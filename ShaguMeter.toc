@@ -2,9 +2,14 @@
 ## Title: |cffffcc00Shagu|cffffffffMeter
 ## Author: Shagu
 ## Notes: A simple and lightweight DamageMeter.
-## Version: 2.2
-## OptionalDeps: pfUI, pfQuest
+## Version: 1.0
+## OptionalDeps: pfUI
 ## SavedVariablesPerCharacter: ShaguMeter_Config
 
 # main
-ShaguMeter.lua
+core.lua
+
+# components
+parser.lua
+window.lua
+settings.lua
