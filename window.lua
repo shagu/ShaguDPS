@@ -244,7 +244,7 @@ window.Refresh = function(force)
     window:SetHeight(config.height * config.bars + 22 + 4)
 
     -- pfUI skin
-    if config.pfui == 1 and pfUI.uf and pfUI.api.CreateBackdrop then
+    if config.pfui == 1 and pfUI and pfUI.uf and pfUI.api.CreateBackdrop then
       window.btnAnnounce:SetHeight(14)
       window.btnAnnounce:SetWidth(14)
 
