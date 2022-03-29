@@ -13,7 +13,7 @@ It does not have much functionality and will not gain much more features.
 1. Download **[Latest Version](https://github.com/shagu/ShaguMeter/archive/master.zip)**
 2. Unpack the Zip file
 3. Rename the folder "ShaguMeter-master" to "ShaguMeter"
-4. Copy "pfSimpleDamage" into Wow-Directory\Interface\AddOns
+4. Copy "ShaguMeter" into Wow-Directory\Interface\AddOns
 5. Restart Wow
 
 ## Commands
