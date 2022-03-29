@@ -12,7 +12,6 @@ settings:RegisterEvent("PLAYER_ENTERING_WORLD")
 settings:SetScript("OnEvent", function()
   if ShaguMeter_Config then
     for k, v in pairs(ShaguMeter_Config) do
-      -- print(k .. " -> " .. v)
       config[k] = v
     end
   end
