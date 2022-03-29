@@ -7,6 +7,8 @@ It does not have much functionality and will not gain much more features.
 
 ![ShaguMeter](screenshot.jpg)
 
+![ShaguMeter](screenshot2.jpg)
+
 ## Installation
 1. Download **[Latest Version](https://github.com/shagu/ShaguMeter/archive/master.zip)**
 2. Unpack the Zip file
