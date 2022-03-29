@@ -189,9 +189,42 @@ window.btnAnnounce:SetScript("OnLeave", function()
   this:SetBackdropBorderColor(.4,.4,.4,1)
 end)
 
+local function announce(text)
+  local type      = DEFAULT_CHAT_FRAME.editBox.chatType
+  local language  = DEFAULT_CHAT_FRAME.editBox.language
+  local channel   = DEFAULT_CHAT_FRAME.editBox.channelTarget
+  local target    = DEFAULT_CHAT_FRAME.editBox.tellTarget
+  if type == "WHISPER" then
+    SendChatMessage(text, type, language, target)
+  elseif type == "CHANNEL" then
+    SendChatMessage(text, type, language, channel);
+  else
+    SendChatMessage(text, type, language);
+  end
+end
+
+local chatcolors = {
+  ["SAY"] = "|cffFFFFFF",
+  ["EMOTE"] = "|cffFF7E40",
+  ["YELL"] = "|cffFF3F40",
+  ["PARTY"] = "|cffAAABFE",
+  ["GUILD"] = "|cff3CE13F",
+  ["OFFICER"] = "|cff40BC40",
+  ["RAID"] = "|cffFF7D01",
+  ["RAID_WARNING"] = "|cffFF4700",
+  ["BATTLEGROUND"] = "|cffFF7D01",
+  ["WHISPER"] = "|cffFF7EFF",
+  ["CHANNEL"] = "|cffFEC1C0"
+}
+
 window.btnAnnounce:SetScript("OnClick", function()
   local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
-  dialog.text = "Post damage data into chat?"
+
+  local ctype = DEFAULT_CHAT_FRAME.editBox.chatType
+  local color = chatcolors[ctype]
+  if not color then color = "|cff00FAF6" end
+
+  dialog.text = "Post damage data into chat?\n\n-> "..color..string.lower(ctype).."|r <-\n\n"
   dialog.OnAccept = function()
     local sum_dmg, count = 0, 0
     for _, damage in pairs(view_dmg_all) do
@@ -205,11 +238,11 @@ window.btnAnnounce:SetScript("OnClick", function()
 
     if count <= 0 then return end
 
-    SendChatMessage("ShaguMeter - Damage Done:")
+    announce("ShaguMeter - Damage Done:")
     local i = 1
     for name, damage in spairs(view_dmg_all, function(t,a,b) return t[b] < t[a] end) do
       if i <= 5 then
-        SendChatMessage(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / sum_dmg * 100,1) .. "%)")
+        announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / sum_dmg * 100,1) .. "%)")
       end
       i = i + 1
     end
