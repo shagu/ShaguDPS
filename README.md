@@ -31,5 +31,6 @@ Available options are:
 /sm bars 8           Visible Bars (any number)
 /sm trackall 0       Track all nearby units (0 or 1)
 /sm texture 2        Set the statusbar texture (1 to 4)
-/sm pfui 1           Inherit pfUI theme (0 or 1)
+/sm pfui 1           Inherit pfUI theme if available (0 or 1)
+/sm toggle           Toggle visibility of the main window
 ```

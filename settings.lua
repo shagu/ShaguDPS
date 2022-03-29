@@ -38,6 +38,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     p("  /sm trackall " .. config.track_all_units .. " |cffcccccc- Track all nearby units")
     p("  /sm texture " .. config.texture .. " |cffcccccc- Set the statusbar texture")
     p("  /sm pfui " .. config.pfui .. " |cffcccccc- Inherit pfUI theme")
+    p("  /sm toggle |cffcccccc- Toggle window")
     return
   end
 
@@ -52,6 +53,11 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     else
       p("|cffffcc00Shagu|cffffffffMeter:|cffff5511 Valid Options are 0-1")
     end
+  elseif strlower(cmd) == "toggle" then
+    config.visible = config.visible == 1 and 0 or 1
+    ShaguMeter_Config = config
+    window:Refresh(true)
+    p("|cffffcc00Shagu|cffffffffMeter:|cffffddcc Visible: " .. config.visible)
   elseif strlower(cmd) == "debug" then
     playerClasses["Test1"] = "WARRIOR"
     playerClasses["Test2"] = "WARLOCK"
