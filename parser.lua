@@ -89,6 +89,7 @@ local COMBATHITSELFOTHER = prepare(COMBATHITSELFOTHER) -- You hit %s for %d.
 local COMBATHITCRITSELFOTHER = prepare(COMBATHITCRITSELFOTHER) -- You crit %s for %d.
 local COMBATHITSCHOOLSELFOTHER = prepare(COMBATHITSCHOOLSELFOTHER) -- You hit %s for %d %s damage.
 local COMBATHITCRITSCHOOLSELFOTHER = prepare(COMBATHITCRITSCHOOLSELFOTHER) -- You crit %s for %d %s damage.
+local DAMAGESHIELDSELFOTHER = prepare(DAMAGESHIELDSELFOTHER) -- You reflect %d %s damage to %s.
 
 -- me target
 local SPELLLOGSCHOOLOTHERSELF = prepare(SPELLLOGSCHOOLOTHERSELF) -- %s's %s hits you for %d %s damage.
@@ -111,6 +112,7 @@ local COMBATHITOTHEROTHER = prepare(COMBATHITOTHEROTHER) -- %s hits %s for %d.
 local COMBATHITCRITOTHEROTHER = prepare(COMBATHITCRITOTHEROTHER) -- %s crits %s for %d.
 local COMBATHITSCHOOLOTHEROTHER = prepare(COMBATHITSCHOOLOTHEROTHER) -- %s hits %s for %d %s damage.
 local COMBATHITCRITSCHOOLOTHEROTHER = prepare(COMBATHITCRITSCHOOLOTHEROTHER) -- %s crits %s for %d %s damage.
+local DAMAGESHIELDOTHEROTHER = prepare(DAMAGESHIELDOTHEROTHER) -- %s reflects %d %s damage to %s.
 
 local datasources = {
   --[[ me source me target ]]--
@@ -224,6 +226,14 @@ local datasources = {
   function(source, target, school, attack)
     for target, damage, school in string.gfind(arg1, COMBATHITCRITSCHOOLSELFOTHER) do
       parser:AddData(source, attack, target, damage, school)
+      return true
+    end
+  end,
+
+  -- You reflect %d %s damage to %s.
+  function(source, target, school, attack)
+    for damage, school, target in string.gfind(arg1, DAMAGESHIELDSELFOTHER) do
+      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school)
       return true
     end
   end,
@@ -375,9 +385,19 @@ local datasources = {
       return true
     end
   end,
+
+  -- %s reflects %d %s damage to %s.
+  function(source, target, school, attack)
+    for source, damage, school, target in string.gfind(arg1, DAMAGESHIELDOTHEROTHER) do
+      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school)
+      return true
+    end
+  end,
 }
 
 -- register to all combat log events
+parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF")
+parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS")
 parser:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
 parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE")
 parser:RegisterEvent("CHAT_MSG_COMBAT_SELF_HITS")
