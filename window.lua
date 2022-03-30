@@ -46,10 +46,18 @@ end
 
 local function barTooltipShow()
   GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-  GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. dmg_table[this.unit]["_sum"])
+  if config.view == 1 then
+    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. dmg_table[this.unit]["_sum"])
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. view_dps_all[this.unit])
+  else
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. view_dps_all[this.unit])
+    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. dmg_table[this.unit]["_sum"])
+  end
+
+  GameTooltip:AddLine(" ")
   for attack, damage in spairs(dmg_table[this.unit], function(t,a,b) return t[b] < t[a] end) do
     if attack ~= "_sum" and attack ~= "_ctime" and attack ~= "_tick" then
-      GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. round(damage / dmg_table[this.unit]["_sum"] * 100,1) .. "%")
+      GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f",round(damage / dmg_table[this.unit]["_sum"] * 100,1)) .. "%")
     end
   end
   GameTooltip:Show()
