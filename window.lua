@@ -311,7 +311,10 @@ window.Refresh = function(force)
     -- pfUI skin
     if config.pfui == 1 and pfUI and pfUI.uf and pfUI.api.CreateBackdrop then
       window.btnDamage:SetHeight(14)
+      window.btnDamage:SetWidth(50)
+
       window.btnDPS:SetHeight(14)
+      window.btnDPS:SetWidth(50)
 
       window.btnAnnounce:SetHeight(14)
       window.btnAnnounce:SetWidth(14)
