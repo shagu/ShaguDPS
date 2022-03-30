@@ -242,17 +242,21 @@ window.btnAnnounce:SetScript("OnClick", function()
   local color = chatcolors[ctype]
   if not color then color = "|cff00FAF6" end
 
-  dialog.text = "Post damage data into chat?\n\n-> "..color..string.lower(ctype).."|r <-\n\n"
+  local view = config.view == 1 and view_dmg_all or view_dps_all
+  local name = config.view == 1 and "Damage Done" or "Overall DPS"
+  local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
+
+  dialog.text = text
   dialog.OnAccept = function()
     -- load current maximum damage
-    local best, all = window.GetCaps(view_dmg_all)
+    local best, all = window.GetCaps(view)
     if all <= 0 then return end
 
     -- announce all entries to chat
-    announce("ShaguDPS - Damage Done:")
+    announce("ShaguDPS - " .. name .. ":")
     local i = 1
-    for name, damage in spairs(view_dmg_all, function(t,a,b) return t[b] < t[a] end) do
-      if i <= 5 then
+    for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
+      if i <= 10 then
         announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
       end
       i = i + 1
