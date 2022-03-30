@@ -1,19 +1,19 @@
-# ShaguMeter
+# ShaguDPS
 
 A very small and lightweight damage meter. The combat log is parsed locale-independent and should work on every 1.12 vanilla based client.
 It does not have much functionality and will not gain much more features.
 
 **Don't expect to see anything fancy here.**
 
-![ShaguMeter](screenshot.jpg)
+![ShaguDPS](screenshot.jpg)
 
-![ShaguMeter](screenshot2.jpg)
+![ShaguDPS](screenshot2.jpg)
 
 ## Installation
-1. Download **[Latest Version](https://github.com/shagu/ShaguMeter/archive/master.zip)**
+1. Download **[Latest Version](https://github.com/shagu/ShaguDPS/archive/master.zip)**
 2. Unpack the Zip file
-3. Rename the folder "ShaguMeter-master" to "ShaguMeter"
-4. Copy "ShaguMeter" into Wow-Directory\Interface\AddOns
+3. Rename the folder "ShaguDPS-master" to "ShaguDPS"
+4. Copy "ShaguDPS" into Wow-Directory\Interface\AddOns
 5. Restart Wow
 
 ## Commands

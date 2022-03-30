@@ -1,4 +1,4 @@
-ShaguMeter = {}
+ShaguDPS = {}
 
 -- initialize default question dialog
 StaticPopupDialogs["SHAGUMETER_QUESTION"] = {
@@ -39,16 +39,16 @@ local config = {
 }
 
 -- create core component frames
-local window = CreateFrame("Frame", "ShaguMeterWindow", UIParent)
+local window = CreateFrame("Frame", "ShaguDPSWindow", UIParent)
 local settings = CreateFrame("Frame")
 local parser = CreateFrame("Frame")
 
 -- make everything public
-ShaguMeter.textures = textures
-ShaguMeter.dmg_table = dmg_table
-ShaguMeter.view_dmg_all = view_dmg_all
-ShaguMeter.playerClasses = playerClasses
-ShaguMeter.config = config
-ShaguMeter.window = window
-ShaguMeter.settings = settings
-ShaguMeter.parser = parser
+ShaguDPS.textures = textures
+ShaguDPS.dmg_table = dmg_table
+ShaguDPS.view_dmg_all = view_dmg_all
+ShaguDPS.playerClasses = playerClasses
+ShaguDPS.config = config
+ShaguDPS.window = window
+ShaguDPS.settings = settings
+ShaguDPS.parser = parser

@@ -1,14 +1,14 @@
 -- load public variables into local
-local window = ShaguMeter.window
-local parser = ShaguMeter.parser
+local window = ShaguDPS.window
+local parser = ShaguDPS.parser
 
-local textures = ShaguMeter.textures
-local spairs = ShaguMeter.spairs
+local textures = ShaguDPS.textures
+local spairs = ShaguDPS.spairs
 
-local playerClasses = ShaguMeter.playerClasses
-local view_dmg_all = ShaguMeter.view_dmg_all
-local dmg_table = ShaguMeter.dmg_table
-local config = ShaguMeter.config
+local playerClasses = ShaguDPS.playerClasses
+local view_dmg_all = ShaguDPS.view_dmg_all
+local dmg_table = ShaguDPS.dmg_table
+local config = ShaguDPS.config
 
 local scroll = 0
 local view_dmg_all_max = 0
@@ -83,7 +83,7 @@ local function barScrollWheel()
 end
 
 local function CreateBar(parent, i)
-  parent.bars[i] = parent.bars[i] or CreateFrame("StatusBar", "ShaguMeterBar" .. i, parent)
+  parent.bars[i] = parent.bars[i] or CreateFrame("StatusBar", "ShaguDPSBar" .. i, parent)
   parent.bars[i]:SetStatusBarTexture(textures[config.texture] or textures[1])
 
   parent.bars[i]:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height * (i-1) - 22)
@@ -132,11 +132,11 @@ window.title = window:CreateTexture(nil, "NORMAL")
 window.title:SetTexture(0,0,0,.6)
 window.title:SetHeight(20)
 
-window.titleText = window:CreateFontString("ShaguMeterTitle", "OVERLAY", "GameFontWhite")
+window.titleText = window:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
 window.titleText:SetAllPoints(window.title)
-window.titleText:SetText("ShaguMeter")
+window.titleText:SetText("ShaguDPS")
 
-window.btnReset = CreateFrame("Button", "ShaguMeterReset", window)
+window.btnReset = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnReset:SetPoint("RIGHT", window.title, "RIGHT", -4, 0)
 window.btnReset:SetFrameStrata("MEDIUM")
 
@@ -144,7 +144,7 @@ window.btnReset.tex = window.btnReset:CreateTexture()
 window.btnReset.tex:SetWidth(10)
 window.btnReset.tex:SetHeight(10)
 window.btnReset.tex:SetPoint("CENTER", 0, 0)
-window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguMeter\\img\\reset")
+window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS\\img\\reset")
 window.btnReset:SetScript("OnEnter", function()
   this:SetBackdropBorderColor(1,.9,0,1)
 end)
@@ -172,7 +172,7 @@ window.btnReset:SetScript("OnClick", function()
   StaticPopup_Show("SHAGUMETER_QUESTION")
 end)
 
-window.btnAnnounce = CreateFrame("Button", "ShaguMeterReset", window)
+window.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnAnnounce:SetPoint("LEFT", window.title, "LEFT", 4, 0)
 window.btnAnnounce:SetFrameStrata("MEDIUM")
 
@@ -180,7 +180,7 @@ window.btnAnnounce.tex = window.btnAnnounce:CreateTexture()
 window.btnAnnounce.tex:SetWidth(10)
 window.btnAnnounce.tex:SetHeight(10)
 window.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
-window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguMeter\\img\\announce")
+window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS\\img\\announce")
 window.btnAnnounce:SetScript("OnEnter", function()
   this:SetBackdropBorderColor(1,.9,0,1)
 end)
@@ -238,7 +238,7 @@ window.btnAnnounce:SetScript("OnClick", function()
 
     if count <= 0 then return end
 
-    announce("ShaguMeter - Damage Done:")
+    announce("ShaguDPS - Damage Done:")
     local i = 1
     for name, damage in spairs(view_dmg_all, function(t,a,b) return t[b] < t[a] end) do
       if i <= 5 then
@@ -250,7 +250,7 @@ window.btnAnnounce:SetScript("OnClick", function()
   StaticPopup_Show("SHAGUMETER_QUESTION")
 end)
 
-window.border = CreateFrame("Frame", "ShaguMeterBorder", window)
+window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
 window.border:ClearAllPoints()
 window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
 window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)

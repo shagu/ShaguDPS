@@ -1,10 +1,10 @@
 -- load public variables into local
-local parser = ShaguMeter.parser
+local parser = ShaguDPS.parser
 
-local playerClasses = ShaguMeter.playerClasses
-local view_dmg_all = ShaguMeter.view_dmg_all
-local dmg_table = ShaguMeter.dmg_table
-local config = ShaguMeter.config
+local playerClasses = ShaguDPS.playerClasses
+local view_dmg_all = ShaguDPS.view_dmg_all
+local dmg_table = ShaguDPS.dmg_table
+local config = ShaguDPS.config
 
 -- populate all valid units (unless trackall is set)
 local validUnits = { ["player"] = true, ["pet"] = true }
