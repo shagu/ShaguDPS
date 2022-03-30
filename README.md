@@ -19,20 +19,20 @@ It does not have much functionality and will not gain much more features.
 ## Commands
 
 The following commands can be used to access the settings:
-* **/shagumeter**
-* **/meter**
-* **/sm**
+* **/shagudps**
+* **/sdps**
+* **/sd**
 
 If one is already used by another addon, just pick an alternative command.
 Available options are:
 
 ```
-/sm visible 1        Show main window (0 or 1)
-/sm width 180        Bar width (any number)
-/sm height 17        Bar height (any number)
-/sm bars 8           Visible Bars (any number)
-/sm trackall 0       Track all nearby units (0 or 1)
-/sm texture 2        Set the statusbar texture (1 to 4)
-/sm pfui 1           Inherit pfUI theme if available (0 or 1)
-/sm toggle           Toggle visibility of the main window
+/sdps visible 1        Show main window (0 or 1)
+/sdps width 180        Bar width (any number)
+/sdps height 17        Bar height (any number)
+/sdps bars 8           Visible Bars (any number)
+/sdps trackall 0       Track all nearby units (0 or 1)
+/sdps texture 2        Set the statusbar texture (1 to 4)
+/sdps pfui 1           Inherit pfUI theme if available (0 or 1)
+/sdps toggle           Toggle visibility of the main window
 ```
