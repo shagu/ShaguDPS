@@ -7,11 +7,12 @@ local spairs = ShaguDPS.spairs
 
 local playerClasses = ShaguDPS.playerClasses
 local view_dmg_all = ShaguDPS.view_dmg_all
+local view_dps_all = ShaguDPS.view_dps_all
 local dmg_table = ShaguDPS.dmg_table
 local config = ShaguDPS.config
+local round = ShaguDPS.round
 
 local scroll = 0
-local view_dmg_all_max = 0
 
 local backdrop =  {
   bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -19,15 +20,6 @@ local backdrop =  {
   tile = true, tileSize = 16, edgeSize = 8,
   insets = { left = 3, right = 3, top = 3, bottom = 3 }
 }
-
-local function round(input, places)
-  if not places then places = 0 end
-  if type(input) == "number" and type(places) == "number" then
-    local pow = 1
-    for i = 1, places do pow = pow * 10 end
-    return floor(input * pow + 0.5) / pow
-  end
-end
 
 local function spairs(t, order)
   -- collect the keys
@@ -157,15 +149,22 @@ window.btnReset:SetScript("OnClick", function()
   local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
   dialog.text = "Do you wish to reset the data?"
   dialog.OnAccept = function()
+    -- clear overall damage data
     for k, v in pairs(dmg_table) do
       dmg_table[k] = nil
     end
 
+    -- clear damage done
     for k, v in pairs(view_dmg_all) do
       view_dmg_all[k] = nil
     end
 
-    view_dmg_all_max = 0
+    -- clear dps
+    for k, v in pairs(view_dmg_all) do
+      view_dmg_all[k] = nil
+    end
+
+    -- reset scroll and reload
     scroll = 0
     window:Refresh()
   end
@@ -226,23 +225,16 @@ window.btnAnnounce:SetScript("OnClick", function()
 
   dialog.text = "Post damage data into chat?\n\n-> "..color..string.lower(ctype).."|r <-\n\n"
   dialog.OnAccept = function()
-    local sum_dmg, count = 0, 0
-    for _, damage in pairs(view_dmg_all) do
-      count = count + 1
-      sum_dmg = sum_dmg + damage
+    -- load current maximum damage
+    local best, all = window.GetCaps(view_dmg_all)
+    if all <= 0 then return end
 
-      if damage > view_dmg_all_max then
-        view_dmg_all_max = damage
-      end
-    end
-
-    if count <= 0 then return end
-
+    -- announce all entries to chat
     announce("ShaguDPS - Damage Done:")
     local i = 1
     for name, damage in spairs(view_dmg_all, function(t,a,b) return t[b] < t[a] end) do
       if i <= 5 then
-        announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / sum_dmg * 100,1) .. "%)")
+        announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
       end
       i = i + 1
     end
@@ -263,6 +255,19 @@ window.border:SetBackdropBorderColor(.7,.7,.7,1)
 window.border:SetFrameLevel(100)
 
 window.bars = {}
+
+window.GetCaps = function(view)
+  local best, all = 0, 0
+  for _, damage in pairs(view) do
+    all = all + damage
+
+    if damage > best then
+      best = damage
+    end
+  end
+
+  return best, all
+end
 
 window.Refresh = function(force)
   -- config changes
@@ -324,29 +329,22 @@ window.Refresh = function(force)
     end
   end
 
-  local count = 0
-  local sum_dmg = 0
-  for _, damage in pairs(view_dmg_all) do
-    count = count + 1
-    sum_dmg = sum_dmg + damage
-
-    if damage > view_dmg_all_max then
-      view_dmg_all_max = damage
-    end
-  end
-
   -- clear previous results
   for id, bar in pairs(window.bars) do
     bar:Hide()
   end
 
+  -- load view and current maximum values
+  local view = config.view == 1 and view_dmg_all or view_dps_all
+  local best, all = window.GetCaps(view)
+
   local i = 1
-  for name, damage in spairs(view_dmg_all, function(t,a,b) return t[b] < t[a] end) do
+  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
     local bar = i - scroll
 
     if bar >= 1 and bar <= config.bars then
       window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
-      window.bars[bar]:SetMinMaxValues(0, view_dmg_all_max)
+      window.bars[bar]:SetMinMaxValues(0, best)
       window.bars[bar]:SetValue(damage)
       window.bars[bar]:Show()
       window.bars[bar].unit = name
@@ -371,7 +369,7 @@ window.Refresh = function(force)
       window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
 
       window.bars[bar].textLeft:SetText(i .. ". " .. name)
-      window.bars[bar].textRight:SetText(damage .. " - " .. round(damage / sum_dmg * 100,1) .. "%")
+      window.bars[bar].textRight:SetText(damage .. " - " .. round(damage / all * 100,1) .. "%")
     end
 
     i = i + 1

@@ -3,8 +3,10 @@ local parser = ShaguDPS.parser
 
 local playerClasses = ShaguDPS.playerClasses
 local view_dmg_all = ShaguDPS.view_dmg_all
+local view_dps_all = ShaguDPS.view_dps_all
 local dmg_table = ShaguDPS.dmg_table
 local config = ShaguDPS.config
+local round = ShaguDPS.round
 
 -- populate all valid units (unless trackall is set)
 local validUnits = { ["player"] = true, ["pet"] = true }
@@ -55,12 +57,24 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   if dmg_table[source] then
     dmg_table[source][attack] = (dmg_table[source][attack] or 0) + tonumber(damage)
     dmg_table[source]["_sum"] = (dmg_table[source]["_sum"] or 0) + tonumber(damage)
+
+    dmg_table[source]["_ctime"] = dmg_table[source]["_ctime"] or 0
+    dmg_table[source]["_tick"] = dmg_table[source]["_tick"] or GetTime()
+
+    if dmg_table[source]["_tick"] + 5 < GetTime() then
+      dmg_table[source]["_tick"] = GetTime()
+      dmg_table[source]["_ctime"] = dmg_table[source]["_ctime"] + 5
+    else
+      dmg_table[source]["_ctime"] = dmg_table[source]["_ctime"] + (GetTime() - dmg_table[source]["_tick"])
+      dmg_table[source]["_tick"] = GetTime()
+    end
   else
     return
   end
 
   if dmg_table[source] then
     view_dmg_all[source] = (view_dmg_all[source] or 0) + tonumber(damage)
+    view_dps_all[source] = round(view_dmg_all[source] / math.max(dmg_table[source]["_ctime"], 1), 1)
   end
 
   for id, callback in pairs(parser.callbacks.refresh) do
