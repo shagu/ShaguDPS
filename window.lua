@@ -107,6 +107,14 @@ local function CreateBar(parent, i)
   return parent.bars[i]
 end
 
+local function btnEnter()
+  this:SetBackdropBorderColor(1,.9,0,1)
+end
+
+local function btnLeave()
+  this:SetBackdropBorderColor(.4,.4,.4,1)
+end
+
 window:ClearAllPoints()
 window:SetPoint("RIGHT", UIParent, "RIGHT", -100, -100)
 
@@ -124,9 +132,31 @@ window.title = window:CreateTexture(nil, "NORMAL")
 window.title:SetTexture(0,0,0,.6)
 window.title:SetHeight(20)
 
-window.titleText = window:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
-window.titleText:SetAllPoints(window.title)
-window.titleText:SetText("ShaguDPS")
+window.btnDamage = CreateFrame("Button", "ShaguDPSDamage", window)
+window.btnDamage:SetPoint("CENTER", window.title, "CENTER", -26, 0)
+window.btnDamage:SetFrameStrata("MEDIUM")
+window.btnDamage.caption = window.btnDamage:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
+window.btnDamage.caption:SetText("Damage")
+window.btnDamage.caption:SetAllPoints()
+window.btnDamage:SetScript("OnEnter", btnEnter)
+window.btnDamage:SetScript("OnLeave", btnLeave)
+window.btnDamage:SetScript("OnClick", function()
+  config.view = 1
+  window.Refresh(true)
+end)
+
+window.btnDPS = CreateFrame("Button", "ShaguDPSDPS", window)
+window.btnDPS:SetPoint("CENTER", window.title, "CENTER", 26, 0)
+window.btnDPS:SetFrameStrata("MEDIUM")
+window.btnDPS.caption = window.btnDPS:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
+window.btnDPS.caption:SetText("DPS")
+window.btnDPS.caption:SetAllPoints()
+window.btnDPS:SetScript("OnEnter", btnEnter)
+window.btnDPS:SetScript("OnLeave", btnLeave)
+window.btnDPS:SetScript("OnClick", function()
+  config.view = 2
+  window.Refresh(true)
+end)
 
 window.btnReset = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnReset:SetPoint("RIGHT", window.title, "RIGHT", -4, 0)
@@ -137,14 +167,8 @@ window.btnReset.tex:SetWidth(10)
 window.btnReset.tex:SetHeight(10)
 window.btnReset.tex:SetPoint("CENTER", 0, 0)
 window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS\\img\\reset")
-window.btnReset:SetScript("OnEnter", function()
-  this:SetBackdropBorderColor(1,.9,0,1)
-end)
-
-window.btnReset:SetScript("OnLeave", function()
-  this:SetBackdropBorderColor(.4,.4,.4,1)
-end)
-
+window.btnReset:SetScript("OnEnter", btnEnter)
+window.btnReset:SetScript("OnLeave", btnLeave)
 window.btnReset:SetScript("OnClick", function()
   local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
   dialog.text = "Do you wish to reset the data?"
@@ -180,13 +204,8 @@ window.btnAnnounce.tex:SetWidth(10)
 window.btnAnnounce.tex:SetHeight(10)
 window.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
 window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS\\img\\announce")
-window.btnAnnounce:SetScript("OnEnter", function()
-  this:SetBackdropBorderColor(1,.9,0,1)
-end)
-
-window.btnAnnounce:SetScript("OnLeave", function()
-  this:SetBackdropBorderColor(.4,.4,.4,1)
-end)
+window.btnAnnounce:SetScript("OnEnter", btnEnter)
+window.btnAnnounce:SetScript("OnLeave", btnLeave)
 
 local function announce(text)
   local type      = DEFAULT_CHAT_FRAME.editBox.chatType
@@ -278,11 +297,22 @@ window.Refresh = function(force)
       window:Hide()
     end
 
+    if config.view == 1 then
+      window.btnDamage.caption:SetTextColor(1,.9,0,1)
+      window.btnDPS.caption:SetTextColor(.5,.5,.5,1)
+    elseif config.view == 2 then
+      window.btnDamage.caption:SetTextColor(.5,.5,.5,1)
+      window.btnDPS.caption:SetTextColor(1,.9,0,1)
+    end
+
     window:SetWidth(config.width)
     window:SetHeight(config.height * config.bars + 22 + 4)
 
     -- pfUI skin
     if config.pfui == 1 and pfUI and pfUI.uf and pfUI.api.CreateBackdrop then
+      window.btnDamage:SetHeight(14)
+      window.btnDPS:SetHeight(14)
+
       window.btnAnnounce:SetHeight(14)
       window.btnAnnounce:SetWidth(14)
 
@@ -295,12 +325,23 @@ window.Refresh = function(force)
       pfUI.api.CreateBackdrop(window, nil, true, .75)
       pfUI.api.CreateBackdrop(window.btnAnnounce, nil, true, .75)
       pfUI.api.CreateBackdrop(window.btnReset, nil, true, .75)
+      pfUI.api.CreateBackdrop(window.btnDamage, nil, true, .75)
+      pfUI.api.CreateBackdrop(window.btnDPS, nil, true, .75)
+
+      window.btnDamage:SetBackdropBorderColor(.4,.4,.4,1)
+      window.btnDPS:SetBackdropBorderColor(.4,.4,.4,1)
 
       window.btnAnnounce:SetBackdropBorderColor(.4,.4,.4,1)
       window.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
 
       window.border:Hide()
     else
+      window.btnDamage:SetHeight(16)
+      window.btnDamage:SetWidth(50)
+
+      window.btnDPS:SetHeight(16)
+      window.btnDPS:SetWidth(50)
+
       window.btnAnnounce:SetHeight(16)
       window.btnAnnounce:SetWidth(16)
 
@@ -316,6 +357,14 @@ window.Refresh = function(force)
         insets = { left = 3, right = 3, top = 3, bottom = 3 }
       })
       window:SetBackdropColor(.5,.5,.5,.5)
+
+      window.btnDamage:SetBackdrop(backdrop)
+      window.btnDamage:SetBackdropColor(.2,.2,.2,1)
+      window.btnDamage:SetBackdropBorderColor(.4,.4,.4,1)
+
+      window.btnDPS:SetBackdrop(backdrop)
+      window.btnDPS:SetBackdropColor(.2,.2,.2,1)
+      window.btnDPS:SetBackdropBorderColor(.4,.4,.4,1)
 
       window.btnAnnounce:SetBackdrop(backdrop)
       window.btnAnnounce:SetBackdropColor(.2,.2,.2,1)
