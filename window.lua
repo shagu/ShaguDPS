@@ -218,10 +218,10 @@ window.btnAnnounce:SetScript("OnEnter", btnEnter)
 window.btnAnnounce:SetScript("OnLeave", btnLeave)
 
 local function announce(text)
-  local type      = DEFAULT_CHAT_FRAME.editBox.chatType
-  local language  = DEFAULT_CHAT_FRAME.editBox.language
-  local channel   = DEFAULT_CHAT_FRAME.editBox.channelTarget
-  local target    = DEFAULT_CHAT_FRAME.editBox.tellTarget
+  local type      = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
+  local language  = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("language") or ChatFrameEditBox.language
+  local channel   = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("channelTarget") or ChatFrameEditBox.channelTarget
+  local target    = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("tellTarget") or ChatFrameEditBox.tellTarget
   if type == "WHISPER" then
     SendChatMessage(text, type, language, target)
   elseif type == "CHANNEL" then
@@ -248,7 +248,7 @@ local chatcolors = {
 window.btnAnnounce:SetScript("OnClick", function()
   local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
 
-  local ctype = DEFAULT_CHAT_FRAME.editBox.chatType
+  local ctype = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
   local color = chatcolors[ctype]
   if not color then color = "|cff00FAF6" end
 
