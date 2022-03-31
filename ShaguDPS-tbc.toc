@@ -1,0 +1,18 @@
+## Interface: 20400
+## Title: |cffffcc00Shagu|cffffffffDPS
+## Author: Shagu
+## Notes: A simple and lightweight DPS and damage meter.
+## Version: 1.0
+## OptionalDeps: pfUI-tbc
+## SavedVariablesPerCharacter: ShaguDPS_Config
+
+# main
+core.lua
+
+# parser
+parser.lua
+parser-tbc.lua
+
+# interface
+window.lua
+settings.lua
