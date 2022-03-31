@@ -175,6 +175,27 @@ window.btnReset = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnReset:SetPoint("RIGHT", window.title, "RIGHT", -4, 0)
 window.btnReset:SetFrameStrata("MEDIUM")
 
+local function ResetData()
+  -- clear overall damage data
+  for k, v in pairs(dmg_table) do
+    dmg_table[k] = nil
+  end
+
+  -- clear damage done
+  for k, v in pairs(view_dmg_all) do
+    view_dmg_all[k] = nil
+  end
+
+  -- clear dps
+  for k, v in pairs(view_dps_all) do
+    view_dps_all[k] = nil
+  end
+
+  -- reset scroll and reload
+  scroll = 0
+  window:Refresh()
+end
+
 window.btnReset.tex = window.btnReset:CreateTexture()
 window.btnReset.tex:SetWidth(10)
 window.btnReset.tex:SetHeight(10)
@@ -183,42 +204,15 @@ window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" 
 window.btnReset:SetScript("OnEnter", btnEnter)
 window.btnReset:SetScript("OnLeave", btnLeave)
 window.btnReset:SetScript("OnClick", function()
-  local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
-  dialog.text = "Do you wish to reset the data?"
-  dialog.OnAccept = function()
-    -- clear overall damage data
-    for k, v in pairs(dmg_table) do
-      dmg_table[k] = nil
-    end
-
-    -- clear damage done
-    for k, v in pairs(view_dmg_all) do
-      view_dmg_all[k] = nil
-    end
-
-    -- clear dps
-    for k, v in pairs(view_dps_all) do
-      view_dps_all[k] = nil
-    end
-
-    -- reset scroll and reload
-    scroll = 0
-    window:Refresh()
+  if IsShiftKeyDown() then
+    ResetData()
+  else
+    local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
+    dialog.text = "Do you wish to reset the data?"
+    dialog.OnAccept = ResetData
+    StaticPopup_Show("SHAGUMETER_QUESTION")
   end
-  StaticPopup_Show("SHAGUMETER_QUESTION")
 end)
-
-window.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", window)
-window.btnAnnounce:SetPoint("LEFT", window.title, "LEFT", 4, 0)
-window.btnAnnounce:SetFrameStrata("MEDIUM")
-
-window.btnAnnounce.tex = window.btnAnnounce:CreateTexture()
-window.btnAnnounce.tex:SetWidth(10)
-window.btnAnnounce.tex:SetHeight(10)
-window.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
-window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\announce")
-window.btnAnnounce:SetScript("OnEnter", btnEnter)
-window.btnAnnounce:SetScript("OnLeave", btnLeave)
 
 local function announce(text)
   local type = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
@@ -249,34 +243,51 @@ local chatcolors = {
   ["CHANNEL"] = "|cffFEC1C0"
 }
 
-window.btnAnnounce:SetScript("OnClick", function()
-  local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
-
-  local ctype = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
-  local color = chatcolors[ctype]
-  if not color then color = "|cff00FAF6" end
-
+local function AnnounceData()
   local view = config.view == 1 and view_dmg_all or view_dps_all
-  local name = config.view == 1 and "Damage Done" or "Overall DPS"
-  local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
 
-  dialog.text = text
-  dialog.OnAccept = function()
-    -- load current maximum damage
-    local best, all = window.GetCaps(view)
-    if all <= 0 then return end
+  -- load current maximum damage
+  local best, all = window.GetCaps(view)
+  if all <= 0 then return end
 
-    -- announce all entries to chat
-    announce("ShaguDPS - " .. name .. ":")
-    local i = 1
-    for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
-      if i <= 10 then
-        announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
-      end
-      i = i + 1
+  -- announce all entries to chat
+  announce("ShaguDPS - " .. name .. ":")
+  local i = 1
+  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
+    if i <= 10 then
+      announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
     end
+    i = i + 1
   end
-  StaticPopup_Show("SHAGUMETER_QUESTION")
+end
+
+window.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", window)
+window.btnAnnounce:SetPoint("LEFT", window.title, "LEFT", 4, 0)
+window.btnAnnounce:SetFrameStrata("MEDIUM")
+
+window.btnAnnounce.tex = window.btnAnnounce:CreateTexture()
+window.btnAnnounce.tex:SetWidth(10)
+window.btnAnnounce.tex:SetHeight(10)
+window.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
+window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\announce")
+window.btnAnnounce:SetScript("OnEnter", btnEnter)
+window.btnAnnounce:SetScript("OnLeave", btnLeave)
+window.btnAnnounce:SetScript("OnClick", function()
+  if IsShiftKeyDown() then
+    AnnounceData()
+  else
+    local ctype = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
+    local color = chatcolors[ctype]
+    if not color then color = "|cff00FAF6" end
+
+    local name = config.view == 1 and "Damage Done" or "Overall DPS"
+    local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
+
+    local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
+    dialog.text = text
+    dialog.OnAccept = AnnounceData
+    StaticPopup_Show("SHAGUMETER_QUESTION")
+  end
 end)
 
 window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
