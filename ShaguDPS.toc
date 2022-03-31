@@ -9,7 +9,10 @@
 # main
 core.lua
 
-# components
+# parser
 parser.lua
+parser-vanilla.lua
+
+# interface
 window.lua
 settings.lua
