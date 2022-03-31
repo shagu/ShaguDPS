@@ -17,13 +17,27 @@ local textures = {
   "Interface\\PaperDollInfoFrame\\UI-Character-Skills-Bar"
 }
 
--- a rounding function
+-- a basic rounding function
 local function round(input, places)
   if not places then places = 0 end
   if type(input) == "number" and type(places) == "number" then
     local pow = 1
     for i = 1, places do pow = pow * 10 end
     return floor(input * pow + 0.5) / pow
+  end
+end
+
+local function expansion()
+  local _, _, _, client = GetBuildInfo()
+  client = client or 11200
+
+  -- detect client expansion
+  if client >= 20000 and client <= 20400 then
+    return "tbc"
+  elseif client >= 30000 and client <= 30300 then
+    return "wotlk"
+  else
+    return "vanilla"
   end
 end
 
@@ -68,3 +82,4 @@ ShaguDPS.window = window
 ShaguDPS.settings = settings
 ShaguDPS.parser = parser
 ShaguDPS.round = round
+ShaguDPS.expansion = expansion
