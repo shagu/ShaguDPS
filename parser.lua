@@ -78,7 +78,7 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   end
 
   for id, callback in pairs(parser.callbacks.refresh) do
-    callback(source)
+    callback()
   end
 end
 
