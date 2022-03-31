@@ -119,10 +119,26 @@ local function CreateBar(parent, i)
 end
 
 local function btnEnter()
+  if this.tooltip then
+    GameTooltip:SetOwner(this, "ANCHOR_NONE")
+    for i, data in pairs(this.tooltip) do
+      if type(data) == "string" then
+        GameTooltip:AddLine(data)
+      elseif type(data) == "table" then
+        GameTooltip:AddDoubleLine(data[1], data[2])
+      end
+    end
+    GameTooltip:Show()
+  end
+
   this:SetBackdropBorderColor(1,.9,0,1)
 end
 
 local function btnLeave()
+  if this.tooltip then
+    GameTooltip:Hide()
+  end
+
   this:SetBackdropBorderColor(.4,.4,.4,1)
 end
 
@@ -150,6 +166,7 @@ window.btnDamage.caption = window.btnDamage:CreateFontString("ShaguDPSTitle", "O
 window.btnDamage.caption:SetFont(STANDARD_TEXT_FONT, 9)
 window.btnDamage.caption:SetText("Damage")
 window.btnDamage.caption:SetAllPoints()
+window.btnDamage.tooltip = { "Damage View", "|cffffffffShows the overall damage done" }
 window.btnDamage:SetScript("OnEnter", btnEnter)
 window.btnDamage:SetScript("OnLeave", btnLeave)
 window.btnDamage:SetScript("OnClick", function()
@@ -164,6 +181,7 @@ window.btnDPS.caption = window.btnDPS:CreateFontString("ShaguDPSTitle", "OVERLAY
 window.btnDPS.caption:SetFont(STANDARD_TEXT_FONT, 9)
 window.btnDPS.caption:SetText("DPS")
 window.btnDPS.caption:SetAllPoints()
+window.btnDPS.tooltip = { "DPS View", "|cffffffffShows the overall DPS done" }
 window.btnDPS:SetScript("OnEnter", btnEnter)
 window.btnDPS:SetScript("OnLeave", btnLeave)
 window.btnDPS:SetScript("OnClick", function()
@@ -174,6 +192,11 @@ end)
 window.btnReset = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnReset:SetPoint("RIGHT", window.title, "RIGHT", -4, 0)
 window.btnReset:SetFrameStrata("MEDIUM")
+window.btnReset.tooltip = {
+  "Reset Data",
+  { "|cffffffffClick", "|cffaaaaaaAsk to reset all data."},
+  { "|cffffffffShift-Click", "|cffaaaaaaReset all data."},
+}
 
 local function ResetData()
   -- clear overall damage data
@@ -264,6 +287,11 @@ end
 window.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnAnnounce:SetPoint("LEFT", window.title, "LEFT", 4, 0)
 window.btnAnnounce:SetFrameStrata("MEDIUM")
+window.btnAnnounce.tooltip = {
+  "Send to Chat",
+  { "|cffffffffClick", "|cffaaaaaaAsk to anounce all data."},
+  { "|cffffffffShift-Click", "|cffaaaaaaAnnounce all data."},
+}
 
 window.btnAnnounce.tex = window.btnAnnounce:CreateTexture()
 window.btnAnnounce.tex:SetWidth(10)
