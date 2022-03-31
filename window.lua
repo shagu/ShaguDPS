@@ -197,8 +197,8 @@ window.btnReset:SetScript("OnClick", function()
     end
 
     -- clear dps
-    for k, v in pairs(view_dmg_all) do
-      view_dmg_all[k] = nil
+    for k, v in pairs(view_dps_all) do
+      view_dps_all[k] = nil
     end
 
     -- reset scroll and reload
