@@ -1,9 +1,9 @@
 # ShaguDPS
 
-A very small and lightweight damage meter. The combat log is parsed locale-independent and should work on every 1.12 vanilla based client. It does not have much functionality and will not gain much more features.
+A very small and lightweight damage meter. The combat log is parsed in a locale-independent way and should work on every 1.12 (vanilla) and 2.4.3 (burning crusade) based client.
 
 The goal is not to compete with the big players like [DPSMate](https://github.com/Geigerkind/DPSMate) or [Recount](https://www.curseforge.com/wow/addons/recount),
-but rather to offer a simple damage tracker, that is fast and is using as less resources as possible.
+but instead to offer a simple damage tracker, that is fast and uses the least amount of resources as possible.
 
 **So don't expect to see anything fancy here.**
 
