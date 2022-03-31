@@ -1,3 +1,6 @@
+-- check for expansion
+local tbc = ShaguDPS.expansion() == "tbc" and true or nil
+
 -- load public variables into local
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
@@ -176,7 +179,7 @@ window.btnReset.tex = window.btnReset:CreateTexture()
 window.btnReset.tex:SetWidth(10)
 window.btnReset.tex:SetHeight(10)
 window.btnReset.tex:SetPoint("CENTER", 0, 0)
-window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (ShaguDPS.expansion() == "tbc" and "-tbc" or "") .. "\\img\\reset")
+window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\reset")
 window.btnReset:SetScript("OnEnter", btnEnter)
 window.btnReset:SetScript("OnLeave", btnLeave)
 window.btnReset:SetScript("OnClick", function()
@@ -213,15 +216,16 @@ window.btnAnnounce.tex = window.btnAnnounce:CreateTexture()
 window.btnAnnounce.tex:SetWidth(10)
 window.btnAnnounce.tex:SetHeight(10)
 window.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
-window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (ShaguDPS.expansion() == "tbc" and "-tbc" or "") .. "\\img\\announce")
+window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\announce")
 window.btnAnnounce:SetScript("OnEnter", btnEnter)
 window.btnAnnounce:SetScript("OnLeave", btnLeave)
 
 local function announce(text)
-  local type      = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
-  local language  = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("language") or ChatFrameEditBox.language
-  local channel   = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("channelTarget") or ChatFrameEditBox.channelTarget
-  local target    = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("tellTarget") or ChatFrameEditBox.tellTarget
+  local type = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
+  local language = tbc and ChatFrameEditBox:GetAttribute("language") or ChatFrameEditBox.language
+  local channel = tbc and ChatFrameEditBox:GetAttribute("channelTarget") or ChatFrameEditBox.channelTarget
+  local target = tbc and ChatFrameEditBox:GetAttribute("tellTarget") or ChatFrameEditBox.tellTarget
+
   if type == "WHISPER" then
     SendChatMessage(text, type, language, target)
   elseif type == "CHANNEL" then
@@ -248,7 +252,7 @@ local chatcolors = {
 window.btnAnnounce:SetScript("OnClick", function()
   local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
 
-  local ctype = ShaguDPS.expansion() == "tbc" and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
+  local ctype = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
   local color = chatcolors[ctype]
   if not color then color = "|cff00FAF6" end
 
