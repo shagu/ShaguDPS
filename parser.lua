@@ -8,27 +8,37 @@ local dmg_table = ShaguDPS.dmg_table
 local config = ShaguDPS.config
 local round = ShaguDPS.round
 
--- populate all valid units (unless trackall is set)
-local validUnits = { ["player"] = true, ["pet"] = true }
+-- populate all valid player units
+local validUnits = { ["player"] = true }
 for i=1,4 do validUnits["party" .. i] = true end
-for i=1,4 do validUnits["partypet" .. i] = true end
 for i=1,40 do validUnits["raid" .. i] = true end
-for i=1,40 do validUnits["raidpet" .. i] = true end
+
+-- populate all valid player pets
+local validPets = { ["pet"] = true }
+for i=1,4 do validPets["partypet" .. i] = true end
+for i=1,40 do validPets["raidpet" .. i] = true end
 
 parser.ScanName = function(self, name)
+  -- check if name matches a real player
   for unit, _ in pairs(validUnits) do
     if UnitExists(unit) and UnitName(unit) == name then
       if UnitIsPlayer(unit) then
         local _, class = UnitClass(unit)
         playerClasses[name] = class
         return true
-      else
-        playerClasses[name] = unit
-        return true
       end
     end
   end
 
+  -- check if name matches a player pet
+  for unit, _ in pairs(validPets) do
+    if UnitExists(unit) and UnitName(unit) == name then
+      playerClasses[name] = unit
+      return true
+    end
+  end
+
+  -- assign class other if tracking of all units is set
   if config.track_all_units == 1 then
     playerClasses[name] = playerClasses[name] or "other"
     return true
