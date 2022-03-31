@@ -9,11 +9,18 @@ It does not have much functionality and will not gain much more features.
 
 ![ShaguDPS](screenshot2.jpg)
 
-## Installation
+## Installation (Vanilla, 1.12)
 1. Download **[Latest Version](https://github.com/shagu/ShaguDPS/archive/master.zip)**
 2. Unpack the Zip file
 3. Rename the folder "ShaguDPS-master" to "ShaguDPS"
 4. Copy "ShaguDPS" into Wow-Directory\Interface\AddOns
+5. Restart Wow
+
+## Installation (The Burning Crusade, 2.4.3)
+1. Download **[Latest Version](https://github.com/shagu/ShaguDPS/archive/master.zip)**
+2. Unpack the Zip file
+3. Rename the folder "ShaguDPS-master" to "ShaguDPS-tbc"
+4. Copy "ShaguDPS-tbc" into Wow-Directory\Interface\AddOns
 5. Restart Wow
 
 ## Commands
