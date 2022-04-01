@@ -459,20 +459,14 @@ window.Refresh = function(force)
       window.bars[bar].unit = name
 
       local color = { r= .4, g = .4, b = .4 }
-      if playerClasses[name] ~= "other" then
-        color = { r= .6, g = 1, b = .6 }
-      end
+
       if RAID_CLASS_COLORS[playerClasses[name]] then
+        -- set color to player class colors
         color = RAID_CLASS_COLORS[playerClasses[name]]
-      elseif playerClasses[name] then
-        -- parse pet owners
-        if strsub(playerClasses[name],0,3) == "pet" then
-          name = UnitName("player") .. " - " .. name
-        elseif strsub(playerClasses[name],0,8) == "partypet" then
-          name = UnitName("party" .. strsub(playerClasses[name],9)) .. " - " .. name
-        elseif strsub(playerClasses[name],0,7) == "raidpet" then
-          name = UnitName("raid" .. strsub(playerClasses[name],8)) .. " - " .. name
-        end
+      elseif playerClasses[name] ~= "__other__" then
+        -- set color to player pet colors
+        color = { r= .6, g = 1, b = .6 }
+        name = playerClasses[name] .. " - " .. name
       end
 
       window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)

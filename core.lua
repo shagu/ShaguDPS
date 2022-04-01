@@ -56,6 +56,7 @@ local config = {
 
   -- tracking
   track_all_units = 0,
+  merge_pets = 1,
 
   -- appearance
   visible = 1,
