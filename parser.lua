@@ -25,7 +25,7 @@ parser.ScanName = function(self, name)
       if UnitIsPlayer(unit) then
         local _, class = UnitClass(unit)
         playerClasses[name] = class
-        return true
+        return "PLAYER"
       end
     end
   end
@@ -42,16 +42,16 @@ parser.ScanName = function(self, name)
         playerClasses[name] = UnitName("raid" .. strsub(unit,8))
       end
 
-      return true
+      return "PET"
     end
   end
 
   -- assign class other if tracking of all units is set
   if config.track_all_units == 1 then
     playerClasses[name] = playerClasses[name] or "__other__"
-    return true
+    return "OTHER"
   else
-    return false
+    return nil
   end
 end
 
@@ -60,14 +60,27 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   -- DEFAULT_CHAT_FRAME:AddMessage(source .. " (" .. attack .. ") -> " .. target .. ": " .. damage .. " (" .. (school or "nil") .. ")")
 
   -- write dmg_table table
-  if not dmg_table[source] and ( parser:ScanName(source) or force ) then
+  if not dmg_table[source] then
+    local type = parser:ScanName(source) or force
+    if type == "PET" then
+      -- create owner table if not yet existing
+      local owner = playerClasses[source]
+      if not dmg_table[owner] and parser:ScanName(owner) then
+        dmg_table[owner] = {}
+      end
+    elseif not type then
+      -- invalid or disabled unit type
+      return
+    end
+
+    -- create base damage table
     dmg_table[source] = {}
   end
 
   -- write pet damage into owners data if enabled
-  if config.merge_pets == 1 and
-    playerClasses[source] ~= "__other__" and
-    (dmg_table[playerClasses[source]] or parser:ScanName(playerClasses[source]))
+  if config.merge_pets == 1 and               -- merge pets?
+    playerClasses[source] ~= "__other__" and  -- valid unit?
+    dmg_table[playerClasses[source]]          -- has owner?
   then
     attack = "Pet: " .. source
     source = playerClasses[source]
