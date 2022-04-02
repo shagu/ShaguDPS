@@ -268,6 +268,7 @@ local chatcolors = {
 
 local function AnnounceData()
   local view = config.view == 1 and view_dmg_all or view_dps_all
+  local name = config.view == 1 and "Damage Done" or "Overall DPS"
 
   -- load current maximum damage
   local best, all = window.GetCaps(view)
