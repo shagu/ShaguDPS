@@ -18,6 +18,11 @@ local validPets = { ["pet"] = true }
 for i=1,4 do validPets["partypet" .. i] = true end
 for i=1,40 do validPets["raidpet" .. i] = true end
 
+-- trim leading and trailing spaces
+local function trim(str)
+  return gsub(str, "^%s*(.-)%s*$", "%1")
+end
+
 parser.ScanName = function(self, name)
   -- check if name matches a real player
   for unit, _ in pairs(validUnits) do
@@ -56,8 +61,8 @@ parser.ScanName = function(self, name)
 end
 
 parser.AddData = function(self, source, attack, target, damage, school, force)
-  -- Debug:
-  -- DEFAULT_CHAT_FRAME:AddMessage(source .. " (" .. attack .. ") -> " .. target .. ": " .. damage .. " (" .. (school or "nil") .. ")")
+  -- trim leading and trailing spaces
+  source = trim(source)
 
   -- write dmg_table table
   if not dmg_table[source] then
