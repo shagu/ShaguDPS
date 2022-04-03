@@ -120,7 +120,7 @@ end
 
 local function btnEnter()
   if this.tooltip then
-    GameTooltip:SetOwner(this, "ANCHOR_NONE")
+    GameTooltip_SetDefaultAnchor(GameTooltip, this)
     for i, data in pairs(this.tooltip) do
       if type(data) == "string" then
         GameTooltip:AddLine(data)
