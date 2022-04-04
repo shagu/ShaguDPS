@@ -61,6 +61,9 @@ parser.ScanName = function(self, name)
 end
 
 parser.AddData = function(self, source, attack, target, damage, school, force)
+  -- abort on invalid input
+  if type(source) ~= "string" then return end
+
   -- trim leading and trailing spaces
   source = trim(source)
 
