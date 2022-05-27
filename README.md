@@ -42,6 +42,5 @@ Available options are:
 /sdps bars 8           Visible Bars (any number)
 /sdps trackall 0       Track all nearby units (0 or 1)
 /sdps texture 2        Set the statusbar texture (1 to 4)
-/sdps pfui 1           Inherit pfUI theme if available (0 or 1)
 /sdps toggle           Toggle visibility of the main window
 ```

@@ -154,14 +154,28 @@ window:SetScript("OnDragStart", function() window:StartMoving() end)
 window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
+window:SetBackdrop({
+  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+  tile = true, tileSize = 16, edgeSize = 16,
+  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+})
+window:SetBackdropColor(.5,.5,.5,.5)
 
 window.title = window:CreateTexture(nil, "NORMAL")
 window.title:SetTexture(0,0,0,.6)
 window.title:SetHeight(20)
+window.title:SetPoint("TOPLEFT", 2, -2)
+window.title:SetPoint("TOPRIGHT", -2, -2)
 
 window.btnDamage = CreateFrame("Button", "ShaguDPSDamage", window)
 window.btnDamage:SetPoint("CENTER", window.title, "CENTER", -26, 0)
 window.btnDamage:SetFrameStrata("MEDIUM")
+window.btnDamage:SetHeight(16)
+window.btnDamage:SetWidth(50)
+window.btnDamage:SetBackdrop(backdrop)
+window.btnDamage:SetBackdropColor(.2,.2,.2,1)
+window.btnDamage:SetBackdropBorderColor(.4,.4,.4,1)
+
 window.btnDamage.caption = window.btnDamage:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
 window.btnDamage.caption:SetFont(STANDARD_TEXT_FONT, 9)
 window.btnDamage.caption:SetText("Damage")
@@ -177,6 +191,12 @@ end)
 window.btnDPS = CreateFrame("Button", "ShaguDPSDPS", window)
 window.btnDPS:SetPoint("CENTER", window.title, "CENTER", 26, 0)
 window.btnDPS:SetFrameStrata("MEDIUM")
+window.btnDPS:SetHeight(16)
+window.btnDPS:SetWidth(50)
+window.btnDPS:SetBackdrop(backdrop)
+window.btnDPS:SetBackdropColor(.2,.2,.2,1)
+window.btnDPS:SetBackdropBorderColor(.4,.4,.4,1)
+
 window.btnDPS.caption = window.btnDPS:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
 window.btnDPS.caption:SetFont(STANDARD_TEXT_FONT, 9)
 window.btnDPS.caption:SetText("DPS")
@@ -192,6 +212,11 @@ end)
 window.btnReset = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnReset:SetPoint("RIGHT", window.title, "RIGHT", -4, 0)
 window.btnReset:SetFrameStrata("MEDIUM")
+window.btnReset:SetHeight(16)
+window.btnReset:SetWidth(16)
+window.btnReset:SetBackdrop(backdrop)
+window.btnReset:SetBackdropColor(.2,.2,.2,1)
+window.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
 window.btnReset.tooltip = {
   "Reset Data",
   { "|cffffffffClick", "|cffaaaaaaAsk to reset all data."},
@@ -288,6 +313,11 @@ end
 window.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", window)
 window.btnAnnounce:SetPoint("LEFT", window.title, "LEFT", 4, 0)
 window.btnAnnounce:SetFrameStrata("MEDIUM")
+window.btnAnnounce:SetHeight(16)
+window.btnAnnounce:SetWidth(16)
+window.btnAnnounce:SetBackdrop(backdrop)
+window.btnAnnounce:SetBackdropColor(.2,.2,.2,1)
+window.btnAnnounce:SetBackdropBorderColor(.4,.4,.4,1)
 window.btnAnnounce.tooltip = {
   "Send to Chat",
   { "|cffffffffClick", "|cffaaaaaaAsk to anounce all data."},
@@ -365,78 +395,6 @@ window.Refresh = function(force)
 
     window:SetWidth(config.width)
     window:SetHeight(config.height * config.bars + 22 + 4)
-
-    -- pfUI skin
-    if config.pfui == 1 and pfUI and pfUI.uf and pfUI.api.CreateBackdrop then
-      window.btnDamage:SetHeight(14)
-      window.btnDamage:SetWidth(50)
-
-      window.btnDPS:SetHeight(14)
-      window.btnDPS:SetWidth(50)
-
-      window.btnAnnounce:SetHeight(14)
-      window.btnAnnounce:SetWidth(14)
-
-      window.btnReset:SetHeight(14)
-      window.btnReset:SetWidth(14)
-
-      window.title:SetPoint("TOPLEFT", 1, -1)
-      window.title:SetPoint("TOPRIGHT", -1, -1)
-
-      pfUI.api.CreateBackdrop(window, nil, true, .75)
-      pfUI.api.CreateBackdrop(window.btnAnnounce, nil, true, .75)
-      pfUI.api.CreateBackdrop(window.btnReset, nil, true, .75)
-      pfUI.api.CreateBackdrop(window.btnDamage, nil, true, .75)
-      pfUI.api.CreateBackdrop(window.btnDPS, nil, true, .75)
-
-      window.btnDamage:SetBackdropBorderColor(.4,.4,.4,1)
-      window.btnDPS:SetBackdropBorderColor(.4,.4,.4,1)
-
-      window.btnAnnounce:SetBackdropBorderColor(.4,.4,.4,1)
-      window.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
-
-      window.border:Hide()
-    else
-      window.btnDamage:SetHeight(16)
-      window.btnDamage:SetWidth(50)
-
-      window.btnDPS:SetHeight(16)
-      window.btnDPS:SetWidth(50)
-
-      window.btnAnnounce:SetHeight(16)
-      window.btnAnnounce:SetWidth(16)
-
-      window.btnReset:SetHeight(16)
-      window.btnReset:SetWidth(16)
-
-      window.title:SetPoint("TOPLEFT", 2, -2)
-      window.title:SetPoint("TOPRIGHT", -2, -2)
-
-      window:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 }
-      })
-      window:SetBackdropColor(.5,.5,.5,.5)
-
-      window.btnDamage:SetBackdrop(backdrop)
-      window.btnDamage:SetBackdropColor(.2,.2,.2,1)
-      window.btnDamage:SetBackdropBorderColor(.4,.4,.4,1)
-
-      window.btnDPS:SetBackdrop(backdrop)
-      window.btnDPS:SetBackdropColor(.2,.2,.2,1)
-      window.btnDPS:SetBackdropBorderColor(.4,.4,.4,1)
-
-      window.btnAnnounce:SetBackdrop(backdrop)
-      window.btnAnnounce:SetBackdropColor(.2,.2,.2,1)
-      window.btnAnnounce:SetBackdropBorderColor(.4,.4,.4,1)
-
-      window.btnReset:SetBackdrop(backdrop)
-      window.btnReset:SetBackdropColor(.2,.2,.2,1)
-      window.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
-
-      window.border:Show()
-    end
   end
 
   -- clear previous results
