@@ -1,6 +1,12 @@
 -- check for expansion
 local tbc = ShaguDPS.expansion() == "tbc" and true or nil
 
+-- all known classes
+local classes = {
+  WARRIOR = true, MAGE = true, ROGUE = true, DRUID = true, HUNTER = true,
+  SHAMAN = true, PRIEST = true, WARLOCK = true, PALADIN = true,
+}
+
 -- load public variables into local
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
@@ -419,13 +425,17 @@ window.Refresh = function(force)
 
       local color = { r= .4, g = .4, b = .4 }
 
-      if RAID_CLASS_COLORS[playerClasses[name]] then
+      if classes[playerClasses[name]] then
         -- set color to player class colors
         color = RAID_CLASS_COLORS[playerClasses[name]]
       elseif playerClasses[name] ~= "__other__" then
         -- set color to player pet colors
-        color = { r= .6, g = 1, b = .6 }
-        name = playerClasses[name] .. " - " .. name
+        -- pets have their class set to the owners name
+        local owner = playerClasses[name]
+        if classes[playerClasses[owner]] then
+          color = RAID_CLASS_COLORS[playerClasses[owner]]
+          name = owner .. " - " .. name
+        end
       end
 
       window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
