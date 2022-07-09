@@ -30,6 +30,26 @@ local backdrop =  {
   insets = { left = 3, right = 3, top = 3, bottom = 3 }
 }
 
+local rgbcache = {}
+local function str2rgb(text)
+  if not text then return 1, 1, 1 end
+  if rgbcache[text] then return unpack(rgbcache[text]) end
+  local counter = 1
+  local l = string.len(text)
+  for i = 1, l, 3 do
+    counter = mod(counter*8161, 4294967279) +
+        (string.byte(text,i)*16776193) +
+        ((string.byte(text,i+1) or (l-i+256))*8372226) +
+        ((string.byte(text,i+2) or (l-i+256))*3932164)
+  end
+  local hash = mod(mod(counter, 4294967291),16777216)
+  local r = (hash - (mod(hash,65536))) / 65536
+  local g = ((hash - r*65536) - ( mod((hash - r*65536),256)) ) / 256
+  local b = hash - r*65536 - g*256
+  rgbcache[text] = { r / 255, g / 255, b / 255 }
+  return unpack(rgbcache[text])
+end
+
 local function spairs(t, order)
   -- collect the keys
   local keys = {}
@@ -423,7 +443,8 @@ window.Refresh = function(force)
       window.bars[bar]:Show()
       window.bars[bar].unit = name
 
-      local color = { r= .4, g = .4, b = .4 }
+      local r, g, b = str2rgb(name)
+      local color = { r = r / 4 + .4, g = g / 4 + .4, b = b / 4 + .4 }
 
       if classes[playerClasses[name]] then
         -- set color to player class colors
