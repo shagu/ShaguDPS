@@ -5,6 +5,7 @@
 ## Version: 1.1
 ## OptionalDeps: pfUI
 ## SavedVariablesPerCharacter: ShaguDPS_Config
+## Dependencies: MikScrollingBattleText
 
 # main
 core.lua
