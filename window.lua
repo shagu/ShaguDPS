@@ -1,15 +1,16 @@
 -- check for expansion
 local tbc = ShaguDPS.expansion() == "tbc" and true or nil
 
--- all known classes
-local classes = {
-  WARRIOR = true, MAGE = true, ROGUE = true, DRUID = true, HUNTER = true,
-  SHAMAN = true, PRIEST = true, WARLOCK = true, PALADIN = true,
-}
+
+--with border 
+local setting_border = false
+--with background
+local setting_background = false
 
 -- load public variables into local
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
+local parser2 = ShaguDPS.parser2
 
 local textures = ShaguDPS.textures
 local spairs = ShaguDPS.spairs
@@ -21,6 +22,9 @@ local dmg_table = ShaguDPS.dmg_table
 local config = ShaguDPS.config
 local round = ShaguDPS.round
 
+local view_heal_all = ShaguDPS.view_heal_all
+local heal_table = ShaguDPS.heal_table
+
 local scroll = 0
 
 local backdrop =  {
@@ -29,26 +33,6 @@ local backdrop =  {
   tile = true, tileSize = 16, edgeSize = 8,
   insets = { left = 3, right = 3, top = 3, bottom = 3 }
 }
-
-local rgbcache = {}
-local function str2rgb(text)
-  if not text then return 1, 1, 1 end
-  if rgbcache[text] then return unpack(rgbcache[text]) end
-  local counter = 1
-  local l = string.len(text)
-  for i = 1, l, 3 do
-    counter = mod(counter*8161, 4294967279) +
-        (string.byte(text,i)*16776193) +
-        ((string.byte(text,i+1) or (l-i+256))*8372226) +
-        ((string.byte(text,i+2) or (l-i+256))*3932164)
-  end
-  local hash = mod(mod(counter, 4294967291),16777216)
-  local r = (hash - (mod(hash,65536))) / 65536
-  local g = ((hash - r*65536) - ( mod((hash - r*65536),256)) ) / 256
-  local b = hash - r*65536 - g*256
-  rgbcache[text] = { r / 255, g / 255, b / 255 }
-  return unpack(rgbcache[text])
-end
 
 local function spairs(t, order)
   -- collect the keys
@@ -78,16 +62,26 @@ local function barTooltipShow()
   if config.view == 1 then
     GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. dmg_table[this.unit]["_sum"])
     GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. view_dps_all[this.unit])
-  else
+  elseif config.view == 2 then
     GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. view_dps_all[this.unit])
     GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. dmg_table[this.unit]["_sum"])
+  elseif config.view == 3 then
+    GameTooltip:AddDoubleLine("|cffffee00Heal Done", "|cffffffff" .. heal_table[this.unit]["_sum"][2] .. " - " ..view_heal_all[this.unit][1])
   end
 
   GameTooltip:AddLine(" ")
-  for attack, damage in spairs(dmg_table[this.unit], function(t,a,b) return t[b] < t[a] end) do
-    if attack ~= "_sum" and attack ~= "_ctime" and attack ~= "_tick" then
-      GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f",round(damage / dmg_table[this.unit]["_sum"] * 100,1)) .. "%")
-    end
+  if config.view == 1 or config.view == 2 then
+	  for attack, damage in spairs(dmg_table[this.unit], function(t,a,b) return t[b] < t[a] end) do
+		if attack ~= "_sum" and attack ~= "_ctime" and attack ~= "_tick" then
+		  GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f",round(damage / dmg_table[this.unit]["_sum"] * 100,1)) .. "%")
+		end
+	  end
+  elseif config.view == 3 then
+	for healspell, healamount in spairs(heal_table[this.unit], function(t,a,b) return t[b][1] < t[a][1] end) do
+		if healspell ~= "_sum" and healspell ~= "_ctime" and healspell ~= "_tick" then
+		  GameTooltip:AddDoubleLine("|cffffffff" .. healspell, "|cffcccccc" .. healamount[2] .." (|cffffffff" .. string.format("%.1f",round(healamount[2] / max(heal_table[this.unit]["_sum"][2],1) * 100,1)) .. "%) - " .. "|cffcccccc" .. healamount[1] .." (|cffffffff" .. string.format("%.1f",round(healamount[1] / heal_table[this.unit]["_sum"][1] * 100,1)) .. "%)")
+		end
+	  end
   end
   GameTooltip:Show()
 end
@@ -101,10 +95,15 @@ local function barScrollWheel()
   scroll = arg1 < 0 and scroll + 1 or scroll
 
   local count = 0
-  for k,v in pairs(view_dmg_all) do
-    count = count + 1
+  if config.view == 1 or config.view == 2 then
+	  for k,v in pairs(view_dmg_all) do
+		count = count + 1
+	  end
+  elseif config.view == 3 then
+      for k,v in pairs(view_heal_all) do
+		count = count + 1
+	  end
   end
-
   scroll = math.min(scroll, count + 1 - config.bars)
   scroll = math.max(scroll, 0)
 
@@ -114,11 +113,16 @@ end
 local function CreateBar(parent, i)
   parent.bars[i] = parent.bars[i] or CreateFrame("StatusBar", "ShaguDPSBar" .. i, parent)
   parent.bars[i]:SetStatusBarTexture(textures[config.texture] or textures[1])
-
-  parent.bars[i]:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height * (i-1) - 22)
-  parent.bars[i]:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height * (i-1) - 22)
+	
+  local iminus = i
+  if iminus>100 then iminus=iminus-100 end
+  
+  parent.bars[i]:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height * (iminus-1) - 22)
+  parent.bars[i]:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height * (iminus-1) - 22)
   parent.bars[i]:SetHeight(config.height)
 
+  if i>100 then return parent.bars[i] end
+  
   parent.bars[i].textLeft = parent.bars[i].textLeft or parent.bars[i]:CreateFontString("Status", "OVERLAY", "GameFontNormal")
   parent.bars[i].textLeft:SetFont(STANDARD_TEXT_FONT, 12, "THINOUTLINE")
   parent.bars[i].textLeft:SetJustifyH("LEFT")
@@ -180,12 +184,14 @@ window:SetScript("OnDragStart", function() window:StartMoving() end)
 window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
-window:SetBackdrop({
-  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-  tile = true, tileSize = 16, edgeSize = 16,
-  insets = { left = 3, right = 3, top = 3, bottom = 3 }
-})
-window:SetBackdropColor(.5,.5,.5,.5)
+if setting_background == true then 
+	window:SetBackdrop({
+	  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+	  tile = true, tileSize = 16, edgeSize = 16,
+	  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+	})
+	window:SetBackdropColor(.5,.5,.5,.5)
+end
 
 window.title = window:CreateTexture(nil, "NORMAL")
 window.title:SetTexture(0,0,0,.6)
@@ -205,13 +211,23 @@ window.btnDamage:SetBackdropBorderColor(.4,.4,.4,1)
 window.btnDamage.caption = window.btnDamage:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
 window.btnDamage.caption:SetFont(STANDARD_TEXT_FONT, 9)
 window.btnDamage.caption:SetText("Damage")
+
 window.btnDamage.caption:SetAllPoints()
-window.btnDamage.tooltip = { "Damage View", "|cffffffffShows the overall damage done" }
+window.btnDamage.tooltip = {
+	"Toogle Views",
+	{ "|cffffffffClick: Damage View", "|cffaaaaaaShows the overall damage done" },
+	{ "|cffffffffShift-Click: Heal View", "|cffaaaaaaShows the overall heal done" },
+}
 window.btnDamage:SetScript("OnEnter", btnEnter)
 window.btnDamage:SetScript("OnLeave", btnLeave)
 window.btnDamage:SetScript("OnClick", function()
-  config.view = 1
-  window.Refresh(true)
+	if IsShiftKeyDown() then
+	  config.view = 3
+	  window.Refresh(true)
+	else
+	  config.view = 1
+	  window.Refresh(true)
+	end
 end)
 
 window.btnDPS = CreateFrame("Button", "ShaguDPSDPS", window)
@@ -264,6 +280,16 @@ local function ResetData()
   for k, v in pairs(view_dps_all) do
     view_dps_all[k] = nil
   end
+  
+  -- clear overall heal data
+  for k, v in pairs(heal_table) do
+    heal_table[k] = nil
+  end
+
+  -- clear heal done
+  for k, v in pairs(view_heal_all) do
+    view_heal_all[k] = nil
+  end
 
   -- reset scroll and reload
   scroll = 0
@@ -307,10 +333,10 @@ local chatcolors = {
   ["SAY"] = "|cffFFFFFF",
   ["EMOTE"] = "|cffFF7E40",
   ["YELL"] = "|cffFF3F40",
-  ["PARTY"] = "|cffAAABFE",
+  ["PARTY"] = "|cffAAA0BC40",
+  ["RAID"] = "|cffFF7DBFE",
   ["GUILD"] = "|cff3CE13F",
-  ["OFFICER"] = "|cff40BC40",
-  ["RAID"] = "|cffFF7D01",
+  ["OFFICER"] = "|cff401",
   ["RAID_WARNING"] = "|cffFF4700",
   ["BATTLEGROUND"] = "|cffFF7D01",
   ["WHISPER"] = "|cffFF7EFF",
@@ -318,21 +344,45 @@ local chatcolors = {
 }
 
 local function AnnounceData()
-  local view = config.view == 1 and view_dmg_all or view_dps_all
-  local name = config.view == 1 and "Damage Done" or "Overall DPS"
+  --local view = config.view == 1 and view_dmg_all or view_dps_all
+  --local name = config.view == 1 and "Damage Done" or "Overall DPS"
+	local view;
+	local name;
+	
+	if config.view == 1 then
+		 view = view_dmg_all
+		 name = "Damage Done"
+	elseif config.view == 2 then
+		 view = view_dps_all
+		 name = "Overall DPS"
+	elseif config.view == 3 then
+		 view = view_heal_all
+		 name = "Heal Done"
+	end
 
   -- load current maximum damage
-  local best, all = window.GetCaps(view)
+  local best, all, all2 = window.GetCaps(view)
   if all <= 0 then return end
 
   -- announce all entries to chat
   announce("ShaguDPS - " .. name .. ":")
   local i = 1
-  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
-    if i <= 10 then
-      announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
-    end
-    i = i + 1
+  if config.view == 3 then
+	  for name, damage in spairs(view, function(t,a,b) return t[b][2] < t[a][2] end) do
+		if i <= 10 then
+		  announce(i .. ". " .. name .. " " .. damage[2] .." (" .. round(damage[2] / max(all2,1) * 100,1) .. "%)" .. " - " .. damage[1] .." (" .. round(damage[1] / all * 100,1) .. "%)")
+		  --TODO overheal
+		end
+		i = i + 1
+	  end
+  else
+	for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
+		if i <= 10 then
+		  announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
+		  --TODO overheal
+		end
+		i = i + 1
+	end
   end
 end
 
@@ -365,7 +415,16 @@ window.btnAnnounce:SetScript("OnClick", function()
     local color = chatcolors[ctype]
     if not color then color = "|cff00FAF6" end
 
-    local name = config.view == 1 and "Damage Done" or "Overall DPS"
+    --local name = config.view == 1 and "Damage Done" or "Overall DPS"
+	local name;
+	if config.view == 1 then
+		 name = "Damage Done"
+	elseif config.view == 2 then
+		 name = "Overall DPS"
+	elseif config.view == 3 then
+		 name = "Heal Done"
+	end
+	
     local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
 
     local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
@@ -375,31 +434,42 @@ window.btnAnnounce:SetScript("OnClick", function()
   end
 end)
 
-window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
-window.border:ClearAllPoints()
-window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
-window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)
-window.border:SetBackdrop({
-  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-  tile = true, tileSize = 16, edgeSize = 16,
-  insets = { left = 3, right = 3, top = 3, bottom = 3 }
-})
-window.border:SetBackdropBorderColor(.7,.7,.7,1)
-window.border:SetFrameLevel(100)
+if setting_border == true then 
+	window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
+	window.border:ClearAllPoints()
+	window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
+	window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)
+	window.border:SetBackdrop({
+	  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	  tile = true, tileSize = 16, edgeSize = 16,
+	  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+	})
+	window.border:SetBackdropBorderColor(.7,.7,.7,1)
+	window.border:SetFrameLevel(100)
+end 
 
 window.bars = {}
 
 window.GetCaps = function(view)
-  local best, all = 0, 0
+  local best, all, all2 = 0, 0, 0
   for _, damage in pairs(view) do
-    all = all + damage
+    if config.view == 3 then
+		all = all + damage[1]
+		all2 = all2 + damage[2]
 
-    if damage > best then
-      best = damage
-    end
+		if damage[1] > best then
+		  best = damage[1]
+		end
+	else
+		all = all + damage
+
+		if damage > best then
+		  best = damage
+		end
+	end
   end
 
-  return best, all
+  return best, all, all2
 end
 
 window.Refresh = function(force)
@@ -411,14 +481,20 @@ window.Refresh = function(force)
       window:Hide()
     end
 
-    if config.view == 1 then
+    if config.view == 1 or config.view == 3 then
       window.btnDamage.caption:SetTextColor(1,.9,0,1)
       window.btnDPS.caption:SetTextColor(.5,.5,.5,1)
     elseif config.view == 2 then
       window.btnDamage.caption:SetTextColor(.5,.5,.5,1)
       window.btnDPS.caption:SetTextColor(1,.9,0,1)
     end
-
+	
+	if config.view == 3 then
+		window.btnDamage.caption:SetText("Heal")
+	else
+		window.btnDamage.caption:SetText("Damage")
+	end
+	
     window:SetWidth(config.width)
     window:SetHeight(config.height * config.bars + 22 + 4)
   end
@@ -429,44 +505,95 @@ window.Refresh = function(force)
   end
 
   -- load view and current maximum values
-  local view = config.view == 1 and view_dmg_all or view_dps_all
-  local best, all = window.GetCaps(view)
+ -- local view = config.view == 1 and view_dmg_all or view_dps_all
+  
+    local view;
+	if config.view == 1 then
+		 view = view_dmg_all
+	elseif config.view == 2 then
+		 view = view_dps_all
+	elseif config.view == 3 then
+		 view = view_heal_all
+	end
+
+  local best, all, all2 = window.GetCaps(view)
 
   local i = 1
-  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
-    local bar = i - scroll
+  if config.view == 3 then
+	for name, damage in spairs(view, function(t,a,b) return t[b][2] < t[a][2] end) do
+	local bar = i - scroll
 
-    if bar >= 1 and bar <= config.bars then
-      window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
-      window.bars[bar]:SetMinMaxValues(0, best)
-      window.bars[bar]:SetValue(damage)
-      window.bars[bar]:Show()
-      window.bars[bar].unit = name
+	if bar >= 1 and bar <= config.bars then
+	  
+	  window.bars[bar+100] = not force and window.bars[bar+100] or CreateBar(window, bar+100)
+	  window.bars[bar+100]:SetMinMaxValues(0, best)
+	  window.bars[bar+100]:SetValue(damage[1])
+	  window.bars[bar+100]:Show()
+	  window.bars[bar+100]:SetAlpha(0.9)
+	  window.bars[bar+100]:SetStatusBarColor(0.5, 0.5, 0.5)
+	  
+	  window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
+	  window.bars[bar]:SetMinMaxValues(0, best)
+	  window.bars[bar]:SetValue(damage[2])
+	  window.bars[bar]:Show()
+	  window.bars[bar].unit = name
 
-      local r, g, b = str2rgb(name)
-      local color = { r = r / 4 + .4, g = g / 4 + .4, b = b / 4 + .4 }
+	  local color = { r= .4, g = .4, b = .4 }
 
-      if classes[playerClasses[name]] then
-        -- set color to player class colors
-        color = RAID_CLASS_COLORS[playerClasses[name]]
-      elseif playerClasses[name] ~= "__other__" then
-        -- set color to player pet colors
-        -- pets have their class set to the owners name
-        local owner = playerClasses[name]
-        if classes[playerClasses[owner]] then
-          color = RAID_CLASS_COLORS[playerClasses[owner]]
-          name = owner .. " - " .. name
-        end
-      end
+	  if RAID_CLASS_COLORS[playerClasses[name]] then
+		-- set color to player class colors
+		color = RAID_CLASS_COLORS[playerClasses[name]]
+	  elseif playerClasses[name] ~= "__other__" then
+		-- set color to player pet colors
+		color = { r= .6, g = 1, b = .6 }
+		name = playerClasses[name] .. " - " .. name
+	  end
 
-      window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
+	  window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
 
-      window.bars[bar].textLeft:SetText(i .. ". " .. name)
-      window.bars[bar].textRight:SetText(damage .. " - " .. round(damage / all * 100,1) .. "%")
-    end
+	  window.bars[bar].textLeft:SetText(i .. ". " .. name)
+	  
+	  window.bars[bar].textRight:SetText(damage[2] .. " - " .. damage[1])
+	end
 
-    i = i + 1
+	i = i + 1
+	end
+  else
+	  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
+		local bar = i - scroll
+
+		if bar >= 1 and bar <= config.bars then
+		  window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
+		  window.bars[bar]:SetMinMaxValues(0, best)
+		  
+		  window.bars[bar]:SetValue(damage)
+		  
+		  window.bars[bar]:Show()
+		  window.bars[bar].unit = name
+
+		  local color = { r= .4, g = .4, b = .4 }
+
+		  if RAID_CLASS_COLORS[playerClasses[name]] then
+			-- set color to player class colors
+			color = RAID_CLASS_COLORS[playerClasses[name]]
+		  elseif playerClasses[name] ~= "__other__" then
+			-- set color to player pet colors
+			color = { r= .6, g = 1, b = .6 }
+			name = playerClasses[name] .. " - " .. name
+		  end
+
+		  window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
+
+		  window.bars[bar].textLeft:SetText(i .. ". " .. name)
+		  
+		  window.bars[bar].textRight:SetText(damage .. " - " .. round(damage / all * 100,1) .. "%")
+
+		end
+
+		i = i + 1
+	  end
   end
 end
 
 table.insert(parser.callbacks.refresh, window.Refresh)
+table.insert(parser2.callbacks.refresh, window.Refresh)

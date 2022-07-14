@@ -2,6 +2,7 @@
 local settings = ShaguDPS.settings
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
+local parser2 = ShaguDPS.parser2
 
 local config = ShaguDPS.config
 local textures = ShaguDPS.textures
@@ -80,6 +81,13 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
         ["ROGUE"] = { "Auto Hit", "Hemorrhage", "Eviscerate", "Instant Poison VI" },
         ["MAGE"] = { "Fireball", "Ignite", "Scorch", "Frostbolt", "Arcane Explosion" }
       }
+	  
+	  local skills2 = {
+        ["PRIEST"] = { "Renew", "Flash Heal", "Greater Heal", "Power Word: Shield" },
+        ["DRUID"] = { "Healing Touch", "Rejuvenation", "Regrowth" },
+        ["SHAMAN"] = { "Chain Heal", "Healing Wave", "Lesser Healing Wave"},
+        ["PALADIN"] = { "Holy Light", "Flash of Light"}
+      }
 
       local onUpdate = function()
         if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + 1 end
@@ -91,10 +99,23 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
             local atkcount = table.getn(skills[class])
             local attack = skills[class][math.random(atkcount)]
             local damage = floor(math.random()*200*atkcount)
-
+			
             parser:AddData(source, attack, UnitName("player"), damage, "physical", true)
           end
         end
+		
+		for source, v in pairs(playerClasses) do
+          local class = playerClasses[source]
+
+          if class and skills2[class] then
+            local atkcount = table.getn(skills2[class])
+            local attack = skills2[class][math.random(atkcount)]
+            local damage = floor(math.random()*200*atkcount)
+			
+            parser2:AddData(source, attack, UnitName("player"), damage, "physical", true)
+          end
+        end
+		
       end
 
       ShaguDPS.simulator = CreateFrame("Frame", "ShaguDPSSimulator", UIParent)
