@@ -27,6 +27,8 @@ local function trim(str)
   return gsub(str, "^%s*(.-)%s*$", "%1")
 end
 
+local playerName = UnitName("player");
+
 parser.ScanName = function(self, name)
   -- check if name matches a real player
   for unit, _ in pairs(validUnits) do
@@ -151,17 +153,36 @@ parser2.AddData = function(self, source, attack, target, damage, school, force)
   end
   
   --find ID for target of heal so we can get missing health for effective healing calc.
-  local effectiveAmount = damage
-  local unitID = MikCEH.GetUnitIDFromName(target);
-  if not unitID then
-	if UnitName("target") == target then
-		unitID = "target";
+  local effectiveAmount = damage --as default we set all heal as effective
+  local unitID = nil
+  if UnitName("target") == target then
+	unitID = "target";
+  elseif (target == playerName or target == "you") then
+	unitID = "player";
+ -- Check if the name is one of the player's raid or party members.
+  else
+	-- Loop through all of the raid members.
+	for i = 1, GetNumRaidMembers() do
+		if (target == UnitName("raid" .. i)) then
+			unitID = "raid" .. i;
+			break
+		end
+	end
+	-- Loop through all of the party members.
+	for i = 1, GetNumPartyMembers() do
+		if (target == UnitName("party" .. i)) then
+			unitID = "party" .. i;
+			break
+		end
 	end
   end
 
  -- Make sure it's a valid unit id. then calc. effective healing
   if (unitID) then
+    --if we found the unitID then calc effective healing else assume all as effective
 	effectiveAmount = min(UnitHealthMax(unitID) - UnitHealth(unitID), damage)
+  else
+	print("could not find unitID for "..target)
   end
 	
   if heal_table[source] then
