@@ -2,6 +2,7 @@
 local settings = ShaguDPS.settings
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
+local parser2 = ShaguDPS.parser2
 
 local config = ShaguDPS.config
 local textures = ShaguDPS.textures
@@ -17,6 +18,18 @@ settings:SetScript("OnEvent", function()
   end
 
   ShaguDPS_Config = config
+  if config.borders == 0 then
+	window.border:Hide()
+	window:SetBackdrop(nil)
+  else
+	window.border:Show()
+	window:SetBackdrop({
+	  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+	  tile = true, tileSize = 16, edgeSize = 16,
+	  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+	})
+	window:SetBackdropColor(.5,.5,.5,.5)
+	end
   window.Refresh(true)
 end)
 
@@ -37,7 +50,8 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     p("  /sdps trackall " .. config.track_all_units .. " |cffcccccc- Track all nearby units")
     p("  /sdps mergepet " .. config.merge_pets .. " |cffcccccc- Merge pets into owner data")
     p("  /sdps texture " .. config.texture .. " |cffcccccc- Set the statusbar texture")
-    p("  /sdps toggle |cffcccccc- Toggle window")
+    p("  /sdps borders " .. config.borders .. " |cffcccccc- Visible Borders")
+	p("  /sdps toggle |cffcccccc- Toggle window")
     return
   end
 
@@ -68,7 +82,8 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
       playerClasses["Brunhin"] = "PALADIN"
       playerClasses["Rothius"] = "ROGUE"
       playerClasses["Bitolis"] = "MAGE"
-
+	
+	  --damage skills for simulation
       local skills = {
         ["WARRIOR"] = { "Auto Hit", "Bloodthirst", "Execute", "Whirlwind", "Heroic Strike" },
         ["WARLOCK"] = { "Shadow Bolt", "Corruption", "Immolate" },
@@ -79,6 +94,14 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
         ["PALADIN"] = { "Auto Hit", "Seal of Rigtheousness", "Judgement of Rigtheousness" },
         ["ROGUE"] = { "Auto Hit", "Hemorrhage", "Eviscerate", "Instant Poison VI" },
         ["MAGE"] = { "Fireball", "Ignite", "Scorch", "Frostbolt", "Arcane Explosion" }
+      }
+	  
+	  --healing skills for simulation
+	  local skills2 = {
+        ["PRIEST"] = { "Renew", "Flash Heal", "Greater Heal", "Power Word: Shield" },
+        ["DRUID"] = { "Healing Touch", "Rejuvenation", "Regrowth" },
+        ["SHAMAN"] = { "Chain Heal", "Healing Wave", "Lesser Healing Wave"},
+        ["PALADIN"] = { "Holy Light", "Flash of Light"}
       }
 
       local onUpdate = function()
@@ -95,6 +118,19 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
             parser:AddData(source, attack, UnitName("player"), damage, "physical", true)
           end
         end
+		
+		for source, v in pairs(playerClasses) do
+          local class = playerClasses[source]
+
+          if class and skills2[class] then
+            local atkcount = table.getn(skills2[class])
+            local attack = skills2[class][math.random(atkcount)]
+            local damage = floor(math.random()*200*atkcount)
+			
+            parser2:AddData(source, attack, UnitName("player"), damage, "physical", true)
+          end
+        end
+		
       end
 
       ShaguDPS.simulator = CreateFrame("Frame", "ShaguDPSSimulator", UIParent)
@@ -169,5 +205,21 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 1-" .. table.getn(textures))
     end
+  elseif strlower(cmd) == "borders" then
+    config.borders = config.borders == 1 and 0 or 1
+    ShaguDPS_Config = config
+	if config.borders == 0 then
+		window.border:Hide()
+		window:SetBackdrop(nil)
+	else
+		window.border:Show()
+		window:SetBackdrop({
+		  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		  tile = true, tileSize = 16, edgeSize = 16,
+		  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+		})
+		window:SetBackdropColor(.5,.5,.5,.5)
+	end
+    p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Borders: " .. config.borders)
   end
 end

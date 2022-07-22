@@ -1,12 +1,16 @@
 -- load public variables into local
 local parser = ShaguDPS.parser
-
 local playerClasses = ShaguDPS.playerClasses
 local view_dmg_all = ShaguDPS.view_dmg_all
 local view_dps_all = ShaguDPS.view_dps_all
 local dmg_table = ShaguDPS.dmg_table
 local config = ShaguDPS.config
 local round = ShaguDPS.round
+
+--healing extension variables
+local parser2 = ShaguDPS.parser2
+local view_heal_all = ShaguDPS.view_heal_all
+local heal_table = ShaguDPS.heal_table
 
 -- populate all valid player units
 local validUnits = { ["player"] = true }
@@ -22,6 +26,8 @@ for i=1,40 do validPets["raidpet" .. i] = true end
 local function trim(str)
   return gsub(str, "^%s*(.-)%s*$", "%1")
 end
+
+local playerName = UnitName("player");
 
 parser.ScanName = function(self, name)
   -- check if name matches a real player
@@ -60,6 +66,7 @@ parser.ScanName = function(self, name)
   end
 end
 
+--parse damage
 parser.AddData = function(self, source, attack, target, damage, school, force)
   -- abort on invalid input
   if type(source) ~= "string" then return end
@@ -126,6 +133,82 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   end
 end
 
+--parse heals
+parser2.AddData = function(self, source, attack, target, damage, school, force)
+  -- abort on invalid input
+  if type(source) ~= "string" then return end
+
+  -- trim leading and trailing spaces
+  source = trim(source)
+
+  -- write heal_table table
+  if not heal_table[source] then
+    local type = parser:ScanName(source) or force
+    if not type then
+      -- invalid or disabled unit type
+      return
+    end
+    -- create base heal table
+    heal_table[source] = {}
+  end
+  
+  --find ID for target of heal so we can get missing health for effective healing calc.
+  local effectiveAmount = damage --as default we set all heal as effective
+  local unitID = nil
+  if UnitName("target") == target then
+	unitID = "target";
+  elseif (target == playerName or target == "you") then
+	unitID = "player";
+ -- Check if the name is one of the player's raid or party members.
+  else
+	-- Loop through all of the raid members.
+	for i = 1, GetNumRaidMembers() do
+		if (target == UnitName("raid" .. i)) then
+			unitID = "raid" .. i;
+			break
+		end
+	end
+	-- Loop through all of the party members.
+	for i = 1, GetNumPartyMembers() do
+		if (target == UnitName("party" .. i)) then
+			unitID = "party" .. i;
+			break
+		end
+	end
+  end
+
+ -- Make sure it's a valid unit id. then calc. effective healing
+  if (unitID) then
+    --if we found the unitID then calc effective healing else assume all as effective
+	effectiveAmount = min(UnitHealthMax(unitID) - UnitHealth(unitID), damage)
+  else
+	print("could not find unitID for "..target)
+  end
+	
+  if heal_table[source] then
+    --since heal_table[source][attack] ist a table itself with heal and effective heal it needs to be created first
+    if heal_table[source][attack] == nil then heal_table[source][attack] = {} end
+	if heal_table[source]["_sum"] == nil then heal_table[source]["_sum"] = {} end
+    
+	heal_table[source][attack] = {(heal_table[source][attack][1] or 0) + tonumber(damage), (heal_table[source][attack][2] or 0) + tonumber(effectiveAmount)}
+    heal_table[source]["_sum"] = {(heal_table[source]["_sum"][1] or 0) + tonumber(damage), (heal_table[source]["_sum"][2] or 0) + tonumber(effectiveAmount)}
+  else
+    return
+  end
+
+  if heal_table[source] then
+    if view_heal_all[source] == nil then view_heal_all[source] = {} end
+    view_heal_all[source] = {(view_heal_all[source][1] or 0) + tonumber(damage), (view_heal_all[source][2] or 0) + tonumber(effectiveAmount)}
+  end
+
+  for id, callback in pairs(parser2.callbacks.refresh) do
+    callback()
+  end
+end
+
 parser.callbacks = {
+  ["refresh"] = {}
+}
+parser2.callbacks = {
   ["refresh"] = {}
 }

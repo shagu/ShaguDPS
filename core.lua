@@ -46,6 +46,9 @@ local dmg_table = {}
 local view_dmg_all = { }
 local view_dps_all = { }
 local playerClasses = {}
+--healing extension variables
+local heal_table = {}
+local view_heal_all = { }
 
 -- default config
 local config = {
@@ -64,12 +67,14 @@ local config = {
 
   -- window
   view = 1,
+  borders= 1,
 }
 
 -- create core component frames
 local window = CreateFrame("Frame", "ShaguDPSWindow", UIParent)
 local settings = CreateFrame("Frame")
 local parser = CreateFrame("Frame")
+local parser2 = CreateFrame("Frame")
 
 -- make everything public
 ShaguDPS.textures = textures
@@ -83,3 +88,8 @@ ShaguDPS.settings = settings
 ShaguDPS.parser = parser
 ShaguDPS.round = round
 ShaguDPS.expansion = expansion
+
+--healing extension variables
+ShaguDPS.parser2 = parser2
+ShaguDPS.heal_table = heal_table
+ShaguDPS.view_heal_all = view_heal_all

@@ -1,4 +1,5 @@
 local parser = ShaguDPS.parser
+local parser2 = ShaguDPS.parser2
 
 local function prepare(template)
   template = gsub(template, "%(", "%%(") -- fix ( in string
@@ -49,6 +50,22 @@ local COMBATHITCRITOTHEROTHER = prepare(COMBATHITCRITOTHEROTHER) -- %s crits %s 
 local COMBATHITSCHOOLOTHEROTHER = prepare(COMBATHITSCHOOLOTHEROTHER) -- %s hits %s for %d %s damage.
 local COMBATHITCRITSCHOOLOTHEROTHER = prepare(COMBATHITCRITSCHOOLOTHEROTHER) -- %s crits %s for %d %s damage.
 local DAMAGESHIELDOTHEROTHER = prepare(DAMAGESHIELDOTHEROTHER) -- %s reflects %d %s damage to %s.
+
+--HEALS
+local HEALEDSELFSELF = prepare(HEALEDSELFSELF) -- "Your %s heals you for %d."
+local HEALEDCRITOTHEROTHER = prepare(HEALEDCRITOTHEROTHER) -- "%s's %s critically heals %s for %d.";
+local HEALEDCRITOTHERSELF = prepare(HEALEDCRITOTHERSELF) -- "%s's %s critically heals you for %d.";
+local HEALEDCRITSELFOTHER = prepare(HEALEDCRITSELFOTHER) -- "Your %s critically heals %s for %d.";
+local HEALEDCRITSELFSELF = prepare(HEALEDCRITSELFSELF) -- "Your %s critically heals you for %d.";
+local HEALEDOTHEROTHER = prepare(HEALEDOTHEROTHER) -- "%s's %s heals %s for %d.";
+local HEALEDOTHERSELF = prepare(HEALEDOTHERSELF) -- "%s's %s heals you for %d.";
+local HEALEDSELFOTHER = prepare(HEALEDSELFOTHER) -- "Your %s heals %s for %d.";
+
+--HOTS
+local PERIODICAURAHEALOTHEROTHER = prepare(PERIODICAURAHEALOTHEROTHER) -- "%s gains %d health from %s's %s."; -- Bob gains 10 health from Jane's Rejuvenation.
+local PERIODICAURAHEALOTHERSELF = prepare(PERIODICAURAHEALOTHERSELF) -- "You gain %d health from %s's %s."; -- You gain 12 health from John's Rejuvenation.
+local PERIODICAURAHEALSELFOTHER = prepare(PERIODICAURAHEALSELFOTHER) -- "%s gains %d health from your %s."; -- Bob gains 10 health from your Rejuvenation.
+local PERIODICAURAHEALSELFSELF = prepare(PERIODICAURAHEALSELFSELF) -- "You gain %d health from %s."; -- You gain 10 health from Rejuvenation.
 
 local datasources = {
   --[[ me source me target ]]--
@@ -331,7 +348,109 @@ local datasources = {
   end,
 }
 
--- register to all combat log events
+local datasources2 = {
+  --[[ me source me target ]]--
+  -- "Your %s heals you for %d."
+  function(source, target, attack)
+    for attack, damage in string.gfind(arg1, HEALEDSELFSELF) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "%s's %s critically heals %s for %d."
+  function(source, target, attack)
+    for source, attack, target, damage in string.gfind(arg1, HEALEDCRITOTHEROTHER) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "%s's %s critically heals you for %d."
+  function(source, target, attack)
+    for source, attack, damage in string.gfind(arg1, HEALEDCRITOTHERSELF) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "Your %s critically heals %s for %d.";
+  function(source, target, attack)
+    for attack, target, damage in string.gfind(arg1, HEALEDCRITSELFOTHER) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "Your %s critically heals you for %d.";
+  function(source, target, attack)
+    for attack, damage, attack in string.gfind(arg1, HEALEDCRITSELFSELF) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  --[[ me source ]]--
+  -- "%s's %s heals %s for %d.";
+  function(source, target, attack)
+    for source, attack, target, damage in string.gfind(arg1, HEALEDOTHEROTHER) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "%s's %s heals you for %d.";
+  function(source, target, attack)
+    for source, attack, target, damage in string.gfind(arg1, HEALEDOTHERSELF) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "Your %s heals %s for %d.";
+  function(source, target, attack)
+    for attack, target, damage in string.gfind(arg1, HEALEDSELFOTHER) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "%s gains %d health from %s's %s."; -- Bob gains 10 health from Jane's Rejuvenation.
+  function(source, target, attack)
+    for target, damage, source, attack in string.gfind(arg1, PERIODICAURAHEALOTHEROTHER) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "You gain %d health from %s's %s."; -- You gain 12 health from John's Rejuvenation.
+  function(source, target, attack)
+    for damage, source, attack in string.gfind(arg1, PERIODICAURAHEALOTHERSELF) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+   -- "%s gains %d health from your %s."; -- Bob gains 10 health from your Rejuvenation.
+  function(source, target, attack)
+    for target, damage, source in string.gfind(arg1, PERIODICAURAHEALSELFOTHER) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+
+  -- "You gain %d health from %s."; -- You gain 10 health from Rejuvenation.
+  function(source, target, attack)
+    for damage, source in string.gfind(arg1, PERIODICAURAHEALSELFSELF ) do
+      parser2:AddData(source, attack, target, damage)
+      return true
+    end
+  end,
+  
+  --TODOS
+  -- Absorb from power word shield is missing
+}
+-- register to all combat log damage events
 parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF")
 parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS")
 parser:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
@@ -356,7 +475,17 @@ parser:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS")
 parser:RegisterEvent("CHAT_MSG_SPELL_PET_DAMAGE")
 parser:RegisterEvent("CHAT_MSG_COMBAT_PET_HITS")
 
--- call all datasources on each event
+-- register to all combat log heal events
+parser2:RegisterEvent("CHAT_MSG_SPELL_SELF_BUFF")
+parser2:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS")
+parser2:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF")
+parser2:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS")
+parser2:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF")
+parser2:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS")
+parser2:RegisterEvent("CHAT_MSG_SPELL_PARTY_BUFF")
+parser2:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
+
+-- call all datasources on each damage event
 parser:SetScript("OnEvent", function()
   if not arg1 then return end
 
@@ -367,6 +496,22 @@ parser:SetScript("OnEvent", function()
 
   -- detection on all data sources
   for id, func in pairs(datasources) do
+    if func(source, target, school, attack) then
+      return
+    end
+  end
+end)
+
+-- call all datasources on each heal event
+parser2:SetScript("OnEvent", function()
+  if not arg1 then return end
+
+  local source = UnitName("player")
+  local target = UnitName("player")
+  local school = "heal"
+  local attack = " "
+  -- detection on all data sources
+  for id, func in pairs(datasources2) do
     if func(source, target, school, attack) then
       return
     end
