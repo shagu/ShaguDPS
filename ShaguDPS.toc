@@ -1,7 +1,7 @@
 ## Interface: 11200
 ## Title: |cffffcc00Shagu|cffffffffDPS
-## Author: Shagu, Geojak
-## Notes: A simple and lightweight DPS and damage meter. Extended by Geojak to track Healing
+## Author: Shagu
+## Notes: A simple and lightweight DPS, damage and healing meter.
 ## Version: 1.1
 ## OptionalDeps: pfUI
 ## SavedVariablesPerCharacter: ShaguDPS_Config

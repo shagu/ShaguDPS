@@ -1,7 +1,5 @@
 -- load public variables into local
 local parser = ShaguDPS.parser
-local parser2 = ShaguDPS.parser2
-
 local playerClasses = ShaguDPS.playerClasses
 local view_dmg_all = ShaguDPS.view_dmg_all
 local view_dps_all = ShaguDPS.view_dps_all
@@ -9,6 +7,8 @@ local dmg_table = ShaguDPS.dmg_table
 local config = ShaguDPS.config
 local round = ShaguDPS.round
 
+--healing extension variables
+local parser2 = ShaguDPS.parser2
 local view_heal_all = ShaguDPS.view_heal_all
 local heal_table = ShaguDPS.heal_table
 
@@ -64,6 +64,7 @@ parser.ScanName = function(self, name)
   end
 end
 
+--parse damage
 parser.AddData = function(self, source, attack, target, damage, school, force)
   -- abort on invalid input
   if type(source) ~= "string" then return end
@@ -130,6 +131,7 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   end
 end
 
+--parse heals
 parser2.AddData = function(self, source, attack, target, damage, school, force)
   -- abort on invalid input
   if type(source) ~= "string" then return end
@@ -144,30 +146,30 @@ parser2.AddData = function(self, source, attack, target, damage, school, force)
       -- invalid or disabled unit type
       return
     end
-	
     -- create base heal table
     heal_table[source] = {}
   end
   
-  --calc effective healing
+  --find ID for target of heal so we can get missing health for effective healing calc.
   local effectiveAmount = damage
   local unitID = MikCEH.GetUnitIDFromName(target);
-	if not unitID then
-		if UnitName("target") == target then
-			unitID = "target";
-		end
+  if not unitID then
+	if UnitName("target") == target then
+		unitID = "target";
 	end
-	--print(unitID)
+  end
 
- -- Make sure it's a valid unit id. 
-	if (unitID) then
-		effectiveAmount = min(UnitHealthMax(unitID) - UnitHealth(unitID), damage)
-	end
+ -- Make sure it's a valid unit id. then calc. effective healing
+  if (unitID) then
+	effectiveAmount = min(UnitHealthMax(unitID) - UnitHealth(unitID), damage)
+  end
 	
   if heal_table[source] then
+    --since heal_table[source][attack] ist a table itself with heal and effective heal it needs to be created first
     if heal_table[source][attack] == nil then heal_table[source][attack] = {} end
 	if heal_table[source]["_sum"] == nil then heal_table[source]["_sum"] = {} end
-    heal_table[source][attack] = {(heal_table[source][attack][1] or 0) + tonumber(damage), (heal_table[source][attack][2] or 0) + tonumber(effectiveAmount)}
+    
+	heal_table[source][attack] = {(heal_table[source][attack][1] or 0) + tonumber(damage), (heal_table[source][attack][2] or 0) + tonumber(effectiveAmount)}
     heal_table[source]["_sum"] = {(heal_table[source]["_sum"][1] or 0) + tonumber(damage), (heal_table[source]["_sum"][2] or 0) + tonumber(effectiveAmount)}
   else
     return

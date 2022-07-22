@@ -46,7 +46,7 @@ local dmg_table = {}
 local view_dmg_all = { }
 local view_dps_all = { }
 local playerClasses = {}
-
+--healing extension variables
 local heal_table = {}
 local view_heal_all = { }
 
@@ -85,9 +85,10 @@ ShaguDPS.config = config
 ShaguDPS.window = window
 ShaguDPS.settings = settings
 ShaguDPS.parser = parser
-ShaguDPS.parser2 = parser2
 ShaguDPS.round = round
 ShaguDPS.expansion = expansion
 
+--healing extension variables
+ShaguDPS.parser2 = parser2
 ShaguDPS.heal_table = heal_table
 ShaguDPS.view_heal_all = view_heal_all

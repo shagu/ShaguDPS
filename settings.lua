@@ -69,7 +69,8 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
       playerClasses["Brunhin"] = "PALADIN"
       playerClasses["Rothius"] = "ROGUE"
       playerClasses["Bitolis"] = "MAGE"
-
+	
+	  --damage skills for simulation
       local skills = {
         ["WARRIOR"] = { "Auto Hit", "Bloodthirst", "Execute", "Whirlwind", "Heroic Strike" },
         ["WARLOCK"] = { "Shadow Bolt", "Corruption", "Immolate" },
@@ -82,6 +83,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
         ["MAGE"] = { "Fireball", "Ignite", "Scorch", "Frostbolt", "Arcane Explosion" }
       }
 	  
+	  --healing skills for simulation
 	  local skills2 = {
         ["PRIEST"] = { "Renew", "Flash Heal", "Greater Heal", "Power Word: Shield" },
         ["DRUID"] = { "Healing Touch", "Rejuvenation", "Regrowth" },
@@ -99,7 +101,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
             local atkcount = table.getn(skills[class])
             local attack = skills[class][math.random(atkcount)]
             local damage = floor(math.random()*200*atkcount)
-			
+
             parser:AddData(source, attack, UnitName("player"), damage, "physical", true)
           end
         end

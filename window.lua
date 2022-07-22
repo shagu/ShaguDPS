@@ -15,7 +15,7 @@ local setting_background = false
 -- load public variables into local
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
-local parser2 = ShaguDPS.parser2
+
 
 local textures = ShaguDPS.textures
 local spairs = ShaguDPS.spairs
@@ -27,6 +27,8 @@ local dmg_table = ShaguDPS.dmg_table
 local config = ShaguDPS.config
 local round = ShaguDPS.round
 
+--healing extension variables
+local parser2 = ShaguDPS.parser2
 local view_heal_all = ShaguDPS.view_heal_all
 local heal_table = ShaguDPS.heal_table
 
@@ -138,7 +140,8 @@ end
 local function CreateBar(parent, i)
   parent.bars[i] = parent.bars[i] or CreateFrame("StatusBar", "ShaguDPSBar" .. i, parent)
   parent.bars[i]:SetStatusBarTexture(textures[config.texture] or textures[1])
-	
+
+  --overhealing bars are plotted with a +1000 together with the effective healing bars
   local iminus = i
   if iminus>1000 then iminus=iminus-1000 end
   
@@ -147,6 +150,7 @@ local function CreateBar(parent, i)
   parent.bars[i]:SetHeight(config.height)
 
   if i>1000 then 
+    --plot the overhealing bar below the effective healing bar
     parent.bars[iminus]:SetFrameLevel(parent.bars[i]:GetFrameLevel()+1)
 	return parent.bars[i] 
   end
@@ -374,19 +378,19 @@ local chatcolors = {
 local function AnnounceData()
   --local view = config.view == 1 and view_dmg_all or view_dps_all
   --local name = config.view == 1 and "Damage Done" or "Overall DPS"
-	local view;
-	local name;
-	
-	if config.view == 1 then
-		 view = view_dmg_all
-		 name = "Damage Done"
-	elseif config.view == 2 then
-		 view = view_dps_all
-		 name = "Overall DPS"
-	elseif config.view == 3 then
-		 view = view_heal_all
-		 name = "Heal Done"
-	end
+  local view;
+  local name;
+
+  if config.view == 1 then
+	view = view_dmg_all
+	name = "Damage Done"
+  elseif config.view == 2 then
+	view = view_dps_all
+	name = "Overall DPS"
+  elseif config.view == 3 then
+	view = view_heal_all
+	name = "Heal Done"
+  end
 
   -- load current maximum damage
   local best, all, all2 = window.GetCaps(view)
@@ -396,13 +400,13 @@ local function AnnounceData()
   announce("ShaguDPS - " .. name .. ":")
   local i = 1
   if config.view == 3 then
-	  for name, damage in spairs(view, function(t,a,b) return t[b][2] < t[a][2] end) do
+	for name, damage in spairs(view, function(t,a,b) return t[b][2] < t[a][2] end) do
 		if i <= 10 then
 		  announce(i .. ". " .. name .. " " .. damage[2] .." (" .. round(damage[2] / max(all2,1) * 100,1) .. "%)" .. " - " .. damage[1] .." (" .. round(damage[1] / all * 100,1) .. "%)")
 		  --TODO overheal
 		end
 		i = i + 1
-	  end
+	end
   else
 	for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
 		if i <= 10 then
@@ -482,11 +486,11 @@ window.GetCaps = function(view)
   local best, all, all2 = 0, 0, 0
   for _, damage in pairs(view) do
     if config.view == 3 then
-		all = all + damage[1]
-		all2 = all2 + damage[2]
+		all = all + damage[1] --total healing
+		all2 = all2 + damage[2] --effective healing
 
 		if damage[1] > best then
-		  best = damage[1]
+		  best = damage[1] --total healing best
 		end
 	else
 		all = all + damage
@@ -533,57 +537,52 @@ window.Refresh = function(force)
   end
 
   -- load view and current maximum values
- -- local view = config.view == 1 and view_dmg_all or view_dps_all
+  local view;
+  if config.view == 1 then
+	view = view_dmg_all
+  elseif config.view == 2 then
+	view = view_dps_all
+  elseif config.view == 3 then
+	view = view_heal_all
+  end
   
-    local view;
-	if config.view == 1 then
-		 view = view_dmg_all
-	elseif config.view == 2 then
-		 view = view_dps_all
-	elseif config.view == 3 then
-		 view = view_heal_all
-	end
-
   local best, all, all2 = window.GetCaps(view)
 
   local i = 1
   if config.view == 3 then
 	for name, damage in spairs(view, function(t,a,b) return t[b][2] < t[a][2] end) do
-	local bar = i - scroll
+		local bar = i - scroll
 
-	if bar >= 1 and bar <= config.bars then
-	  window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
-	  
-	  window.bars[bar+1000] = not force and window.bars[bar+1000] or CreateBar(window, bar+1000)
-	  window.bars[bar+1000]:SetMinMaxValues(0, best)
-	  window.bars[bar+1000]:SetValue(damage[1])
-	  window.bars[bar+1000]:Show()
-	  window.bars[bar+1000]:SetAlpha(0.9)
-	  window.bars[bar+1000]:SetStatusBarColor(0.5, 0.5, 0.5)
-	  
-	  
-	  window.bars[bar]:SetMinMaxValues(0, best)
-	  window.bars[bar]:SetValue(damage[2])
-	  window.bars[bar]:Show()
-	  window.bars[bar].unit = name
+		if bar >= 1 and bar <= config.bars then
+		  window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
+		  
+		  --plot the overhealing in grey as a bar+1000
+		  window.bars[bar+1000] = not force and window.bars[bar+1000] or CreateBar(window, bar+1000)
+		  window.bars[bar+1000]:SetMinMaxValues(0, best)
+		  window.bars[bar+1000]:SetValue(damage[1])
+		  window.bars[bar+1000]:Show()
+		  window.bars[bar+1000]:SetAlpha(0.9)
+		  window.bars[bar+1000]:SetStatusBarColor(0.5, 0.5, 0.5)
+		  
+		  window.bars[bar]:SetMinMaxValues(0, best)
+		  window.bars[bar]:SetValue(damage[2])
+		  window.bars[bar]:Show()
+		  window.bars[bar].unit = name
 
-	  local r, g, b = str2rgb(name)
-      local color = { r = r / 4 + .4, g = g / 4 + .4, b = b / 4 + .4 }
-	
-
-	  if classes[playerClasses[name]] then
-		-- set color to player class colors
-		color = RAID_CLASS_COLORS[playerClasses[name]]
-	  end
+		  local r, g, b = str2rgb(name)
+		  local color = { r = r / 4 + .4, g = g / 4 + .4, b = b / 4 + .4 }
 		
-	  window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
+		  if classes[playerClasses[name]] then
+			-- set color to player class colors
+			color = RAID_CLASS_COLORS[playerClasses[name]]
+		  end
+			
+		  window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
+		  window.bars[bar].textLeft:SetText(i .. ". " .. name)
+		  window.bars[bar].textRight:SetText(damage[2] .. " - " .. damage[1])
+		end
 
-	  window.bars[bar].textLeft:SetText(i .. ". " .. name)
-	  
-	  window.bars[bar].textRight:SetText(damage[2] .. " - " .. damage[1])
-	end
-
-	i = i + 1
+		i = i + 1
 	end
   else
 	  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
@@ -613,7 +612,6 @@ window.Refresh = function(force)
 		  end
 
 		  window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
-
 		  window.bars[bar].textLeft:SetText(i .. ". " .. name)
 		  window.bars[bar].textRight:SetText(damage .. " - " .. round(damage / all * 100,1) .. "%")
 		end
