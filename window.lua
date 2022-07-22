@@ -7,15 +7,9 @@ local classes = {
   SHAMAN = true, PRIEST = true, WARLOCK = true, PALADIN = true,
 }
 
---with border 
-local setting_border = false
---with background
-local setting_background = false
-
 -- load public variables into local
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
-
 
 local textures = ShaguDPS.textures
 local spairs = ShaguDPS.spairs
@@ -216,14 +210,13 @@ window:SetScript("OnDragStart", function() window:StartMoving() end)
 window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
-if setting_background == true then 
-	window:SetBackdrop({
-	  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-	  tile = true, tileSize = 16, edgeSize = 16,
-	  insets = { left = 3, right = 3, top = 3, bottom = 3 }
-	})
-	window:SetBackdropColor(.5,.5,.5,.5)
-end
+
+window:SetBackdrop({
+  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+  tile = true, tileSize = 16, edgeSize = 16,
+  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+})
+window:SetBackdropColor(.5,.5,.5,.5)
 
 window.title = window:CreateTexture(nil, "NORMAL")
 window.title:SetTexture(0,0,0,.6)
@@ -376,11 +369,9 @@ local chatcolors = {
 }
 
 local function AnnounceData()
-  --local view = config.view == 1 and view_dmg_all or view_dps_all
-  --local name = config.view == 1 and "Damage Done" or "Overall DPS"
+
   local view;
   local name;
-
   if config.view == 1 then
 	view = view_dmg_all
 	name = "Damage Done"
@@ -466,19 +457,17 @@ window.btnAnnounce:SetScript("OnClick", function()
   end
 end)
 
-if setting_border == true then 
-	window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
-	window.border:ClearAllPoints()
-	window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
-	window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)
-	window.border:SetBackdrop({
-	  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-	  tile = true, tileSize = 16, edgeSize = 16,
-	  insets = { left = 3, right = 3, top = 3, bottom = 3 }
-	})
-	window.border:SetBackdropBorderColor(.7,.7,.7,1)
-	window.border:SetFrameLevel(100)
-end 
+window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
+window.border:ClearAllPoints()
+window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
+window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)
+window.border:SetBackdrop({
+  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+  tile = true, tileSize = 16, edgeSize = 16,
+  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+})
+window.border:SetBackdropBorderColor(.7,.7,.7,1)
+window.border:SetFrameLevel(100)
 
 window.bars = {}
 

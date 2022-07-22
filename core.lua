@@ -67,6 +67,7 @@ local config = {
 
   -- window
   view = 1,
+  borders= 1,
 }
 
 -- create core component frames
