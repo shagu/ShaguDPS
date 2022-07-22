@@ -140,13 +140,16 @@ local function CreateBar(parent, i)
   parent.bars[i]:SetStatusBarTexture(textures[config.texture] or textures[1])
 	
   local iminus = i
-  if iminus>100 then iminus=iminus-100 end
+  if iminus>1000 then iminus=iminus-1000 end
   
   parent.bars[i]:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height * (iminus-1) - 22)
   parent.bars[i]:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height * (iminus-1) - 22)
   parent.bars[i]:SetHeight(config.height)
 
-  if i>100 then return parent.bars[i] end
+  if i>1000 then 
+    parent.bars[iminus]:SetFrameLevel(parent.bars[i]:GetFrameLevel()+1)
+	return parent.bars[i] 
+  end
   
   parent.bars[i].textLeft = parent.bars[i].textLeft or parent.bars[i]:CreateFontString("Status", "OVERLAY", "GameFontNormal")
   parent.bars[i].textLeft:SetFont(STANDARD_TEXT_FONT, 12, "THINOUTLINE")
@@ -549,15 +552,16 @@ window.Refresh = function(force)
 	local bar = i - scroll
 
 	if bar >= 1 and bar <= config.bars then
-	  
-	  window.bars[bar+100] = not force and window.bars[bar+100] or CreateBar(window, bar+100)
-	  window.bars[bar+100]:SetMinMaxValues(0, best)
-	  window.bars[bar+100]:SetValue(damage[1])
-	  window.bars[bar+100]:Show()
-	  window.bars[bar+100]:SetAlpha(0.9)
-	  window.bars[bar+100]:SetStatusBarColor(0.5, 0.5, 0.5)
-	  
 	  window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
+	  
+	  window.bars[bar+1000] = not force and window.bars[bar+1000] or CreateBar(window, bar+1000)
+	  window.bars[bar+1000]:SetMinMaxValues(0, best)
+	  window.bars[bar+1000]:SetValue(damage[1])
+	  window.bars[bar+1000]:Show()
+	  window.bars[bar+1000]:SetAlpha(0.9)
+	  window.bars[bar+1000]:SetStatusBarColor(0.5, 0.5, 0.5)
+	  
+	  
 	  window.bars[bar]:SetMinMaxValues(0, best)
 	  window.bars[bar]:SetValue(damage[2])
 	  window.bars[bar]:Show()
@@ -565,20 +569,13 @@ window.Refresh = function(force)
 
 	  local r, g, b = str2rgb(name)
       local color = { r = r / 4 + .4, g = g / 4 + .4, b = b / 4 + .4 }
+	
 
 	  if classes[playerClasses[name]] then
 		-- set color to player class colors
 		color = RAID_CLASS_COLORS[playerClasses[name]]
-	  elseif playerClasses[name] ~= "__other__" then
-		-- set color to player pet colors
-        -- pets have their class set to the owners name
-        local owner = playerClasses[name]
-        if classes[playerClasses[owner]] then
-          color = RAID_CLASS_COLORS[playerClasses[owner]]
-          name = owner .. " - " .. name
-        end
 	  end
-
+		
 	  window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
 
 	  window.bars[bar].textLeft:SetText(i .. ". " .. name)
@@ -595,29 +592,30 @@ window.Refresh = function(force)
 		if bar >= 1 and bar <= config.bars then
 		  window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
 		  window.bars[bar]:SetMinMaxValues(0, best)
-		  
 		  window.bars[bar]:SetValue(damage)
-		  
 		  window.bars[bar]:Show()
 		  window.bars[bar].unit = name
 
-		  local color = { r= .4, g = .4, b = .4 }
+		  local r, g, b = str2rgb(name)
+		  local color = { r = r / 4 + .4, g = g / 4 + .4, b = b / 4 + .4 }
 
-		  if RAID_CLASS_COLORS[playerClasses[name]] then
+		  if classes[playerClasses[name]] then
 			-- set color to player class colors
 			color = RAID_CLASS_COLORS[playerClasses[name]]
 		  elseif playerClasses[name] ~= "__other__" then
 			-- set color to player pet colors
-			color = { r= .6, g = 1, b = .6 }
-			name = playerClasses[name] .. " - " .. name
+			-- pets have their class set to the owners name
+			local owner = playerClasses[name]
+			if classes[playerClasses[owner]] then
+			  color = RAID_CLASS_COLORS[playerClasses[owner]]
+			  name = owner .. " - " .. name
+			end
 		  end
 
 		  window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
 
 		  window.bars[bar].textLeft:SetText(i .. ". " .. name)
-		  
 		  window.bars[bar].textRight:SetText(damage .. " - " .. round(damage / all * 100,1) .. "%")
-
 		end
 
 		i = i + 1

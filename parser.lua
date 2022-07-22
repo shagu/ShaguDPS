@@ -64,26 +64,6 @@ parser.ScanName = function(self, name)
   end
 end
 
-parser2.ScanName = function(self, name)
-  -- check if name matches a real player
-  for unit, _ in pairs(validUnits) do
-    if UnitExists(unit) and UnitName(unit) == name then
-      if UnitIsPlayer(unit) then
-        local _, class = UnitClass(unit)
-        playerClasses[name] = class
-        return "PLAYER"
-      end
-    end
-  end
-
-  -- assign class other if tracking of all units is set
-  if config.track_all_units == 1 then
-    playerClasses[name] = playerClasses[name] or "__other__"
-    return "OTHER"
-  else
-    return nil
-  end
-end
 parser.AddData = function(self, source, attack, target, damage, school, force)
   -- abort on invalid input
   if type(source) ~= "string" then return end
@@ -156,7 +136,7 @@ parser2.AddData = function(self, source, attack, target, damage, school, force)
 
   -- trim leading and trailing spaces
   source = trim(source)
-	
+
   -- write heal_table table
   if not heal_table[source] then
     local type = parser:ScanName(source) or force
@@ -172,12 +152,12 @@ parser2.AddData = function(self, source, attack, target, damage, school, force)
   --calc effective healing
   local effectiveAmount = damage
   local unitID = MikCEH.GetUnitIDFromName(target);
- 
 	if not unitID then
 		if UnitName("target") == target then
 			unitID = "target";
 		end
 	end
+	--print(unitID)
 
  -- Make sure it's a valid unit id. 
 	if (unitID) then
@@ -198,7 +178,7 @@ parser2.AddData = function(self, source, attack, target, damage, school, force)
     view_heal_all[source] = {(view_heal_all[source][1] or 0) + tonumber(damage), (view_heal_all[source][2] or 0) + tonumber(effectiveAmount)}
   end
 
-  for id, callback in pairs(parser.callbacks.refresh) do
+  for id, callback in pairs(parser2.callbacks.refresh) do
     callback()
   end
 end
