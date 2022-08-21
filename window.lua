@@ -405,7 +405,7 @@ local function AnnounceData()
     damage = round(damage, 1)
 
     if i <= 10 then
-      announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
+      announce(i .. ". " .. name .. " " .. damage .. " (" .. string.format("%.1f",round(damage / all * 100,1)) .. "%)")
     end
     i = i + 1
   end
@@ -569,7 +569,7 @@ window.Refresh = function(force)
       window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
 
       window.bars[bar].textLeft:SetText(i .. ". " .. name)
-      window.bars[bar].textRight:SetText(damage .. " - " .. round(damage / all * 100,1) .. "%")
+      window.bars[bar].textRight:SetText(damage .. " - " .. string.format("%.1f",round(damage / all * 100,1)) .. "%")
     end
 
     i = i + 1
