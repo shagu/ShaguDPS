@@ -15,6 +15,15 @@ local validPets = { ["pet"] = true }
 for i=1,4 do validPets["partypet" .. i] = true end
 for i=1,40 do validPets["raidpet" .. i] = true end
 
+-- find unitstr by name
+local function UnitByName(name)
+  for unit in pairs(validUnits) do
+    if UnitName(unit) == name then
+      return unit
+    end
+  end
+end
+
 -- trim leading and trailing spaces
 local function trim(str)
   return gsub(str, "^%s*(.-)%s*$", "%1")
@@ -120,6 +129,16 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
   if start_next_segment and data["classes"][source] and data["classes"][source] ~= "__other__" then
     data["damage"][1] = {}
     start_next_segment = nil
+  end
+
+  -- try to detect effective healing
+  local value = value
+  if datatype == "heal" then
+    local unitstr = UnitByName(target)
+
+    if unitstr then
+      value = math.min(UnitHealthMax(unitstr) - UnitHealth(unitstr), value)
+    end
   end
 
   -- write both (overall and current segment)
