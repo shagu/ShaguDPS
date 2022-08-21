@@ -42,6 +42,18 @@ local function expansion()
 end
 
 -- shared variables
+local data = {
+  -- global damage data
+  damage = {},
+
+  views = {
+    [1] = {}, -- damage
+    [2] = {}, -- dps
+  },
+
+  classes = {},
+}
+
 local dmg_table = {}
 local view_dmg_all = { }
 local view_dps_all = { }
@@ -72,12 +84,9 @@ local settings = CreateFrame("Frame")
 local parser = CreateFrame("Frame")
 
 -- make everything public
-ShaguDPS.textures = textures
-ShaguDPS.dmg_table = dmg_table
-ShaguDPS.view_dmg_all = view_dmg_all
-ShaguDPS.view_dps_all = view_dps_all
-ShaguDPS.playerClasses = playerClasses
+ShaguDPS.data = data
 ShaguDPS.config = config
+ShaguDPS.textures = textures
 ShaguDPS.window = window
 ShaguDPS.settings = settings
 ShaguDPS.parser = parser

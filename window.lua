@@ -11,14 +11,11 @@ local classes = {
 local window = ShaguDPS.window
 local parser = ShaguDPS.parser
 
+local data = ShaguDPS.data
+local config = ShaguDPS.config
+
 local textures = ShaguDPS.textures
 local spairs = ShaguDPS.spairs
-
-local playerClasses = ShaguDPS.playerClasses
-local view_dmg_all = ShaguDPS.view_dmg_all
-local view_dps_all = ShaguDPS.view_dps_all
-local dmg_table = ShaguDPS.dmg_table
-local config = ShaguDPS.config
 local round = ShaguDPS.round
 
 local scroll = 0
@@ -76,17 +73,17 @@ end
 local function barTooltipShow()
   GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
   if config.view == 1 then
-    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. dmg_table[this.unit]["_sum"])
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. view_dps_all[this.unit])
+    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. data.damage[this.unit]["_sum"])
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. data.views[2][this.unit])
   else
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. view_dps_all[this.unit])
-    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. dmg_table[this.unit]["_sum"])
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. data.views[2][this.unit])
+    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. data.damage[this.unit]["_sum"])
   end
 
   GameTooltip:AddLine(" ")
-  for attack, damage in spairs(dmg_table[this.unit], function(t,a,b) return t[b] < t[a] end) do
+  for attack, damage in spairs(data.damage[this.unit], function(t,a,b) return t[b] < t[a] end) do
     if attack ~= "_sum" and attack ~= "_ctime" and attack ~= "_tick" then
-      GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f",round(damage / dmg_table[this.unit]["_sum"] * 100,1)) .. "%")
+      GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f",round(damage / data.damage[this.unit]["_sum"] * 100,1)) .. "%")
     end
   end
   GameTooltip:Show()
@@ -101,7 +98,7 @@ local function barScrollWheel()
   scroll = arg1 < 0 and scroll + 1 or scroll
 
   local count = 0
-  for k,v in pairs(view_dmg_all) do
+  for k,v in pairs(data.views[config.view]) do
     count = count + 1
   end
 
@@ -251,18 +248,15 @@ window.btnReset.tooltip = {
 
 local function ResetData()
   -- clear overall damage data
-  for k, v in pairs(dmg_table) do
-    dmg_table[k] = nil
+  for k, v in pairs(data.damage) do
+    data.damage[k] = nil
   end
 
-  -- clear damage done
-  for k, v in pairs(view_dmg_all) do
-    view_dmg_all[k] = nil
-  end
-
-  -- clear dps
-  for k, v in pairs(view_dps_all) do
-    view_dps_all[k] = nil
+  -- clear views
+  for id, view in pairs(data.views) do
+    for k, v in pairs(data.views[id]) do
+      data.views[id][k] = nil
+    end
   end
 
   -- reset scroll and reload
@@ -318,17 +312,17 @@ local chatcolors = {
 }
 
 local function AnnounceData()
-  local view = config.view == 1 and view_dmg_all or view_dps_all
+  local view = config.view
   local name = config.view == 1 and "Damage Done" or "Overall DPS"
 
   -- load current maximum damage
-  local best, all = window.GetCaps(view)
+  local best, all = window.GetCaps(data.views[view])
   if all <= 0 then return end
 
   -- announce all entries to chat
   announce("ShaguDPS - " .. name .. ":")
   local i = 1
-  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
+  for name, damage in spairs(data.views[view], function(t,a,b) return t[b] < t[a] end) do
     if i <= 10 then
       announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
     end
@@ -429,11 +423,11 @@ window.Refresh = function(force)
   end
 
   -- load view and current maximum values
-  local view = config.view == 1 and view_dmg_all or view_dps_all
-  local best, all = window.GetCaps(view)
+  local view = config.view
+  local best, all = window.GetCaps(data.views[view])
 
   local i = 1
-  for name, damage in spairs(view, function(t,a,b) return t[b] < t[a] end) do
+  for name, damage in spairs(data.views[view], function(t,a,b) return t[b] < t[a] end) do
     local bar = i - scroll
 
     if bar >= 1 and bar <= config.bars then
@@ -446,15 +440,15 @@ window.Refresh = function(force)
       local r, g, b = str2rgb(name)
       local color = { r = r / 4 + .4, g = g / 4 + .4, b = b / 4 + .4 }
 
-      if classes[playerClasses[name]] then
+      if classes[data["classes"][name]] then
         -- set color to player class colors
-        color = RAID_CLASS_COLORS[playerClasses[name]]
-      elseif playerClasses[name] ~= "__other__" then
+        color = RAID_CLASS_COLORS[data["classes"][name]]
+      elseif data["classes"][name] ~= "__other__" then
         -- set color to player pet colors
         -- pets have their class set to the owners name
-        local owner = playerClasses[name]
-        if classes[playerClasses[owner]] then
-          color = RAID_CLASS_COLORS[playerClasses[owner]]
+        local owner = data["classes"][name]
+        if classes[data["classes"][owner]] then
+          color = RAID_CLASS_COLORS[data["classes"][owner]]
           name = owner .. " - " .. name
         end
       end
