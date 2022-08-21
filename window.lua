@@ -468,7 +468,13 @@ window.GetCaps = function(view, per_second)
   local best, all = 0, 0
 
   for name, data in pairs(view) do
-    local val = per_second and data["_sum"] / data["_ctime"] or data["_sum"]
+    local val = 0
+
+    -- only add value if source already did damage
+    if data["_sum"] and data["_ctime"] then
+      val = per_second and data["_sum"] / data["_ctime"] or data["_sum"]
+    end
+
     all = all + val
 
     if val > best then
