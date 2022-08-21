@@ -556,7 +556,13 @@ window.Refresh = function(force)
         local owner = data["classes"][name]
         if classes[data["classes"][owner]] then
           color = RAID_CLASS_COLORS[data["classes"][owner]]
-          name = owner .. " - " .. name
+
+          -- overwrite pet name
+          if config.merge_pets == 0 then
+            name = owner .. " - " .. name
+          else
+            name = owner
+          end
         end
       end
 
