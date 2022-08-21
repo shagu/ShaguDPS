@@ -141,12 +141,12 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
         -- create owner table if not yet existing
         local owner = data["classes"][source]
         if not entry[owner] and parser:ScanName(owner) then
-          entry[owner] = {}
+          entry[owner] = { ["_sum"] = 0, ["_ctime"] = 1 }
         end
       end
 
       -- create base damage table
-      entry[source] = {}
+      entry[source] = { ["_sum"] = 0, ["_ctime"] = 1 }
     end
 
     -- write pet damage into owners data if enabled
@@ -158,7 +158,7 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
       source = data["classes"][source]
 
       if not entry[source] then
-        entry[source] = {}
+        entry[source] = { ["_sum"] = 0, ["_ctime"] = 1 }
       end
     end
 
