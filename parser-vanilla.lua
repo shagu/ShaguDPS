@@ -50,12 +50,12 @@ local COMBATHITSCHOOLOTHEROTHER = prepare(COMBATHITSCHOOLOTHEROTHER) -- %s hits 
 local COMBATHITCRITSCHOOLOTHEROTHER = prepare(COMBATHITCRITSCHOOLOTHEROTHER) -- %s crits %s for %d %s damage.
 local DAMAGESHIELDOTHEROTHER = prepare(DAMAGESHIELDOTHEROTHER) -- %s reflects %d %s damage to %s.
 
-local datasources = {
+local damage_handlers = {
   --[[ me source me target ]]--
   -- Your %s hits you for %d %s damage.
   function(source, target, school, attack)
     for attack, damage, school in string.gfind(arg1, SPELLLOGSCHOOLSELFSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -63,7 +63,7 @@ local datasources = {
   -- Your %s crits you for %d %s damage.
   function(source, target, school, attack)
     for attack, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLSELFSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -71,7 +71,7 @@ local datasources = {
   -- Your %s hits you for %d.
   function(source, target, school, attack)
     for attack, damage in string.gfind(arg1, SPELLLOGSELFSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -79,7 +79,7 @@ local datasources = {
   -- Your %s crits you for %d.
   function(source, target, school, attack)
     for attack, damage in string.gfind(arg1, SPELLLOGCRITSELFSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -87,7 +87,7 @@ local datasources = {
   -- "You suffer %d %s damage from your %s.";
   function(source, target, school, attack)
     for damage, school, attack in string.gfind(arg1, PERIODICAURADAMAGESELFSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -96,7 +96,7 @@ local datasources = {
   -- Your %s hits %s for %d %s damage.
   function(source, target, school, attack)
     for attack, target, damage, school in string.gfind(arg1, SPELLLOGSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -104,7 +104,7 @@ local datasources = {
   -- Your %s crits %s for %d %s damage.
   function(source, target, school, attack)
     for attack, target, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -112,7 +112,7 @@ local datasources = {
   -- Your %s hits %s for %d.
   function(source, target, school, attack)
     for attack, target, damage in string.gfind(arg1, SPELLLOGSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -120,7 +120,7 @@ local datasources = {
   -- Your %s crits %s for %d.
   function(source, target, school, attack)
     for attack, target, damage in string.gfind(arg1, SPELLLOGCRITSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -129,7 +129,7 @@ local datasources = {
   -- Rabbit suffers 3 frost damage from your Ice Nova.
   function(source, target, school, attack)
     for target, damage, school, attack in string.gfind(arg1, PERIODICAURADAMAGESELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -137,7 +137,7 @@ local datasources = {
   -- You hit %s for %d.
   function(source, target, school, attack)
     for target, damage in string.gfind(arg1, COMBATHITSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -145,7 +145,7 @@ local datasources = {
   -- You crit %s for %d.
   function(source, target, school, attack)
     for target, damage in string.gfind(arg1, COMBATHITCRITSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -153,7 +153,7 @@ local datasources = {
   -- You hit %s for %d %s damage.
   function(source, target, school, attack)
     for target, damage, school in string.gfind(arg1, COMBATHITSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -161,7 +161,7 @@ local datasources = {
   -- You crit %s for %d %s damage.
   function(source, target, school, attack)
     for target, damage, school in string.gfind(arg1, COMBATHITCRITSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -169,7 +169,7 @@ local datasources = {
   -- You reflect %d %s damage to %s.
   function(source, target, school, attack)
     for damage, school, target in string.gfind(arg1, DAMAGESHIELDSELFOTHER) do
-      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school)
+      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school, "damage")
       return true
     end
   end,
@@ -178,7 +178,7 @@ local datasources = {
   -- %s's %s hits you for %d %s damage.
   function(source, target, school, attack)
     for source, attack, damage, school in string.gfind(arg1, SPELLLOGSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -186,7 +186,7 @@ local datasources = {
   -- %s's %s crits you for %d %s damage.
   function(source, target, school, attack)
     for source, attack, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -194,7 +194,7 @@ local datasources = {
   -- %s's %s hits you for %d.
   function(source, target, school, attack)
     for source, attack, damage in string.gfind(arg1, SPELLLOGOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -202,7 +202,7 @@ local datasources = {
   -- %s's %s crits you for %d.
   function(source, target, school, attack)
     for source, attack, damage in string.gfind(arg1, SPELLLOGCRITOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -211,7 +211,7 @@ local datasources = {
   -- You suffer 3 frost damage from Rabbit's Ice Nova.
   function(source, target, school, attack)
     for damage, school, source, attack in string.gfind(arg1, PERIODICAURADAMAGEOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -219,7 +219,7 @@ local datasources = {
   -- %s hits you for %d.
   function(source, target, school, attack)
     for source, damage in string.gfind(arg1, COMBATHITOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -227,7 +227,7 @@ local datasources = {
   -- %s crits you for %d.
   function(source, target, school, attack)
     for source, damage in string.gfind(arg1, COMBATHITCRITOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -235,7 +235,7 @@ local datasources = {
   -- %s hits you for %d %s damage.
   function(source, target, school, attack)
     for source, damage, school in string.gfind(arg1, COMBATHITSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -243,7 +243,7 @@ local datasources = {
   -- %s crits you for %d %s damage.
   function(source, target, school, attack)
     for source, damage, school in string.gfind(arg1, COMBATHITCRITSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -252,7 +252,7 @@ local datasources = {
   -- %s's %s hits %s for %d %s damage.
   function(source, target, school, attack)
     for source, attack, target, damage, school in string.gfind(arg1, SPELLLOGSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -260,7 +260,7 @@ local datasources = {
   -- %s's %s crits %s for %d %s damage.
   function(source, target, school, attack)
     for source, attack, target, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -268,7 +268,7 @@ local datasources = {
   -- %s's %s hits %s for %d.
   function(source, target, school, attack)
     for source, attack, target, damage in string.gfind(arg1, SPELLLOGOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -276,7 +276,7 @@ local datasources = {
   -- %s's %s crits %s for %d.
   function(source, target, school, attack)
     for source, attack, target, damage, school in string.gfind(arg1, SPELLLOGCRITOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -285,7 +285,7 @@ local datasources = {
   -- Bob suffers 5 frost damage from Jeff's Ice Nova.
   function(source, target, school, attack)
     for target, damage, school, source, attack in string.gfind(arg1, PERIODICAURADAMAGEOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -293,7 +293,7 @@ local datasources = {
   -- %s hits %s for %d.
   function(source, target, school, attack)
     for source, target, damage in string.gfind(arg1, COMBATHITOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -301,7 +301,7 @@ local datasources = {
   -- %s crits %s for %d.
   function(source, target, school, attack)
     for source, target, damage in string.gfind(arg1, COMBATHITCRITOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -309,7 +309,7 @@ local datasources = {
   -- %s hits %s for %d %s damage.
   function(source, target, school, attack)
     for source, target, damage, school in string.gfind(arg1, COMBATHITSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -317,7 +317,7 @@ local datasources = {
   -- %s crits %s for %d %s damage.
   function(source, target, school, attack)
     for source, target, damage, school in string.gfind(arg1, COMBATHITCRITSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school)
+      parser:AddData(source, attack, target, damage, school, "damage")
       return true
     end
   end,
@@ -325,13 +325,13 @@ local datasources = {
   -- %s reflects %d %s damage to %s.
   function(source, target, school, attack)
     for source, damage, school, target in string.gfind(arg1, DAMAGESHIELDOTHEROTHER) do
-      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school)
+      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school, "damage")
       return true
     end
   end,
 }
 
--- register to all combat log events
+-- register to all damage combat log events
 parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF")
 parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS")
 parser:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
@@ -366,7 +366,7 @@ parser:SetScript("OnEvent", function()
   local attack = "Auto Hit"
 
   -- detection on all data sources
-  for id, func in pairs(datasources) do
+  for id, func in pairs(damage_handlers) do
     if func(source, target, school, attack) then
       return
     end

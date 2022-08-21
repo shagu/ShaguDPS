@@ -109,7 +109,7 @@ parser.ScanName = function(self, name)
   end
 end
 
-parser.AddData = function(self, source, attack, target, damage, school, force)
+parser.AddData = function(self, source, action, target, value, school, datatype)
   -- abort on invalid input
   if type(source) ~= "string" then return end
 
@@ -124,11 +124,11 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
 
   -- write both (overall and current segment)
   for segment = 0, 1 do
-    local entry = data["damage"][segment]
+    local entry = data[datatype][segment]
 
     -- detect source and write initial table
     if not entry[source] then
-      local type = parser:ScanName(source) or force
+      local type = parser:ScanName(source)
       if type == "PET" then
         -- create owner table if not yet existing
         local owner = data["classes"][source]
@@ -145,7 +145,7 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
     end
 
     -- write pet damage into owners data if enabled
-    local attack, source = attack, source
+    local action, source = action, source
     if config.merge_pets == 1 and                 -- merge pets?
       data["classes"][source] ~= "__other__" and  -- valid unit?
       entry[data["classes"][source]]              -- has owner?
@@ -153,7 +153,7 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
       -- remove pet data
       entry[source] = nil
 
-      attack = "Pet: " .. source
+      action = "Pet: " .. source
       source = data["classes"][source]
 
       -- write data into owner
@@ -163,8 +163,8 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
     end
 
     if entry[source] then
-      entry[source][attack] = (entry[source][attack] or 0) + tonumber(damage)
-      entry[source]["_sum"] = (entry[source]["_sum"] or 0) + tonumber(damage)
+      entry[source][action] = (entry[source][action] or 0) + tonumber(value)
+      entry[source]["_sum"] = (entry[source]["_sum"] or 0) + tonumber(value)
 
       entry[source]["_ctime"] = entry[source]["_ctime"] or 1
       entry[source]["_tick"] = entry[source]["_tick"] or GetTime()

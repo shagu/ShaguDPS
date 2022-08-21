@@ -1,15 +1,15 @@
 local parser = ShaguDPS.parser
 
 local function hit(_, _, _, source, _, _, target, _, damage, school)
-  parser:AddData(source, "Auto Hit", target, damage, school)
+  parser:AddData(source, "Auto Hit", target, damage, school, "damage")
 end
 
 local function spell(_, _, _, source, _, _, target, _, _, attack, _, damage, school)
-  parser:AddData(source, attack, target, damage, school)
+  parser:AddData(source, attack, target, damage, school, "damage")
 end
 
 local function other(_, _, _, source, _, _, target, _, attack, damage, _, school)
-  parser:AddData(source, attack, target, damage, school)
+  parser:AddData(source, attack, target, damage, school, "damage")
 end
 
 local datasources = {
