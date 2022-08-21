@@ -43,14 +43,7 @@ end
 
 -- shared variables
 local data = {
-  -- global damage data
   damage = {},
-
-  views = {
-    [1] = {}, -- damage
-    [2] = {}, -- dps
-  },
-
   classes = {},
 }
 

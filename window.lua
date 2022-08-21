@@ -70,14 +70,26 @@ local function spairs(t, order)
   end
 end
 
+local sort_all = function(t,a,b)
+  return t[b]["_sum"] < t[a]["_sum"]
+end
+
+local sort_dps = function(t,a,b)
+  return t[b]["_sum"] / t[b]["_ctime"] < t[a]["_sum"] / t[a]["_ctime"]
+end
+
 local function barTooltipShow()
   GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+
+  local damage = data.damage[this.unit]["_sum"]
+  local dps = data.damage[this.unit]["_sum"] / data.damage[this.unit]["_ctime"]
+
   if config.view == 1 then
-    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. data.damage[this.unit]["_sum"])
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. data.views[2][this.unit])
+    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. damage)
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. dps)
   else
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. data.views[2][this.unit])
-    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. data.damage[this.unit]["_sum"])
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. dps)
+    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. damage)
   end
 
   GameTooltip:AddLine(" ")
@@ -98,7 +110,7 @@ local function barScrollWheel()
   scroll = arg1 < 0 and scroll + 1 or scroll
 
   local count = 0
-  for k,v in pairs(data.views[config.view]) do
+  for k,v in pairs(data.damage) do
     count = count + 1
   end
 
@@ -252,13 +264,6 @@ local function ResetData()
     data.damage[k] = nil
   end
 
-  -- clear views
-  for id, view in pairs(data.views) do
-    for k, v in pairs(data.views[id]) do
-      data.views[id][k] = nil
-    end
-  end
-
   -- reset scroll and reload
   scroll = 0
   window:Refresh()
@@ -315,14 +320,21 @@ local function AnnounceData()
   local view = config.view
   local name = config.view == 1 and "Damage Done" or "Overall DPS"
 
+  -- get current maximum values
+  local per_second = config.view == 2 and true or nil
+  local sort = per_second and sort_dps or sort_all
+  local best, all = window.GetCaps(data.damage, per_second)
+
   -- load current maximum damage
-  local best, all = window.GetCaps(data.views[view])
+  local best, all = window.GetCaps(data.damage)
   if all <= 0 then return end
 
   -- announce all entries to chat
   announce("ShaguDPS - " .. name .. ":")
   local i = 1
-  for name, damage in spairs(data.views[view], function(t,a,b) return t[b] < t[a] end) do
+  for name, combat_data in spairs(data.damage, sort) do
+    local damage = per_second and combat_data["_sum"] / combat_data["_ctime"] or combat_data["_sum"]
+
     if i <= 10 then
       announce(i .. ". " .. name .. " " .. damage .. " (" .. round(damage / all * 100,1) .. "%)")
     end
@@ -383,13 +395,15 @@ window.border:SetFrameLevel(100)
 
 window.bars = {}
 
-window.GetCaps = function(view)
+window.GetCaps = function(view, per_second)
   local best, all = 0, 0
-  for _, damage in pairs(view) do
-    all = all + damage
 
-    if damage > best then
-      best = damage
+  for name, data in pairs(view) do
+    local val = per_second and data["_sum"] / data["_ctime"] or data["_sum"]
+    all = all + val
+
+    if val > best then
+      best = val
     end
   end
 
@@ -422,12 +436,14 @@ window.Refresh = function(force)
     bar:Hide()
   end
 
-  -- load view and current maximum values
-  local view = config.view
-  local best, all = window.GetCaps(data.views[view])
+  -- get current maximum values
+  local per_second = config.view == 2 and true or nil
+  local sort = per_second and sort_dps or sort_all
+  local best, all = window.GetCaps(data.damage, per_second)
 
   local i = 1
-  for name, damage in spairs(data.views[view], function(t,a,b) return t[b] < t[a] end) do
+  for name, combat_data in spairs(data.damage, sort) do
+    local damage = per_second and combat_data["_sum"] / combat_data["_ctime"] or combat_data["_sum"]
     local bar = i - scroll
 
     if bar >= 1 and bar <= config.bars then

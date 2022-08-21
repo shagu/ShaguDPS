@@ -83,9 +83,9 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   end
 
   -- write pet damage into owners data if enabled
-  if config.merge_pets == 1 and               -- merge pets?
+  if config.merge_pets == 1 and                 -- merge pets?
     data["classes"][source] ~= "__other__" and  -- valid unit?
-    data["damage"][data["classes"][source]]          -- has owner?
+    data["damage"][data["classes"][source]]     -- has owner?
   then
     attack = "Pet: " .. source
     source = data["classes"][source]
@@ -99,7 +99,7 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
     data["damage"][source][attack] = (data["damage"][source][attack] or 0) + tonumber(damage)
     data["damage"][source]["_sum"] = (data["damage"][source]["_sum"] or 0) + tonumber(damage)
 
-    data["damage"][source]["_ctime"] = data["damage"][source]["_ctime"] or 0
+    data["damage"][source]["_ctime"] = data["damage"][source]["_ctime"] or 1
     data["damage"][source]["_tick"] = data["damage"][source]["_tick"] or GetTime()
 
     if data["damage"][source]["_tick"] + 5 < GetTime() then
@@ -111,14 +111,6 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
     end
   else
     return
-  end
-
-  if data["damage"][source] then
-    -- write damage view
-    data["views"][1][source] = (data["views"][1][source] or 0) + tonumber(damage)
-
-    -- write dps view
-    data["views"][2][source] = round(data["views"][1][source] / math.max(data["damage"][source]["_ctime"], 1), 1)
   end
 
   for id, callback in pairs(parser.callbacks.refresh) do
