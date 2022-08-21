@@ -48,6 +48,11 @@ local data = {
     [1] = {}, -- current
   },
 
+  heal = {
+    [0] = {}, -- overall
+    [1] = {}, -- current
+  },
+
   classes = {},
 }
 
