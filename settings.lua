@@ -57,58 +57,6 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     ShaguDPS_Config = config
     window:Refresh(true)
     p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible: " .. config.visible)
-  elseif strlower(cmd) == "debug" then
-    if not ShaguDPS.simulator then
-      playerClasses["Muato"] = "WARRIOR"
-      playerClasses["Fentarakh"] = "WARLOCK"
-      playerClasses["Zibari"] = "HUNTER"
-      playerClasses["Blaina"] = "PRIEST"
-      playerClasses["Mirn"] = "DRUID"
-      playerClasses["Loota"] = "SHAMAN"
-      playerClasses["Brunhin"] = "PALADIN"
-      playerClasses["Rothius"] = "ROGUE"
-      playerClasses["Bitolis"] = "MAGE"
-
-      local skills = {
-        ["WARRIOR"] = { "Auto Hit", "Bloodthirst", "Execute", "Whirlwind", "Heroic Strike" },
-        ["WARLOCK"] = { "Shadow Bolt", "Corruption", "Immolate" },
-        ["HUNTER"] = { "Auto Shot", "Aimed Shot", "Multi-Shot" },
-        ["PRIEST"] = { "Mind Flay", "Shadow Word: Pain", "Mind Blast", "Shoot" },
-        ["DRUID"] = { "Auto Hit", "Shred", "Rip" },
-        ["SHAMAN"] = { "Auto Hit", "Frost Shock", "Earth Shock", "Stromstrike" },
-        ["PALADIN"] = { "Auto Hit", "Seal of Rigtheousness", "Judgement of Rigtheousness" },
-        ["ROGUE"] = { "Auto Hit", "Hemorrhage", "Eviscerate", "Instant Poison VI" },
-        ["MAGE"] = { "Fireball", "Ignite", "Scorch", "Frostbolt", "Arcane Explosion" }
-      }
-
-      local onUpdate = function()
-        if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + 1 end
-
-        for source, v in pairs(playerClasses) do
-          local class = playerClasses[source]
-
-          if class and skills[class] then
-            local atkcount = table.getn(skills[class])
-            local attack = skills[class][math.random(atkcount)]
-            local damage = floor(math.random()*200*atkcount)
-
-            parser:AddData(source, attack, UnitName("player"), damage, "physical", true)
-          end
-        end
-      end
-
-      ShaguDPS.simulator = CreateFrame("Frame", "ShaguDPSSimulator", UIParent)
-      ShaguDPS.simulator:SetScript("OnUpdate", onUpdate)
-      ShaguDPS.simulator:Hide()
-    end
-
-    if ShaguDPS.simulator:IsShown() then
-      ShaguDPS.simulator:Hide()
-    else
-      ShaguDPS.simulator:Show()
-    end
-
-
   elseif strlower(cmd) == "width" then
     if tonumber(args) then
       config.width = tonumber(args)
