@@ -154,9 +154,13 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
       data["classes"][source] ~= "__other__" and  -- valid unit?
       entry[data["classes"][source]]              -- has owner?
     then
+      -- remove pet data
+      entry[source] = nil
+
       attack = "Pet: " .. source
       source = data["classes"][source]
 
+      -- write data into owner
       if not entry[source] then
         entry[source] = { ["_sum"] = 0, ["_ctime"] = 1 }
       end
