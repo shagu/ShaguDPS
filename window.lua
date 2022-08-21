@@ -273,7 +273,7 @@ window.btnMode.caption = window.btnMode:CreateFontString("ShaguDPSTitle", "OVERL
 window.btnMode.caption:SetFont(STANDARD_TEXT_FONT, 9)
 window.btnMode.caption:SetText("Mode: Damage")
 window.btnMode.caption:SetAllPoints()
-window.btnMode.tooltip = { "Select Mode", "|cffffffffDamage, DPS" }
+window.btnMode.tooltip = { "Select Mode", "|cffffffffDamage, DPS, Heal, HPS" }
 window.btnMode:SetScript("OnEnter", btnEnter)
 window.btnMode:SetScript("OnLeave", btnLeave)
 window.btnMode:SetScript("OnClick", function()
@@ -296,14 +296,14 @@ end)
 
 local menubuttons = {
   -- segments
-  ["Current"]  = { 0, 1, -25.5, "Current Segment", "|cffffffffShows the current fight", "segment" },
-  ["Overall"]  = { 1, 0, -25.5, "Overall Segment", "|cffffffffShows all fights",        "segment" },
+  ["Current"]  = { 0, 1, -25.5, "Current Segment", "|cffffffffShow current fight",      "segment" },
+  ["Overall"]  = { 1, 0, -25.5, "Overall Segment", "|cffffffffShow all fights",         "segment" },
 
   -- modes
-  ["Damage"]   = { 0, 1, 25.5,  "Damage View",     "|cffffffffShows the Damage",        "view" },
-  ["DPS"]      = { 1, 2, 25.5,  "DPS View",        "|cffffffffShows the DPS",           "view" },
-  ["Heal"]     = { 2, 3, 25.5,  "Heal View",       "|cffffffffShows the Heal",          "view" },
-  ["HPS"]      = { 3, 4, 25.5,  "HPS View",        "|cffffffffShows the HPS",           "view" },
+  ["Damage"]   = { 0, 1, 25.5,  "Damage View",     "|cffffffffShow Damage Done",        "view" },
+  ["DPS"]      = { 1, 2, 25.5,  "DPS View",        "|cffffffffShow Damage Per Second",  "view" },
+  ["Heal"]     = { 2, 3, 25.5,  "Heal View",       "|cffffffffShow Healing Done",       "view" },
+  ["HPS"]      = { 3, 4, 25.5,  "HPS View",        "|cffffffffShow Heal Per Second",    "view" },
 }
 
 for name, template in pairs(menubuttons) do
