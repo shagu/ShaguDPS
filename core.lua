@@ -43,7 +43,11 @@ end
 
 -- shared variables
 local data = {
-  damage = {},
+  damage = {
+    [0] = {}, -- overall
+    [1] = {}, -- current
+  },
+
   classes = {},
 }
 
