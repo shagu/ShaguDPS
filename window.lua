@@ -82,15 +82,21 @@ end
 local function barTooltipShow()
   GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 
-  local damage = segment[this.unit]["_sum"]
-  local dps = round(segment[this.unit]["_sum"] / segment[this.unit]["_ctime"], 1)
+  local value = segment[this.unit]["_sum"]
+  local persec = round(segment[this.unit]["_sum"] / segment[this.unit]["_ctime"], 1)
 
   if config.view == 1 then
-    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. damage)
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. dps)
-  else
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. dps)
-    GameTooltip:AddDoubleLine("|cffffee00Damage Done", "|cffffffff" .. damage)
+    GameTooltip:AddDoubleLine("|cffffee00Damage", "|cffffffff" .. value)
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. persec)
+  elseif config.view == 2 then
+    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. persec)
+    GameTooltip:AddDoubleLine("|cffffee00Damage", "|cffffffff" .. value)
+  elseif config.view == 3 then
+    GameTooltip:AddDoubleLine("|cffffee00Healing", "|cffffffff" .. value)
+    GameTooltip:AddDoubleLine("|cffffee00HPS", "|cffffffff" .. persec)
+  elseif config.view == 4 then
+    GameTooltip:AddDoubleLine("|cffffee00HPS", "|cffffffff" .. persec)
+    GameTooltip:AddDoubleLine("|cffffee00Healing", "|cffffffff" .. value)
   end
 
   GameTooltip:AddLine(" ")
@@ -239,11 +245,15 @@ window.btnSegment:SetScript("OnClick", function()
   if window.btnCurrent:IsShown() then
     window.btnDamage:Hide()
     window.btnDPS:Hide()
+    window.btnHeal:Hide()
+    window.btnHPS:Hide()
     window.btnOverall:Hide()
     window.btnCurrent:Hide()
   else
     window.btnDamage:Hide()
     window.btnDPS:Hide()
+    window.btnHeal:Hide()
+    window.btnHPS:Hide()
     window.btnOverall:Show()
     window.btnCurrent:Show()
   end
@@ -269,11 +279,15 @@ window.btnMode:SetScript("OnClick", function()
   if window.btnDamage:IsShown() then
     window.btnDamage:Hide()
     window.btnDPS:Hide()
+    window.btnHeal:Hide()
+    window.btnHPS:Hide()
     window.btnOverall:Hide()
     window.btnCurrent:Hide()
   else
     window.btnDamage:Show()
     window.btnDPS:Show()
+    window.btnHeal:Show()
+    window.btnHPS:Show()
     window.btnOverall:Hide()
     window.btnCurrent:Hide()
   end
@@ -285,8 +299,10 @@ local menubuttons = {
   ["Overall"]  = { 1, 0, -25.5, "Overall Segment", "|cffffffffShows all fights",        "segment" },
 
   -- modes
-  ["DPS"]      = { 0, 2, 25.5,  "DPS View",        "|cffffffffShows the DPS",           "view" },
-  ["Damage"]   = { 1, 1, 25.5,  "Damage View",     "|cffffffffShows the Damage",        "view" },
+  ["Damage"]   = { 0, 1, 25.5,  "Damage View",     "|cffffffffShows the Damage",        "view" },
+  ["DPS"]      = { 1, 2, 25.5,  "DPS View",        "|cffffffffShows the DPS",           "view" },
+  ["Heal"]     = { 2, 3, 25.5,  "Heal View",       "|cffffffffShows the Heal",          "view" },
+  ["HPS"]      = { 3, 4, 25.5,  "HPS View",        "|cffffffffShows the HPS",           "view" },
 }
 
 for name, template in pairs(menubuttons) do
@@ -382,13 +398,17 @@ local chatcolors = {
   ["CHANNEL"] = "|cffFEC1C0"
 }
 
+local viewnames = {
+  "Damage", "DPS", "Heal", "HPS"
+}
+
 local function AnnounceData()
   local view = config.view
   local seg = config.segment == 1 and "Current" or "Overall"
-  local name = config.view == 1 and "Damage" or "DPS"
+  local name = viewnames[config.view]
 
   -- get current maximum values
-  local per_second = config.view == 2 and true or nil
+  local per_second = (config.view == 2 or config.view == 4) and true or nil
   local sort = per_second and sort_dps or sort_all
   local best, all = window.GetCaps(segment, per_second)
 
@@ -440,7 +460,7 @@ window.btnAnnounce:SetScript("OnClick", function()
     local color = chatcolors[ctype]
     if not color then color = "|cff00FAF6" end
 
-    local name = config.view == 1 and "Damage Done" or "Overall DPS"
+    local name = viewnames[config.view]
     local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
 
     local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
@@ -486,7 +506,12 @@ window.GetCaps = function(view, per_second)
 end
 
 window.Refresh = function(force)
-  segment = data.damage[(config.segment or 0)]
+  -- set view to damage or heal
+  if config.view == 1 or config.view == 2 then
+    segment = data.damage[(config.segment or 0)]
+  elseif config.view == 3 or config.view == 4 then
+    segment = data.heal[(config.segment or 0)]
+  end
 
   -- config changes
   if force then
@@ -496,14 +521,22 @@ window.Refresh = function(force)
       window:Hide()
     end
 
+    for _, button in pairs({window.btnDamage, window.btnDPS, window.btnHeal, window.btnHPS}) do
+      button.caption:SetTextColor(.5,.5,.5,1)
+    end
+
     if config.view == 1 then
       window.btnDamage.caption:SetTextColor(1,.9,0,1)
-      window.btnDPS.caption:SetTextColor(.5,.5,.5,1)
       window.btnMode.caption:SetText("Damage")
     elseif config.view == 2 then
-      window.btnDamage.caption:SetTextColor(.5,.5,.5,1)
       window.btnDPS.caption:SetTextColor(1,.9,0,1)
       window.btnMode.caption:SetText("DPS")
+    elseif config.view == 3 then
+      window.btnHeal.caption:SetTextColor(1,.9,0,1)
+      window.btnMode.caption:SetText("Heal")
+    elseif config.view == 4 then
+      window.btnHPS.caption:SetTextColor(1,.9,0,1)
+      window.btnMode.caption:SetText("HPS")
     end
 
     if config.segment == 0 then
@@ -526,7 +559,7 @@ window.Refresh = function(force)
   end
 
   -- get current maximum values
-  local per_second = config.view == 2 and true or nil
+  local per_second = (config.view == 2 or config.view == 4) and true or nil
   local sort = per_second and sort_dps or sort_all
   local best, all = window.GetCaps(segment, per_second)
 
