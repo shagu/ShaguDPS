@@ -116,15 +116,6 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   -- trim leading and trailing spaces
   source = trim(source)
 
-  -- find source unit type
-  local type
-  if not data["classes"][source] then
-    type = parser:ScanName(source) or force
-
-    -- invalid or disabled unit type
-    if not type then return end
-  end
-
   -- clear "current" on fight start
   if start_next_segment and data["classes"][source] and data["classes"][source] ~= "__other__" then
     data["damage"][1] = {}
@@ -135,14 +126,18 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
   for segment = 0, 1 do
     local entry = data["damage"][segment]
 
-    -- write dmg_table table
+    -- detect source and write initial table
     if not entry[source] then
+      local type = parser:ScanName(source) or force
       if type == "PET" then
         -- create owner table if not yet existing
         local owner = data["classes"][source]
         if not entry[owner] and parser:ScanName(owner) then
           entry[owner] = { ["_sum"] = 0, ["_ctime"] = 1 }
         end
+      elseif not type then
+        -- invalid or disabled unit type
+        break
       end
 
       -- create base damage table
@@ -150,6 +145,7 @@ parser.AddData = function(self, source, attack, target, damage, school, force)
     end
 
     -- write pet damage into owners data if enabled
+    local attack, source = attack, source
     if config.merge_pets == 1 and                 -- merge pets?
       data["classes"][source] ~= "__other__" and  -- valid unit?
       entry[data["classes"][source]]              -- has owner?
