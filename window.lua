@@ -102,7 +102,8 @@ local function barTooltipShow()
   GameTooltip:AddLine(" ")
   for attack, damage in spairs(segment[this.unit], function(t,a,b) return t[b] < t[a] end) do
     if attack ~= "_sum" and attack ~= "_ctime" and attack ~= "_tick" then
-      GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f",round(damage / segment[this.unit]["_sum"] * 100,1)) .. "%")
+      local percent = damage == 0 and 0 or round(damage / segment[this.unit]["_sum"] * 100,1)
+      GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f", percent) .. "%")
     end
   end
   GameTooltip:Show()
@@ -423,9 +424,10 @@ local function AnnounceData()
   for name, combat_data in spairs(segment, sort) do
     local damage = per_second and combat_data["_sum"] / combat_data["_ctime"] or combat_data["_sum"]
     damage = round(damage, 1)
+    local percent = damage == 0 and 0 or round(damage / all * 100,1)
 
     if i <= 10 then
-      announce(i .. ". " .. name .. " " .. damage .. " (" .. string.format("%.1f",round(damage / all * 100,1)) .. "%)")
+      announce(i .. ". " .. name .. " " .. damage .. " (" .. string.format("%.1f", percent) .. "%)")
     end
     i = i + 1
   end
@@ -567,6 +569,7 @@ window.Refresh = function(force)
   for name, combat_data in spairs(segment, sort) do
     local damage = per_second and combat_data["_sum"] / combat_data["_ctime"] or combat_data["_sum"]
     damage = round(damage, 1)
+    local percent = damage == 0 and 0 or round(damage / all * 100,1)
 
     local bar = i - scroll
 
@@ -600,9 +603,8 @@ window.Refresh = function(force)
       end
 
       window.bars[bar]:SetStatusBarColor(color.r, color.g, color.b)
-
       window.bars[bar].textLeft:SetText(i .. ". " .. name)
-      window.bars[bar].textRight:SetText(damage .. " - " .. string.format("%.1f",round(damage / all * 100,1)) .. "%")
+      window.bars[bar].textRight:SetText(damage .. " - " .. string.format("%.1f", percent) .. "%")
     end
 
     i = i + 1
