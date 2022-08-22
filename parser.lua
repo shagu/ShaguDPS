@@ -17,7 +17,15 @@ for i=1,40 do validPets["raidpet" .. i] = true end
 
 -- find unitstr by name
 local function UnitByName(name)
+  -- prioritize players
   for unit in pairs(validUnits) do
+    if UnitName(unit) == name then
+      return unit
+    end
+  end
+
+  -- scan for pets
+  for unit in pairs(validPets) do
     if UnitName(unit) == name then
       return unit
     end
