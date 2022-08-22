@@ -139,13 +139,18 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
     start_next_segment = nil
   end
 
-  -- try to detect effective healing
+  -- calculate effective healing if config is set
   local value = value
-  if datatype == "heal" then
+  if datatype == "heal" and config.effective_heal == 1 then
     local unitstr = UnitByName(target)
 
     if unitstr then
+      -- calculate the effective healing of the current data
       value = math.min(UnitHealthMax(unitstr) - UnitHealth(unitstr), value)
+    else
+      -- if no unit could be found it is mpossible to
+      -- calculate effictive healing, aborting here.
+      return
     end
   end
 

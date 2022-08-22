@@ -69,6 +69,7 @@ local config = {
   bars = 8,
 
   -- tracking
+  effective_heal = 1,
   track_all_units = 0,
   merge_pets = 1,
 
