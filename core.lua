@@ -69,7 +69,6 @@ local config = {
   bars = 8,
 
   -- tracking
-  effective_heal = 1,
   track_all_units = 0,
   merge_pets = 1,
 
@@ -79,6 +78,14 @@ local config = {
 
   -- window
   view = 1,
+}
+
+local internals = {
+  ["_sum"] = true,
+  ["_ctime"] = true,
+  ["_tick"] = true,
+  ["_esum"] = true,
+  ["_effective"] = true,
 }
 
 -- create core component frames
@@ -92,6 +99,7 @@ ShaguDPS.config = config
 ShaguDPS.textures = textures
 ShaguDPS.window = window
 ShaguDPS.settings = settings
+ShaguDPS.internals = internals
 ShaguDPS.parser = parser
 ShaguDPS.round = round
 ShaguDPS.expansion = expansion

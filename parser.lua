@@ -147,18 +147,14 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
     start_next_segment = nil
   end
 
-  -- calculate effective healing if config is set
-  local value = value
-  if datatype == "heal" and config.effective_heal == 1 then
+  -- calculate effective value (heal)
+  local effective = 0
+  if datatype == "heal" then
     local unitstr = UnitByName(target)
 
     if unitstr then
       -- calculate the effective healing of the current data
-      value = math.min(UnitHealthMax(unitstr) - UnitHealth(unitstr), value)
-    else
-      -- if no unit could be found it is mpossible to
-      -- calculate effictive healing, aborting here.
-      return
+      effective = math.min(UnitHealthMax(unitstr) - UnitHealth(unitstr), value)
     end
   end
 
@@ -203,8 +199,18 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
     end
 
     if entry[source] then
+      -- write overall value and per spell
       entry[source][action] = (entry[source][action] or 0) + tonumber(value)
       entry[source]["_sum"] = (entry[source]["_sum"] or 0) + tonumber(value)
+
+      if datatype == "heal" then
+        -- write effective healing sumary
+        entry[source]["_esum"] = (entry[source]["_esum"] or 0) + tonumber(effective)
+
+        -- write effective healing per spell
+        entry[source]["_effective"] = entry[source]["_effective"] or {}
+        entry[source]["_effective"][action] = (entry[source]["_effective"][action] or 0) + tonumber(effective)
+      end
 
       entry[source]["_ctime"] = entry[source]["_ctime"] or 1
       entry[source]["_tick"] = entry[source]["_tick"] or GetTime()

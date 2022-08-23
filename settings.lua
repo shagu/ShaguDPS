@@ -35,7 +35,6 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     p("  /sdps height " .. config.height .. " |cffcccccc- Bar height")
     p("  /sdps bars " .. config.bars .. " |cffcccccc- Visible Bars")
     p("  /sdps trackall " .. config.track_all_units .. " |cffcccccc- Track all nearby units")
-    p("  /sdps effective " .. config.effective_heal .. " |cffcccccc- Only track effective healing")
     p("  /sdps mergepet " .. config.merge_pets .. " |cffcccccc- Merge pets into owner data")
     p("  /sdps texture " .. config.texture .. " |cffcccccc- Set the statusbar texture")
     p("  /sdps toggle |cffcccccc- Toggle window")
@@ -95,16 +94,6 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
       window:Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Track all units: " .. config.track_all_units)
-    else
-      p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
-    end
-  elseif strlower(cmd) == "effective" then
-    if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
-      config.effective_heal = tonumber(args)
-      ShaguDPS_Config = config
-      window:Refresh(true)
-
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Effective Healing: " .. config.effective_heal)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end

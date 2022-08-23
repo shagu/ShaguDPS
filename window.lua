@@ -13,6 +13,7 @@ local parser = ShaguDPS.parser
 
 local data = ShaguDPS.data
 local config = ShaguDPS.config
+local internals = ShaguDPS.internals
 
 local textures = ShaguDPS.textures
 local spairs = ShaguDPS.spairs
@@ -100,8 +101,8 @@ local function barTooltipShow()
   end
 
   GameTooltip:AddLine(" ")
-  for attack, damage in spairs(segment[this.unit], function(t,a,b) return t[b] < t[a] end) do
-    if attack ~= "_sum" and attack ~= "_ctime" and attack ~= "_tick" then
+  for attack, damage in spairs(segment[this.unit], function(t,a,b) if tonumber(t[b]) and tonumber(t[a]) then return t[b] < t[a] end end) do
+    if attack and not internals[attack] then
       local percent = damage == 0 and 0 or round(damage / segment[this.unit]["_sum"] * 100,1)
       GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " - |cffffffff" .. string.format("%.1f", percent) .. "%")
     end
