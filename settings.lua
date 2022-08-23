@@ -47,7 +47,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
       config.visible = tonumber(args)
       ShaguDPS_Config = config
-      window:Refresh(true)
+      window.Refresh(true)
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible: " .. config.visible)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
@@ -55,13 +55,13 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
   elseif strlower(cmd) == "toggle" then
     config.visible = config.visible == 1 and 0 or 1
     ShaguDPS_Config = config
-    window:Refresh(true)
+    window.Refresh(true)
     p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible: " .. config.visible)
   elseif strlower(cmd) == "width" then
     if tonumber(args) then
       config.width = tonumber(args)
       ShaguDPS_Config = config
-      window:Refresh(true)
+      window.Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar width: " .. config.width)
     else
@@ -71,7 +71,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     if tonumber(args) then
       config.height = tonumber(args)
       ShaguDPS_Config = config
-      window:Refresh(true)
+      window.Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar height: " .. config.height)
     else
@@ -81,7 +81,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     if tonumber(args) then
       config.bars = tonumber(args)
       ShaguDPS_Config = config
-      window:Refresh(true)
+      window.Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible Bars: " .. config.bars)
     else
@@ -91,7 +91,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
       config.track_all_units = tonumber(args)
       ShaguDPS_Config = config
-      window:Refresh(true)
+      window.Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Track all units: " .. config.track_all_units)
     else
@@ -101,7 +101,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
       config.merge_pets = tonumber(args)
       ShaguDPS_Config = config
-      window:Refresh(true)
+      window.Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Merge pet: " .. config.merge_pets)
     else
@@ -111,7 +111,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     if tonumber(args) and textures[tonumber(args)] then
       config.texture = tonumber(args)
       ShaguDPS_Config = config
-      window:Refresh(true)
+      window.Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Texture: " .. config.texture)
     else
