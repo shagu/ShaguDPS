@@ -16,17 +16,25 @@ for i=1,4 do validPets["partypet" .. i] = true end
 for i=1,40 do validPets["raidpet" .. i] = true end
 
 -- find unitstr by name
+local unit_cache = {}
 local function UnitByName(name)
-  -- prioritize players
+  -- skip all scans if cache is still valid
+  if unit_cache[name] and UnitName(unit_cache[name]) == name then
+    return unit_cache[name]
+  end
+
+  -- scan players for current name
   for unit in pairs(validUnits) do
     if UnitName(unit) == name then
+      unit_cache[name] = unit
       return unit
     end
   end
 
-  -- scan for pets
+  -- scan pets for current name
   for unit in pairs(validPets) do
     if UnitName(unit) == name then
+      unit_cache[name] = unit
       return unit
     end
   end
