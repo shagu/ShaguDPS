@@ -2,7 +2,7 @@
 ## Title: |cffffcc00Shagu|cffffffffDPS
 ## Author: Shagu
 ## Notes: A simple and lightweight DPS and damage meter.
-## Version: 1.0
+## Version: 2.0
 ## OptionalDeps: pfUI-tbc
 ## SavedVariablesPerCharacter: ShaguDPS_Config
 
