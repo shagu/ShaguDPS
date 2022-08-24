@@ -33,6 +33,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     p("  /sdps visible " .. config.visible .. " |cffcccccc- Show main window")
     p("  /sdps width " .. config.width .. " |cffcccccc- Bar width")
     p("  /sdps height " .. config.height .. " |cffcccccc- Bar height")
+    p("  /sdps spacing " .. config.spacing .. " |cffcccccc- Bar spacing")
     p("  /sdps bars " .. config.bars .. " |cffcccccc- Visible Bars")
     p("  /sdps trackall " .. config.track_all_units .. " |cffcccccc- Track all nearby units")
     p("  /sdps mergepet " .. config.merge_pets .. " |cffcccccc- Merge pets into owner data")
@@ -76,6 +77,16 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar height: " .. config.height)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 1-999")
+    end
+  elseif strlower(cmd) == "spacing" then
+    if tonumber(args) then
+      config.spacing = tonumber(args)
+      ShaguDPS_Config = config
+      window.Refresh(true)
+
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar spacing: " .. config.spacing)
+    else
+      p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-" .. config.height)
     end
   elseif strlower(cmd) == "bars" then
     if tonumber(args) then

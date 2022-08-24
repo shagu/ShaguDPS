@@ -67,6 +67,7 @@ local config = {
   width = 180,
   height = 15,
   bars = 8,
+  spacing = 0,
 
   -- tracking
   track_all_units = 0,
