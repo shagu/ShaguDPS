@@ -179,27 +179,25 @@ local function barTooltipShow()
   local value = segment[this.unit]["_sum"]
   local persec = round(segment[this.unit]["_sum"] / segment[this.unit]["_ctime"], 1)
 
-  if config.view == 1 then
-    GameTooltip:AddDoubleLine("|cffffee00Damage", "|cffffffff" .. value)
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. persec)
-  elseif config.view == 2 then
-    GameTooltip:AddDoubleLine("|cffffee00DPS", "|cffffffff" .. persec)
-    GameTooltip:AddDoubleLine("|cffffee00Damage", "|cffffffff" .. value)
-  elseif config.view == 3 then
+  GameTooltip:AddLine(this.unit .. ":")
+
+  if config.view == 1 or config.view == 2 then
+    GameTooltip:AddDoubleLine("|cffffffffDamage", "|cffffffff" .. value)
+    GameTooltip:AddDoubleLine("|cffffffffDamage Per Second", "|cffffffff" .. persec)
+  elseif config.view == 3 or config.view == 4 then
     local evalue = segment[this.unit]["_esum"]
     local epersec = round(segment[this.unit]["_esum"] / segment[this.unit]["_ctime"], 1)
 
-    GameTooltip:AddDoubleLine("|cffffee00Healing", "|cffaaaaaa[" .. value - evalue .. "] |cffffffff" .. evalue)
-    GameTooltip:AddDoubleLine("|cffffee00HPS", "|cffaaaaaa[" .. persec - epersec .. "] |cffffffff" .. epersec)
-  elseif config.view == 4 then
-    local evalue = segment[this.unit]["_esum"]
-    local epersec = round(segment[this.unit]["_esum"] / segment[this.unit]["_ctime"], 1)
-
-    GameTooltip:AddDoubleLine("|cffffee00HPS", "|cffaaaaaa[" .. persec - epersec .. "] |cffffffff" .. epersec)
-    GameTooltip:AddDoubleLine("|cffffee00Healing", "|cffaaaaaa[" .. value - evalue .. "] |cffffffff" .. evalue)
+    GameTooltip:AddDoubleLine("|cffffffffHealing", "|cffffffff" .. evalue)
+    GameTooltip:AddDoubleLine("|cffaaaaaaOverheal", "|cffcc8888+" .. value - evalue)
+    GameTooltip:AddLine(" ")
+    GameTooltip:AddDoubleLine("|cffffffffHealing Per Second", "|cffffffff" .. epersec)
+    GameTooltip:AddDoubleLine("|cffaaaaaaOverheal Per Second", "|cffcc8888+" .. persec - epersec)
   end
 
   GameTooltip:AddLine(" ")
+  GameTooltip:AddLine("Details:")
+
   for attack, damage in spairs(segment[this.unit], sort_algorithms.single_spell) do
     if attack and not internals[attack] then
       local percent = damage == 0 and 0 or round(damage / segment[this.unit]["_sum"] * 100,1)
@@ -207,10 +205,13 @@ local function barTooltipShow()
         -- heal / effective heal
         local effective = segment[this.unit]["_effective"][attack]
         local epercent = effective == 0 and 0 or round(effective / segment[this.unit]["_esum"] * 100,1)
-        GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffaaaaaa[" .. damage - effective .. "] |cffffffff" .. effective .. " |r- |cffffffff" .. string.format("%.1f", epercent) .. "%")
+
+        local str = string.format("|cffcc8888+%s|cffffffff %s (%.1f%%)", damage - effective, effective, epercent)
+        GameTooltip:AddDoubleLine("|cffffffff" .. attack, str)
       else
         -- damage
-        GameTooltip:AddDoubleLine("|cffffffff" .. attack, "|cffcccccc" .. damage .. " |r- |cffffffff" .. string.format("%.1f", percent) .. "%")
+        local str = string.format("|cffffffff %s (%.1f%%)", damage, percent)
+        GameTooltip:AddDoubleLine("|cffffffff" .. attack, str)
       end
     end
   end
