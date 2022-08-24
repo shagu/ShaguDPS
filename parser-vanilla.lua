@@ -355,17 +355,17 @@ local damage_handlers = {
 
 local heal_handlers = {
   --[[ me source me target ]]--
-  -- "Your %s heals you for %d."
+  -- "Your %s critically heals you for %d."
   function(source, target, spell)
-    for spell, value in string.gfind(arg1, HEALEDSELFSELF) do
+    for spell, value in string.gfind(arg1, HEALEDCRITSELFSELF) do
       parser:AddData(source, spell, target, value, nil, "heal")
       return true
     end
   end,
 
-  -- "Your %s critically heals you for %d."
+  -- "Your %s heals you for %d."
   function(source, target, spell)
-    for spell, value in string.gfind(arg1, HEALEDCRITSELFSELF) do
+    for spell, value in string.gfind(arg1, HEALEDSELFSELF) do
       parser:AddData(source, spell, target, value, nil, "heal")
       return true
     end
@@ -381,14 +381,6 @@ local heal_handlers = {
   end,
 
   --[[ me source ]]--
-  -- "Your %s heals %s for %d."
-  function(source, target, spell)
-    for spell, target, value in string.gfind(arg1, HEALEDSELFOTHER) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
-    end
-  end,
-
   -- "Your %s critically heals %s for %d."
   function(source, target, spell)
     for spell, target, value in string.gfind(arg1, HEALEDCRITSELFOTHER) do
@@ -397,9 +389,17 @@ local heal_handlers = {
     end
   end,
 
-   -- "%s gains %d health from your %s."
-   -- Bob gains 10 health from your Rejuvenation.
-   function(source, target, spell)
+  -- "Your %s heals %s for %d."
+  function(source, target, spell)
+    for spell, target, value in string.gfind(arg1, HEALEDSELFOTHER) do
+      parser:AddData(source, spell, target, value, nil, "heal")
+      return true
+    end
+  end,
+
+  -- "%s gains %d health from your %s."
+  -- Bob gains 10 health from your Rejuvenation.
+  function(source, target, spell)
     for target, value, spell in string.gfind(arg1, PERIODICAURAHEALSELFOTHER) do
       parser:AddData(source, spell, target, value, nil, "heal")
       return true
@@ -407,17 +407,17 @@ local heal_handlers = {
   end,
 
   --[[ me target ]]--
-  -- "%s's %s heals you for %d."
+  -- "%s's %s critically heals you for %d."
   function(source, target, spell)
-    for source, spell, value in string.gfind(arg1, HEALEDOTHERSELF) do
+    for source, spell, value in string.gfind(arg1, HEALEDCRITOTHERSELF) do
       parser:AddData(source, spell, target, value, nil, "heal")
       return true
     end
   end,
 
-  -- "%s's %s critically heals you for %d."
+  -- "%s's %s heals you for %d."
   function(source, target, spell)
-    for source, spell, value in string.gfind(arg1, HEALEDCRITOTHERSELF) do
+    for source, spell, value in string.gfind(arg1, HEALEDOTHERSELF) do
       parser:AddData(source, spell, target, value, nil, "heal")
       return true
     end
@@ -433,17 +433,17 @@ local heal_handlers = {
   end,
 
   --[[ other ]]--
-  -- "%s's %s heals %s for %d."
+  -- "%s's %s critically heals %s for %d."
   function(source, target, spell)
-    for source, spell, target, value in string.gfind(arg1, HEALEDOTHEROTHER) do
+    for source, spell, target, value in string.gfind(arg1, HEALEDCRITOTHEROTHER) do
       parser:AddData(source, spell, target, value, nil, "heal")
       return true
     end
   end,
 
-  -- "%s's %s critically heals %s for %d."
+  -- "%s's %s heals %s for %d."
   function(source, target, spell)
-    for source, spell, target, value in string.gfind(arg1, HEALEDCRITOTHEROTHER) do
+    for source, spell, target, value in string.gfind(arg1, HEALEDOTHEROTHER) do
       parser:AddData(source, spell, target, value, nil, "heal")
       return true
     end
