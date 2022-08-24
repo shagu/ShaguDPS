@@ -445,6 +445,8 @@ for name, template in pairs(menubuttons) do
   button:SetScript("OnLeave", btnLeave)
   button:SetScript("OnClick", function()
     config[template[6]] = template[2]
+
+    scroll = 0
     window.Refresh(true)
 
     for button in pairs(menubuttons) do
