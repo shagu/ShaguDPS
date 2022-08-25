@@ -144,6 +144,8 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
   -- clear "current" on fight start
   if start_next_segment and data["classes"][source] and data["classes"][source] ~= "__other__" then
     data["damage"][1] = {}
+    data["heal"][1] = {}
+
     start_next_segment = nil
   end
 
