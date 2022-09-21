@@ -179,7 +179,7 @@ local function barTooltipShow()
   local value = segment[this.unit]["_sum"]
   local persec = round(segment[this.unit]["_sum"] / segment[this.unit]["_ctime"], 1)
 
-  GameTooltip:AddLine(this.unit .. ":")
+  GameTooltip:AddLine(this.title .. ":")
 
   if config.view == 1 or config.view == 2 then
     GameTooltip:AddDoubleLine("|cffffffffDamage", "|cffffffff" .. value)
@@ -743,7 +743,10 @@ window.Refresh = function(force, report)
     local bar = i - scroll
     if bar >= 1 and bar <= config.bars then
       window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
-      window.bars[bar].unit = values.name
+
+      -- attach unit and titles to bar
+      window.bars[bar].title = values.name
+      window.bars[bar].unit = name
 
       window.bars[bar]:SetMinMaxValues(0, values[template.bar_max])
       window.bars[bar]:SetValue(values[template.bar_val])
