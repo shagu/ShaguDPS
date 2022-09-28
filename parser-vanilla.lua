@@ -8,455 +8,258 @@ local function prepare(template)
   return gsub(template, "%%d", "(%%d+)")
 end
 
--- [[ Damage ]] --
--- me source me target
-local SPELLLOGSCHOOLSELFSELF = prepare(SPELLLOGSCHOOLSELFSELF) -- Your %s hits you for %d %s damage.
-local SPELLLOGCRITSCHOOLSELFSELF = prepare(SPELLLOGCRITSCHOOLSELFSELF) -- Your %s crits you for %d %s damage.
-local SPELLLOGSELFSELF = prepare(SPELLLOGSELFSELF) --Your %s hits you for %d.
-local SPELLLOGCRITSELFSELF = prepare(SPELLLOGCRITSELFSELF) -- Your %s crits you for %d.
-local PERIODICAURADAMAGESELFSELF =  prepare(PERIODICAURADAMAGESELFSELF) -- "You suffer %d %s damage from your %s.";
+local combatlog_strings = {
+  -- [[ DAMAGE ]] --
 
--- me source
-local SPELLLOGSCHOOLSELFOTHER = prepare(SPELLLOGSCHOOLSELFOTHER) -- Your %s hits %s for %d %s damage.
-local SPELLLOGCRITSCHOOLSELFOTHER = prepare(SPELLLOGCRITSCHOOLSELFOTHER) -- Your %s crits %s for %d %s damage.
-local SPELLLOGSELFOTHER = prepare(SPELLLOGSELFOTHER) -- Your %s hits %s for %d.
-local SPELLLOGCRITSELFOTHER = prepare(SPELLLOGCRITSELFOTHER) -- Your %s crits %s for %d.
-local PERIODICAURADAMAGESELFOTHER = prepare(PERIODICAURADAMAGESELFOTHER) -- "%s suffers %d %s damage from your %s."; -- Rabbit suffers 3 frost damage from your Ice Nova.
-local COMBATHITSELFOTHER = prepare(COMBATHITSELFOTHER) -- You hit %s for %d.
-local COMBATHITCRITSELFOTHER = prepare(COMBATHITCRITSELFOTHER) -- You crit %s for %d.
-local COMBATHITSCHOOLSELFOTHER = prepare(COMBATHITSCHOOLSELFOTHER) -- You hit %s for %d %s damage.
-local COMBATHITCRITSCHOOLSELFOTHER = prepare(COMBATHITCRITSCHOOLSELFOTHER) -- You crit %s for %d %s damage.
-local DAMAGESHIELDSELFOTHER = prepare(DAMAGESHIELDSELFOTHER) -- You reflect %d %s damage to %s.
+  -- TODO: check source/target of each spell
 
--- me target
-local SPELLLOGSCHOOLOTHERSELF = prepare(SPELLLOGSCHOOLOTHERSELF) -- %s's %s hits you for %d %s damage.
-local SPELLLOGCRITSCHOOLOTHERSELF = prepare(SPELLLOGCRITSCHOOLOTHERSELF) -- %s's %s crits you for %d %s damage.
-local SPELLLOGOTHERSELF = prepare(SPELLLOGOTHERSELF) -- %s's %s hits you for %d.
-local SPELLLOGCRITOTHERSELF = prepare(SPELLLOGCRITOTHERSELF) -- %s's %s crits you for %d.
-local PERIODICAURADAMAGEOTHERSELF = prepare(PERIODICAURADAMAGEOTHERSELF) -- "You suffer %d %s damage from %s's %s."; -- You suffer 3 frost damage from Rabbit's Ice Nova.
-local COMBATHITOTHERSELF = prepare(COMBATHITOTHERSELF) -- %s hits you for %d.
-local COMBATHITCRITOTHERSELF = prepare(COMBATHITCRITOTHERSELF) -- %s crits you for %d.
-local COMBATHITSCHOOLOTHERSELF = prepare(COMBATHITSCHOOLOTHERSELF) -- %s hits you for %d %s damage.
-local COMBATHITCRITSCHOOLOTHERSELF = prepare(COMBATHITCRITSCHOOLOTHERSELF) -- %s crits you for %d %s damage.
-
--- other
-local SPELLLOGSCHOOLOTHEROTHER = prepare(SPELLLOGSCHOOLOTHEROTHER) -- %s's %s hits %s for %d %s damage.
-local SPELLLOGCRITSCHOOLOTHEROTHER = prepare(SPELLLOGCRITSCHOOLOTHEROTHER) -- %s's %s crits %s for %d %s damage.
-local SPELLLOGOTHEROTHER = prepare(SPELLLOGOTHEROTHER) -- %s's %s hits %s for %d.
-local SPELLLOGCRITOTHEROTHER = prepare(SPELLLOGCRITOTHEROTHER) -- %s's %s crits %s for %d.
-local PERIODICAURADAMAGEOTHEROTHER = prepare(PERIODICAURADAMAGEOTHEROTHER) -- "%s suffers %d %s damage from %s's %s."; -- Bob suffers 5 frost damage from Jeff's Ice Nova.
-local COMBATHITOTHEROTHER = prepare(COMBATHITOTHEROTHER) -- %s hits %s for %d.
-local COMBATHITCRITOTHEROTHER = prepare(COMBATHITCRITOTHEROTHER) -- %s crits %s for %d.
-local COMBATHITSCHOOLOTHEROTHER = prepare(COMBATHITSCHOOLOTHEROTHER) -- %s hits %s for %d %s damage.
-local COMBATHITCRITSCHOOLOTHEROTHER = prepare(COMBATHITCRITSCHOOLOTHEROTHER) -- %s crits %s for %d %s damage.
-local DAMAGESHIELDOTHEROTHER = prepare(DAMAGESHIELDOTHEROTHER) -- %s reflects %d %s damage to %s.
-
--- [[ Heal ]] --
--- me source me target
-local HEALEDSELFSELF = prepare(HEALEDSELFSELF) -- "Your %s heals you for %d."
-local HEALEDCRITSELFSELF = prepare(HEALEDCRITSELFSELF) -- "Your %s critically heals you for %d.";
-local PERIODICAURAHEALSELFSELF = prepare(PERIODICAURAHEALSELFSELF) -- "You gain %d health from %s.";
-
--- me source
-local HEALEDSELFOTHER = prepare(HEALEDSELFOTHER) -- "Your %s heals %s for %d.";
-local HEALEDCRITSELFOTHER = prepare(HEALEDCRITSELFOTHER) -- "Your %s critically heals %s for %d.";
-local PERIODICAURAHEALSELFOTHER = prepare(PERIODICAURAHEALSELFOTHER) -- "%s gains %d health from your %s."; -- Bob gains 10 health from your Rejuvenation.
-
--- me target
-local HEALEDOTHERSELF = prepare(HEALEDOTHERSELF) -- "%s's %s heals you for %d.";
-local HEALEDCRITOTHERSELF = prepare(HEALEDCRITOTHERSELF) -- "%s's %s critically heals you for %d.";
-local PERIODICAURAHEALOTHERSELF = prepare(PERIODICAURAHEALOTHERSELF) -- "You gain %d health from %s's %s."; -- You gain 12 health from John's Rejuvenation.
-
--- other
-local HEALEDOTHEROTHER = prepare(HEALEDOTHEROTHER) -- "%s's %s heals %s for %d.";
-local HEALEDCRITOTHEROTHER = prepare(HEALEDCRITOTHEROTHER) -- "%s's %s critically heals %s for %d.";
-local PERIODICAURAHEALOTHEROTHER = prepare(PERIODICAURAHEALOTHEROTHER) -- "%s gains %d health from %s's %s."; -- Bob gains 10 health from Jane's Rejuvenation.
-
-local damage_handlers = {
   --[[ me source me target ]]--
-  -- Your %s hits you for %d %s damage.
-  function(source, target, school, attack)
-    for attack, damage, school in string.gfind(arg1, SPELLLOGSCHOOLSELFSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  { -- Your %s hits you for %d %s damage.
+    prepare(SPELLLOGSCHOOLSELFSELF), function(d, attack, value, school)
+      return d.source, attack, d.target, value, school, "damage"
     end
-  end,
-
-  -- Your %s crits you for %d %s damage.
-  function(source, target, school, attack)
-    for attack, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLSELFSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- Your %s crits you for %d %s damage.
+    prepare(SPELLLOGCRITSCHOOLSELFSELF), function(d, attack, value, school)
+      return d.source, attack, d.target, value, school, "damage"
     end
-  end,
-
-  -- Your %s hits you for %d.
-  function(source, target, school, attack)
-    for attack, damage in string.gfind(arg1, SPELLLOGSELFSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- Your %s hits you for %d.
+    prepare(SPELLLOGSELFSELF), function(d, attack, value)
+      return d.source, attack, d.target, value, d.school, "damage"
     end
-  end,
-
-  -- Your %s crits you for %d.
-  function(source, target, school, attack)
-    for attack, damage in string.gfind(arg1, SPELLLOGCRITSELFSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- Your %s crits you for %d.
+    prepare(SPELLLOGCRITSELFSELF), function(d, attack, value)
+      return d.source, attack, d.target, value, d.school, "damage"
     end
-  end,
-
-  -- "You suffer %d %s damage from your %s."
-  function(source, target, school, attack)
-    for damage, school, attack in string.gfind(arg1, PERIODICAURADAMAGESELFSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- You suffer %d %s damage from your %s.
+    prepare(PERIODICAURADAMAGESELFSELF), function(d, value, school, attack)
+      return d.source, attack, d.target, value, school, "damage"
     end
-  end,
+  },
 
   --[[ me source ]]--
-  -- Your %s hits %s for %d %s damage.
-  function(source, target, school, attack)
-    for attack, target, damage, school in string.gfind(arg1, SPELLLOGSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  { -- Your %s hits %s for %d %s damage.
+    prepare(SPELLLOGSCHOOLSELFOTHER), function(d, attack, target, value, school)
+      return d.source, attack, target, value, school, "damage"
     end
-  end,
-
-  -- Your %s crits %s for %d %s damage.
-  function(source, target, school, attack)
-    for attack, target, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- Your %s crits %s for %d %s damage.
+    prepare(SPELLLOGCRITSCHOOLSELFOTHER), function(d, attack, target, value, school)
+      return d.source, attack, target, value, school, "damage"
     end
-  end,
-
-  -- Your %s hits %s for %d.
-  function(source, target, school, attack)
-    for attack, target, damage in string.gfind(arg1, SPELLLOGSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- Your %s hits %s for %d.
+    prepare(SPELLLOGSELFOTHER), function(d, attack, target, value)
+      return d.source, attack, target, value, d.school, "damage"
     end
-  end,
-
-  -- Your %s crits %s for %d.
-  function(source, target, school, attack)
-    for attack, target, damage in string.gfind(arg1, SPELLLOGCRITSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- Your %s crits %s for %d.
+    prepare(SPELLLOGCRITSELFOTHER), function(d, attack, target, value)
+      return d.source, attack, target, value, d.school, "damage"
     end
-  end,
-
-  -- %s suffers %d %s damage from your %s."
-  -- Rabbit suffers 3 frost damage from your Ice Nova.
-  function(source, target, school, attack)
-    for target, damage, school, attack in string.gfind(arg1, PERIODICAURADAMAGESELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s suffers %d %s damage from your %s.
+    prepare(PERIODICAURADAMAGESELFOTHER), function(d, target, value, school, attack)
+      return d.source, attack, target, value, school, "damage"
     end
-  end,
-
-  -- You hit %s for %d.
-  function(source, target, school, attack)
-    for target, damage in string.gfind(arg1, COMBATHITSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- You hit %s for %d.
+    prepare(COMBATHITSELFOTHER), function(d, target, value)
+      return d.source, d.attack, target, value, d.school, "damage"
     end
-  end,
-
-  -- You crit %s for %d.
-  function(source, target, school, attack)
-    for target, damage in string.gfind(arg1, COMBATHITCRITSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- You crit %s for %d.
+    prepare(COMBATHITCRITSELFOTHER), function(d, target, value)
+      return d.source, d.attack, target, value, d.school, "damage"
     end
-  end,
-
-  -- You hit %s for %d %s damage.
-  function(source, target, school, attack)
-    for target, damage, school in string.gfind(arg1, COMBATHITSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- You hit %s for %d %s damage.
+    prepare(COMBATHITSCHOOLSELFOTHER), function(d, target, value, school)
+      return d.source, d.attack, target, value, school, "damage"
     end
-  end,
-
-  -- You crit %s for %d %s damage.
-  function(source, target, school, attack)
-    for target, damage, school in string.gfind(arg1, COMBATHITCRITSCHOOLSELFOTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- You crit %s for %d %s damage.
+    prepare(COMBATHITCRITSCHOOLSELFOTHER), function(d, target, value, school)
+      return d.source, d.attack, target, value, school, "damage"
     end
-  end,
-
-  -- You reflect %d %s damage to %s.
-  function(source, target, school, attack)
-    for damage, school, target in string.gfind(arg1, DAMAGESHIELDSELFOTHER) do
-      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school, "damage")
-      return true
+  },
+  { -- You reflect %d %s damage to %s.
+    prepare(DAMAGESHIELDSELFOTHER), function(d, value, school, target)
+      return d.source, "Reflect ("..school..")", target, value, school, "damage"
     end
-  end,
+  },
 
   --[[ me target ]]--
-  -- %s's %s hits you for %d %s damage.
-  function(source, target, school, attack)
-    for source, attack, damage, school in string.gfind(arg1, SPELLLOGSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  { -- %s's %s hits you for %d %s damage.
+    prepare(SPELLLOGSCHOOLOTHERSELF), function(d, source, attack, value, school)
+      return source, attack, d.target, value, school, "damage"
     end
-  end,
-
-  -- %s's %s crits you for %d %s damage.
-  function(source, target, school, attack)
-    for source, attack, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s's %s crits you for %d %s damage.
+    prepare(SPELLLOGCRITSCHOOLOTHERSELF), function(d, source, attack, value, school)
+      return source, attack, d.target, value, school, "damage"
     end
-  end,
-
-  -- %s's %s hits you for %d.
-  function(source, target, school, attack)
-    for source, attack, damage in string.gfind(arg1, SPELLLOGOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s's %s hits you for %d.
+    prepare(SPELLLOGOTHERSELF), function(d, source, attack, value)
+      return source, attack, d.target, value, d.school, "damage"
     end
-  end,
-
-  -- %s's %s crits you for %d.
-  function(source, target, school, attack)
-    for source, attack, damage in string.gfind(arg1, SPELLLOGCRITOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s's %s crits you for %d.
+    prepare(SPELLLOGCRITOTHERSELF), function(d, source, attack, value)
+      return source, attack, d.target, value, d.school, "damage"
     end
-  end,
-
-  -- "You suffer %d %s damage from %s's %s."
-  -- You suffer 3 frost damage from Rabbit's Ice Nova.
-  function(source, target, school, attack)
-    for damage, school, source, attack in string.gfind(arg1, PERIODICAURADAMAGEOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- You suffer %d %s damage from %s's %s.
+    prepare(PERIODICAURADAMAGEOTHERSELF), function(d, value, school, source, attack)
+      return source, attack, d.target, value, school, "damage"
     end
-  end,
-
-  -- %s hits you for %d.
-  function(source, target, school, attack)
-    for source, damage in string.gfind(arg1, COMBATHITOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s hits you for %d.
+    prepare(COMBATHITOTHERSELF), function(d, source, value)
+      return source, d.attack, d.target, value, d.school, "damage"
     end
-  end,
-
-  -- %s crits you for %d.
-  function(source, target, school, attack)
-    for source, damage in string.gfind(arg1, COMBATHITCRITOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s crits you for %d.
+    prepare(COMBATHITCRITOTHERSELF), function(d, source, value)
+      return source, d.attack, d.target, value, d.school, "damage"
     end
-  end,
-
-  -- %s hits you for %d %s damage.
-  function(source, target, school, attack)
-    for source, damage, school in string.gfind(arg1, COMBATHITSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s hits you for %d %s damage.
+    prepare(COMBATHITSCHOOLOTHERSELF), function(d, source, value, school)
+      return source, d.attack, d.target, value, school, "damage"
     end
-  end,
-
-  -- %s crits you for %d %s damage.
-  function(source, target, school, attack)
-    for source, damage, school in string.gfind(arg1, COMBATHITCRITSCHOOLOTHERSELF) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s crits you for %d %s damage.
+    prepare(COMBATHITCRITSCHOOLOTHERSELF), function(d, source, value, school)
+      return source, d.attack, d.target, value, school, "damage"
     end
-  end,
+  },
 
   --[[ other ]]--
-  -- %s's %s hits %s for %d %s damage.
-  function(source, target, school, attack)
-    for source, attack, target, damage, school in string.gfind(arg1, SPELLLOGSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  { -- %s's %s hits %s for %d %s damage.
+    prepare(SPELLLOGSCHOOLOTHEROTHER), function(d, source, attack, target, value, school)
+      return source, attack, target, value, school, "damage"
     end
-  end,
-
-  -- %s's %s crits %s for %d %s damage.
-  function(source, target, school, attack)
-    for source, attack, target, damage, school in string.gfind(arg1, SPELLLOGCRITSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s's %s crits %s for %d %s damage.
+    prepare(SPELLLOGCRITSCHOOLOTHEROTHER), function(d, source, attack, target, value, school)
+      return source, attack, target, value, school, "damage"
     end
-  end,
-
-  -- %s's %s hits %s for %d.
-  function(source, target, school, attack)
-    for source, attack, target, damage in string.gfind(arg1, SPELLLOGOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s's %s hits %s for %d.
+    prepare(SPELLLOGOTHEROTHER), function(d, source, attack, target, value)
+      return source, attack, target, value, d.school, "damage"
     end
-  end,
-
-  -- %s's %s crits %s for %d.
-  function(source, target, school, attack)
-    for source, attack, target, damage, school in string.gfind(arg1, SPELLLOGCRITOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s's %s crits %s for %d.
+    prepare(SPELLLOGCRITOTHEROTHER), function(d, source, attack, target, value, school)
+      return source, attack, target, value, school, "damage"
     end
-  end,
-
-  -- "%s suffers %d %s damage from %s's %s."
-  -- Bob suffers 5 frost damage from Jeff's Ice Nova.
-  function(source, target, school, attack)
-    for target, damage, school, source, attack in string.gfind(arg1, PERIODICAURADAMAGEOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s suffers %d %s damage from %s's %s.
+    prepare(PERIODICAURADAMAGEOTHEROTHER), function(d, target, value, school, source, attack)
+      return source, attack, target, value, school, "damage"
     end
-  end,
-
-  -- %s hits %s for %d.
-  function(source, target, school, attack)
-    for source, target, damage in string.gfind(arg1, COMBATHITOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s hits %s for %d.
+    prepare(COMBATHITOTHEROTHER), function(d, source, target, value)
+      return source, d.attack, target, value, d.school, "damage"
     end
-  end,
-
-  -- %s crits %s for %d.
-  function(source, target, school, attack)
-    for source, target, damage in string.gfind(arg1, COMBATHITCRITOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s crits %s for %d.
+    prepare(COMBATHITCRITOTHEROTHER), function(d, source, target, value)
+      return source, d.attack, target, value, d.school, "damage"
     end
-  end,
-
-  -- %s hits %s for %d %s damage.
-  function(source, target, school, attack)
-    for source, target, damage, school in string.gfind(arg1, COMBATHITSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s hits %s for %d %s damage.
+    prepare(COMBATHITSCHOOLOTHEROTHER), function(d, source, target, value, school)
+      return source, d.attack, target, value, school, "damage"
     end
-  end,
-
-  -- %s crits %s for %d %s damage.
-  function(source, target, school, attack)
-    for source, target, damage, school in string.gfind(arg1, COMBATHITCRITSCHOOLOTHEROTHER) do
-      parser:AddData(source, attack, target, damage, school, "damage")
-      return true
+  },
+  { -- %s crits %s for %d %s damage.
+    prepare(COMBATHITCRITSCHOOLOTHEROTHER), function(d, source, target, value, school)
+      return source, d.attack, target, value, school, "damage"
     end
-  end,
-
-  -- %s reflects %d %s damage to %s.
-  function(source, target, school, attack)
-    for source, damage, school, target in string.gfind(arg1, DAMAGESHIELDOTHEROTHER) do
-      parser:AddData(source, "Reflection (" .. school .. ")", target, damage, school, "damage")
-      return true
+  },
+  { -- %s reflects %d %s damage to %s.
+    prepare(DAMAGESHIELDOTHEROTHER), function(d, source, value, school, target)
+      return source, "Reflect ("..school..")", target, value, school, "damage"
     end
-  end,
-}
+  },
 
-local heal_handlers = {
+  -- [[ HEAL ]] --
+
   --[[ me source me target ]]--
-  -- "Your %s critically heals you for %d."
-  function(source, target, spell)
-    for spell, value in string.gfind(arg1, HEALEDCRITSELFSELF) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  { -- Your %s critically heals you for %d.
+    prepare(HEALEDCRITSELFSELF), function(d, spell, value)
+      return d.source, spell, d.target, value, d.school, "heal"
     end
-  end,
-
-  -- "Your %s heals you for %d."
-  function(source, target, spell)
-    for spell, value in string.gfind(arg1, HEALEDSELFSELF) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- Your %s heals you for %d.
+    prepare(HEALEDSELFSELF), function(d, spell, value)
+      return d.source, spell, d.target, value, d.school, "heal"
     end
-  end,
-
-  -- "You gain %d health from %s."
-  -- You gain 10 health from Rejuvenation.
-  function(source, target, spell)
-    for value, spell in string.gfind(arg1, PERIODICAURAHEALSELFSELF ) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- You gain %d health from %s.
+    prepare(PERIODICAURAHEALSELFSELF), function(d, value, spell)
+      return d.source, spell, d.target, value, d.school, "heal"
     end
-  end,
+  },
 
   --[[ me source ]]--
-  -- "Your %s critically heals %s for %d."
-  function(source, target, spell)
-    for spell, target, value in string.gfind(arg1, HEALEDCRITSELFOTHER) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  { -- Your %s critically heals %s for %d.
+    prepare(HEALEDCRITSELFOTHER), function(d, spell, target, value)
+      return d.source, spell, target, value, d.school, "heal"
     end
-  end,
-
-  -- "Your %s heals %s for %d."
-  function(source, target, spell)
-    for spell, target, value in string.gfind(arg1, HEALEDSELFOTHER) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- Your %s heals %s for %d.
+    prepare(HEALEDSELFOTHER), function(d, spell, target, value)
+      return d.source, spell, target, value, d.school, "heal"
     end
-  end,
-
-  -- "%s gains %d health from your %s."
-  -- Bob gains 10 health from your Rejuvenation.
-  function(source, target, spell)
-    for target, value, spell in string.gfind(arg1, PERIODICAURAHEALSELFOTHER) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- %s gains %d health from your %s.
+    prepare(PERIODICAURAHEALSELFOTHER), function(d, target, value, spell)
+      return d.source, spell, target, value, d.school, "heal"
     end
-  end,
+  },
 
   --[[ me target ]]--
-  -- "%s's %s critically heals you for %d."
-  function(source, target, spell)
-    for source, spell, value in string.gfind(arg1, HEALEDCRITOTHERSELF) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  { -- %s's %s critically heals you for %d.
+    prepare(HEALEDCRITOTHERSELF), function(d, source, spell, value)
+      return d.source, spell, d.target, value, d.school, "heal"
     end
-  end,
-
-  -- "%s's %s heals you for %d."
-  function(source, target, spell)
-    for source, spell, value in string.gfind(arg1, HEALEDOTHERSELF) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- %s's %s heals you for %d.
+    prepare(HEALEDOTHERSELF), function(d, source, spell, value)
+      return d.source, spell, d.target, value, d.school, "heal"
     end
-  end,
-
-  -- "You gain %d health from %s's %s."
-  -- You gain 12 health from John's Rejuvenation.
-  function(source, target, spell)
-    for value, source, spell in string.gfind(arg1, PERIODICAURAHEALOTHERSELF) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- You gain %d health from %s's %s.
+    prepare(PERIODICAURAHEALOTHERSELF), function(d, value, source, spell)
+      return source, spell, d.target, value, d.school, "heal"
     end
-  end,
+  },
 
   --[[ other ]]--
-  -- "%s's %s critically heals %s for %d."
-  function(source, target, spell)
-    for source, spell, target, value in string.gfind(arg1, HEALEDCRITOTHEROTHER) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  { -- %s's %s critically heals %s for %d.
+    prepare(HEALEDCRITOTHEROTHER), function(d, source, spell, target, value)
+      return source, spell, target, value, d.school, "heal"
     end
-  end,
-
-  -- "%s's %s heals %s for %d."
-  function(source, target, spell)
-    for source, spell, target, value in string.gfind(arg1, HEALEDOTHEROTHER) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- %s's %s heals %s for %d.
+    prepare(HEALEDOTHEROTHER), function(d, source, spell, target, value)
+      return source, spell, target, value, d.school, "heal"
     end
-  end,
-
-  -- "%s gains %d health from %s's %s."
-  -- Bob gains 10 health from Jane's Rejuvenation.
-  function(source, target, spell)
-    for target, value, source, spell in string.gfind(arg1, PERIODICAURAHEALOTHEROTHER) do
-      parser:AddData(source, spell, target, value, nil, "heal")
-      return true
+  },
+  { -- %s gains %d health from %s's %s.
+    prepare(PERIODICAURAHEALOTHEROTHER), function(d, target, value, source, spell)
+      return source, spell, target, value, d.school, "heal"
     end
-  end,
+  },
 }
 
 -- register to all damage combat log events
@@ -494,24 +297,25 @@ parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS")
 parser:RegisterEvent("CHAT_MSG_SPELL_PARTY_BUFF")
 parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
 
+-- cache default table
+local defaults = { }
+
 -- call all datasources on each event
 parser:SetScript("OnEvent", function()
   if not arg1 then return end
 
-  local source = UnitName("player")
-  local target = UnitName("player")
+  defaults.source = UnitName("player")
+  defaults.target = UnitName("player")
+  defaults.school = "physical"
+  defaults.attack = "Auto Hit"
+  defaults.spell  = UNKNOWN
+  defaults.value = 0
 
   -- detection on all damage sources
-  for id, func in pairs(damage_handlers) do
-    if func(source, target, "physical", "Auto Hit") then
-      return
-    end
-  end
-
-  -- detection on all heal sources
-  for id, func in pairs(heal_handlers) do
-    if func(source, target, UNKNOWN) then
-      return
+  for id, data in pairs(combatlog_strings) do
+    local result, _, a1, a2, a3, a4, a5 = string.find(arg1, data[1])
+    if result then
+      return parser:AddData(data[2](defaults, a1, a2, a3, a4, a5))
     end
   end
 end)
