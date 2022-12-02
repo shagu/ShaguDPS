@@ -63,6 +63,10 @@ local combatlog_strings = {
   },
   { -- %s suffers %d %s damage from your %s.
     prepare(PERIODICAURADAMAGESELFOTHER), function(d, target, value, school, attack)
+      -- zhCN: 你的%4$s使%1$s受到了%2$d点%3$s伤害。
+      if GetLocale() == "zhCN" then
+        target, value, school, attack = value, school, attack, target
+      end
       return d.source, attack, target, value, school, "damage"
     end
   },
