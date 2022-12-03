@@ -166,6 +166,10 @@ local combatlog_strings = {
   },
   { -- %s suffers %d %s damage from %s's %s.
     prepare(PERIODICAURADAMAGEOTHEROTHER), function(d, target, value, school, source, attack)
+      -- zhCN: %4$s的%5$s使%1$s受到了%2$d点%3$s伤害。
+      if GetLocale() == "zhCN" then
+        target, value, school, source, attack = school, source, attack, target, value
+      end
       return source, attack, target, value, school, "damage"
     end
   },
@@ -210,6 +214,10 @@ local combatlog_strings = {
   },
   { -- You gain %d health from %s.
     prepare(PERIODICAURAHEALSELFSELF), function(d, value, spell)
+      -- zhCN: 你因%2$s而获得了%1$d点生命值。
+      if GetLocale() == "zhCN" then
+        value, spell = spell, value
+      end
       return d.source, spell, d.target, value, d.school, "heal"
     end
   },
