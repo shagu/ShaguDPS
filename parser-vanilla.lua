@@ -27,8 +27,17 @@ local capture_cache = {}
 function captures(pat)
   local r = capture_cache
   if not r[pat] then
-    local result, _, a, b, c, d, e = string.gfind(gsub(pat, "%((.+)%)", "%1"), gsub(pat, "%d%$", "%%(.-)$"))
-    r[pat] = { (a and tonumber(a)), (b and tonumber(b)), (c and tonumber(c)), (d and tonumber(d)), (e and tonumber(e)) }
+    -- set default to nil
+    r[pat] = { nil, nil, nil, nil, nil }
+
+    -- try to find custom capture indexes
+    for a, b, c, d, e in string.gfind(gsub(pat, "%((.+)%)", "%1"), gsub(pat, "%d%$", "%%(.-)$")) do
+      r[pat][1] = tonumber(a)
+      r[pat][2] = tonumber(b)
+      r[pat][3] = tonumber(c)
+      r[pat][4] = tonumber(d)
+      r[pat][5] = tonumber(e)
+    end
   end
 
   return r[pat][1], r[pat][2], r[pat][3], r[pat][4], r[pat][5]
