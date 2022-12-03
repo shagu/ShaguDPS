@@ -1,196 +1,234 @@
 local parser = ShaguDPS.parser
 
-local function prepare(template)
-  template = gsub(template, "%(", "%%(") -- fix ( in string
-  template = gsub(template, "%)", "%%)") -- fix ) in string
-  template = gsub(template, "%d%$","")
-  template = gsub(template, "%%s", "(.+)")
-  return gsub(template, "%%d", "(%%d+)")
+-- sanitize, cache and convert patterns into gfind compatible ones
+local sanitize_cache = {}
+function sanitize(pattern)
+  if not sanitize_cache[pattern] then
+    local ret = pattern
+    -- escape magic characters
+    ret = gsub(ret, "([%+%-%*%(%)%?%[%]%^])", "%%%1")
+    -- remove capture indexes
+    ret = gsub(ret, "%d%$","")
+    -- catch all characters
+    ret = gsub(ret, "(%%%a)","%(%1+%)")
+    -- convert all %s to .+
+    ret = gsub(ret, "%%s%+",".+")
+    -- set priority to numbers over strings
+    ret = gsub(ret, "%(.%+%)%(%%d%+%)","%(.-%)%(%%d%+%)")
+    -- cache it
+    sanitize_cache[pattern] = ret
+  end
+
+  return sanitize_cache[pattern]
 end
+
+-- find, cache and return the indexes of a regex pattern
+local capture_cache = {}
+function captures(pat)
+  local r = capture_cache
+  if not r[pat] then
+    local result, _, a, b, c, d, e = string.gfind(gsub(pat, "%((.+)%)", "%1"), gsub(pat, "%d%$", "%%(.-)$"))
+    r[pat] = { (a and tonumber(a)), (b and tonumber(b)), (c and tonumber(c)), (d and tonumber(d)), (e and tonumber(e)) }
+  end
+
+  return r[pat][1], r[pat][2], r[pat][3], r[pat][4], r[pat][5]
+end
+
+-- same as string.find but aware of up to 5 capture indexes
+local ra, rb, rc, rd, re
+function cfind(str, pat)
+  -- read capture indexes
+  local a, b, c, d, e = captures(pat)
+  local match, num, va, vb, vc, vd, ve = string.find(str, sanitize(pat))
+
+  -- put entries into the proper return values
+  ra = e == 1 and ve or d == 1 and vd or c == 1 and vc or b == 1 and vb or va
+  rb = e == 2 and ve or d == 2 and vd or c == 2 and vc or a == 2 and va or vb
+  rc = e == 3 and ve or d == 3 and vd or a == 3 and va or b == 3 and vb or vc
+  rd = e == 4 and ve or a == 4 and va or c == 4 and vc or b == 4 and vb or vd
+  re = a == 5 and va or d == 5 and vd or c == 5 and vc or b == 5 and vb or ve
+
+  return match, num, ra, rb, rc, rd, re
+end
+
 
 local combatlog_strings = {
   -- [[ DAMAGE ]] --
 
-  -- TODO: check source/target of each spell
-
   --[[ me source me target ]]--
   { -- Your %s hits you for %d %s damage.
-    prepare(SPELLLOGSCHOOLSELFSELF), function(d, attack, value, school)
+    SPELLLOGSCHOOLSELFSELF, function(d, attack, value, school)
       return d.source, attack, d.target, value, school, "damage"
     end
   },
   { -- Your %s crits you for %d %s damage.
-    prepare(SPELLLOGCRITSCHOOLSELFSELF), function(d, attack, value, school)
+    SPELLLOGCRITSCHOOLSELFSELF, function(d, attack, value, school)
       return d.source, attack, d.target, value, school, "damage"
     end
   },
   { -- Your %s hits you for %d.
-    prepare(SPELLLOGSELFSELF), function(d, attack, value)
+    SPELLLOGSELFSELF, function(d, attack, value)
       return d.source, attack, d.target, value, d.school, "damage"
     end
   },
   { -- Your %s crits you for %d.
-    prepare(SPELLLOGCRITSELFSELF), function(d, attack, value)
+    SPELLLOGCRITSELFSELF, function(d, attack, value)
       return d.source, attack, d.target, value, d.school, "damage"
     end
   },
   { -- You suffer %d %s damage from your %s.
-    prepare(PERIODICAURADAMAGESELFSELF), function(d, value, school, attack)
+    PERIODICAURADAMAGESELFSELF, function(d, value, school, attack)
       return d.source, attack, d.target, value, school, "damage"
     end
   },
 
   --[[ me source ]]--
   { -- Your %s hits %s for %d %s damage.
-    prepare(SPELLLOGSCHOOLSELFOTHER), function(d, attack, target, value, school)
+    SPELLLOGSCHOOLSELFOTHER, function(d, attack, target, value, school)
       return d.source, attack, target, value, school, "damage"
     end
   },
   { -- Your %s crits %s for %d %s damage.
-    prepare(SPELLLOGCRITSCHOOLSELFOTHER), function(d, attack, target, value, school)
+    SPELLLOGCRITSCHOOLSELFOTHER, function(d, attack, target, value, school)
       return d.source, attack, target, value, school, "damage"
     end
   },
   { -- Your %s hits %s for %d.
-    prepare(SPELLLOGSELFOTHER), function(d, attack, target, value)
+    SPELLLOGSELFOTHER, function(d, attack, target, value)
       return d.source, attack, target, value, d.school, "damage"
     end
   },
   { -- Your %s crits %s for %d.
-    prepare(SPELLLOGCRITSELFOTHER), function(d, attack, target, value)
+    SPELLLOGCRITSELFOTHER, function(d, attack, target, value)
       return d.source, attack, target, value, d.school, "damage"
     end
   },
   { -- %s suffers %d %s damage from your %s.
-    prepare(PERIODICAURADAMAGESELFOTHER), function(d, target, value, school, attack)
-      -- zhCN: 你的%4$s使%1$s受到了%2$d点%3$s伤害。
-      if GetLocale() == "zhCN" then
-        target, value, school, attack = value, school, attack, target
-      end
+    PERIODICAURADAMAGESELFOTHER, function(d, target, value, school, attack)
       return d.source, attack, target, value, school, "damage"
     end
   },
   { -- You hit %s for %d.
-    prepare(COMBATHITSELFOTHER), function(d, target, value)
+    COMBATHITSELFOTHER, function(d, target, value)
       return d.source, d.attack, target, value, d.school, "damage"
     end
   },
   { -- You crit %s for %d.
-    prepare(COMBATHITCRITSELFOTHER), function(d, target, value)
+    COMBATHITCRITSELFOTHER, function(d, target, value)
       return d.source, d.attack, target, value, d.school, "damage"
     end
   },
   { -- You hit %s for %d %s damage.
-    prepare(COMBATHITSCHOOLSELFOTHER), function(d, target, value, school)
+    COMBATHITSCHOOLSELFOTHER, function(d, target, value, school)
       return d.source, d.attack, target, value, school, "damage"
     end
   },
   { -- You crit %s for %d %s damage.
-    prepare(COMBATHITCRITSCHOOLSELFOTHER), function(d, target, value, school)
+    COMBATHITCRITSCHOOLSELFOTHER, function(d, target, value, school)
       return d.source, d.attack, target, value, school, "damage"
     end
   },
   { -- You reflect %d %s damage to %s.
-    prepare(DAMAGESHIELDSELFOTHER), function(d, value, school, target)
+    DAMAGESHIELDSELFOTHER, function(d, value, school, target)
       return d.source, "Reflect ("..school..")", target, value, school, "damage"
     end
   },
 
   --[[ me target ]]--
   { -- %s's %s hits you for %d %s damage.
-    prepare(SPELLLOGSCHOOLOTHERSELF), function(d, source, attack, value, school)
+    SPELLLOGSCHOOLOTHERSELF, function(d, source, attack, value, school)
       return source, attack, d.target, value, school, "damage"
     end
   },
   { -- %s's %s crits you for %d %s damage.
-    prepare(SPELLLOGCRITSCHOOLOTHERSELF), function(d, source, attack, value, school)
+    SPELLLOGCRITSCHOOLOTHERSELF, function(d, source, attack, value, school)
       return source, attack, d.target, value, school, "damage"
     end
   },
   { -- %s's %s hits you for %d.
-    prepare(SPELLLOGOTHERSELF), function(d, source, attack, value)
+    SPELLLOGOTHERSELF, function(d, source, attack, value)
       return source, attack, d.target, value, d.school, "damage"
     end
   },
   { -- %s's %s crits you for %d.
-    prepare(SPELLLOGCRITOTHERSELF), function(d, source, attack, value)
+    SPELLLOGCRITOTHERSELF, function(d, source, attack, value)
       return source, attack, d.target, value, d.school, "damage"
     end
   },
   { -- You suffer %d %s damage from %s's %s.
-    prepare(PERIODICAURADAMAGEOTHERSELF), function(d, value, school, source, attack)
+    PERIODICAURADAMAGEOTHERSELF, function(d, value, school, source, attack)
       return source, attack, d.target, value, school, "damage"
     end
   },
   { -- %s hits you for %d.
-    prepare(COMBATHITOTHERSELF), function(d, source, value)
+    COMBATHITOTHERSELF, function(d, source, value)
       return source, d.attack, d.target, value, d.school, "damage"
     end
   },
   { -- %s crits you for %d.
-    prepare(COMBATHITCRITOTHERSELF), function(d, source, value)
+    COMBATHITCRITOTHERSELF, function(d, source, value)
       return source, d.attack, d.target, value, d.school, "damage"
     end
   },
   { -- %s hits you for %d %s damage.
-    prepare(COMBATHITSCHOOLOTHERSELF), function(d, source, value, school)
+    COMBATHITSCHOOLOTHERSELF, function(d, source, value, school)
       return source, d.attack, d.target, value, school, "damage"
     end
   },
   { -- %s crits you for %d %s damage.
-    prepare(COMBATHITCRITSCHOOLOTHERSELF), function(d, source, value, school)
+    COMBATHITCRITSCHOOLOTHERSELF, function(d, source, value, school)
       return source, d.attack, d.target, value, school, "damage"
     end
   },
 
   --[[ other ]]--
   { -- %s's %s hits %s for %d %s damage.
-    prepare(SPELLLOGSCHOOLOTHEROTHER), function(d, source, attack, target, value, school)
+    SPELLLOGSCHOOLOTHEROTHER, function(d, source, attack, target, value, school)
       return source, attack, target, value, school, "damage"
     end
   },
   { -- %s's %s crits %s for %d %s damage.
-    prepare(SPELLLOGCRITSCHOOLOTHEROTHER), function(d, source, attack, target, value, school)
+    SPELLLOGCRITSCHOOLOTHEROTHER, function(d, source, attack, target, value, school)
       return source, attack, target, value, school, "damage"
     end
   },
   { -- %s's %s hits %s for %d.
-    prepare(SPELLLOGOTHEROTHER), function(d, source, attack, target, value)
+    SPELLLOGOTHEROTHER, function(d, source, attack, target, value)
       return source, attack, target, value, d.school, "damage"
     end
   },
   { -- %s's %s crits %s for %d.
-    prepare(SPELLLOGCRITOTHEROTHER), function(d, source, attack, target, value, school)
+    SPELLLOGCRITOTHEROTHER, function(d, source, attack, target, value, school)
       return source, attack, target, value, school, "damage"
     end
   },
   { -- %s suffers %d %s damage from %s's %s.
-    prepare(PERIODICAURADAMAGEOTHEROTHER), function(d, target, value, school, source, attack)
+    PERIODICAURADAMAGEOTHEROTHER, function(d, target, value, school, source, attack)
       return source, attack, target, value, school, "damage"
     end
   },
   { -- %s hits %s for %d.
-    prepare(COMBATHITOTHEROTHER), function(d, source, target, value)
+    COMBATHITOTHEROTHER, function(d, source, target, value)
       return source, d.attack, target, value, d.school, "damage"
     end
   },
   { -- %s crits %s for %d.
-    prepare(COMBATHITCRITOTHEROTHER), function(d, source, target, value)
+    COMBATHITCRITOTHEROTHER, function(d, source, target, value)
       return source, d.attack, target, value, d.school, "damage"
     end
   },
   { -- %s hits %s for %d %s damage.
-    prepare(COMBATHITSCHOOLOTHEROTHER), function(d, source, target, value, school)
+    COMBATHITSCHOOLOTHEROTHER, function(d, source, target, value, school)
       return source, d.attack, target, value, school, "damage"
     end
   },
   { -- %s crits %s for %d %s damage.
-    prepare(COMBATHITCRITSCHOOLOTHEROTHER), function(d, source, target, value, school)
+    COMBATHITCRITSCHOOLOTHEROTHER, function(d, source, target, value, school)
       return source, d.attack, target, value, school, "damage"
     end
   },
   { -- %s reflects %d %s damage to %s.
-    prepare(DAMAGESHIELDOTHEROTHER), function(d, source, value, school, target)
+    DAMAGESHIELDOTHEROTHER, function(d, source, value, school, target)
       return source, "Reflect ("..school..")", target, value, school, "damage"
     end
   },
@@ -199,68 +237,68 @@ local combatlog_strings = {
 
   --[[ me source me target ]]--
   { -- Your %s critically heals you for %d.
-    prepare(HEALEDCRITSELFSELF), function(d, spell, value)
+    HEALEDCRITSELFSELF, function(d, spell, value)
       return d.source, spell, d.target, value, d.school, "heal"
     end
   },
   { -- Your %s heals you for %d.
-    prepare(HEALEDSELFSELF), function(d, spell, value)
+    HEALEDSELFSELF, function(d, spell, value)
       return d.source, spell, d.target, value, d.school, "heal"
     end
   },
   { -- You gain %d health from %s.
-    prepare(PERIODICAURAHEALSELFSELF), function(d, value, spell)
+    PERIODICAURAHEALSELFSELF, function(d, value, spell)
       return d.source, spell, d.target, value, d.school, "heal"
     end
   },
 
   --[[ me source ]]--
   { -- Your %s critically heals %s for %d.
-    prepare(HEALEDCRITSELFOTHER), function(d, spell, target, value)
+    HEALEDCRITSELFOTHER, function(d, spell, target, value)
       return d.source, spell, target, value, d.school, "heal"
     end
   },
   { -- Your %s heals %s for %d.
-    prepare(HEALEDSELFOTHER), function(d, spell, target, value)
+    HEALEDSELFOTHER, function(d, spell, target, value)
       return d.source, spell, target, value, d.school, "heal"
     end
   },
   { -- %s gains %d health from your %s.
-    prepare(PERIODICAURAHEALSELFOTHER), function(d, target, value, spell)
+    PERIODICAURAHEALSELFOTHER, function(d, target, value, spell)
       return d.source, spell, target, value, d.school, "heal"
     end
   },
 
   --[[ me target ]]--
   { -- %s's %s critically heals you for %d.
-    prepare(HEALEDCRITOTHERSELF), function(d, source, spell, value)
+    HEALEDCRITOTHERSELF, function(d, source, spell, value)
       return d.source, spell, d.target, value, d.school, "heal"
     end
   },
   { -- %s's %s heals you for %d.
-    prepare(HEALEDOTHERSELF), function(d, source, spell, value)
+    HEALEDOTHERSELF, function(d, source, spell, value)
       return d.source, spell, d.target, value, d.school, "heal"
     end
   },
   { -- You gain %d health from %s's %s.
-    prepare(PERIODICAURAHEALOTHERSELF), function(d, value, source, spell)
+    PERIODICAURAHEALOTHERSELF, function(d, value, source, spell)
       return source, spell, d.target, value, d.school, "heal"
     end
   },
 
   --[[ other ]]--
   { -- %s's %s critically heals %s for %d.
-    prepare(HEALEDCRITOTHEROTHER), function(d, source, spell, target, value)
+    HEALEDCRITOTHEROTHER, function(d, source, spell, target, value)
       return source, spell, target, value, d.school, "heal"
     end
   },
   { -- %s's %s heals %s for %d.
-    prepare(HEALEDOTHEROTHER), function(d, source, spell, target, value)
+    HEALEDOTHEROTHER, function(d, source, spell, target, value)
       return source, spell, target, value, d.school, "heal"
     end
   },
   { -- %s gains %d health from %s's %s.
-    prepare(PERIODICAURAHEALOTHEROTHER), function(d, target, value, source, spell)
+    PERIODICAURAHEALOTHEROTHER, function(d, target, value, source, spell)
       return source, spell, target, value, d.school, "heal"
     end
   },
@@ -317,7 +355,8 @@ parser:SetScript("OnEvent", function()
 
   -- detection on all damage sources
   for id, data in pairs(combatlog_strings) do
-    local result, _, a1, a2, a3, a4, a5 = string.find(arg1, data[1])
+    local result, _, a1, a2, a3, a4, a5 = cfind(arg1, data[1])
+
     if result then
       return parser:AddData(data[2](defaults, a1, a2, a3, a4, a5))
     end
