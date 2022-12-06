@@ -660,6 +660,13 @@ window.GetData = function(unitdata, values)
 end
 
 local values = {}
+local buttons = {
+  window.btnDamage,
+  window.btnDPS,
+  window.btnHeal,
+  window.btnHPS
+}
+
 window.Refresh = function(force, report)
   -- config changes
   if force then
@@ -669,7 +676,7 @@ window.Refresh = function(force, report)
       window:Hide()
     end
 
-    for _, button in pairs({window.btnDamage, window.btnDPS, window.btnHeal, window.btnHPS}) do
+    for _, button in pairs(buttons) do
       button.caption:SetTextColor(.5,.5,.5,1)
     end
 
