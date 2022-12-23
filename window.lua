@@ -654,6 +654,12 @@ window.GetData = function(unitdata, values)
     values.color.r = RAID_CLASS_COLORS[data["classes"][unit]].r
     values.color.g = RAID_CLASS_COLORS[data["classes"][unit]].g
     values.color.b = RAID_CLASS_COLORS[data["classes"][unit]].b
+
+    if config.pastel == 1 then
+      values.color.r = (values.color.r + .5) * .5
+      values.color.g = (values.color.g + .5) * .5
+      values.color.b = (values.color.b + .5) * .5
+    end
   end
 
   return values

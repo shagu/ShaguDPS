@@ -38,6 +38,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     p("  /sdps trackall " .. config.track_all_units .. " |cffcccccc- Track all nearby units")
     p("  /sdps mergepet " .. config.merge_pets .. " |cffcccccc- Merge pets into owner data")
     p("  /sdps texture " .. config.texture .. " |cffcccccc- Set the statusbar texture")
+    p("  /sdps pastel " .. config.pastel .. " |cffcccccc- Use pastel colors")
     p("  /sdps toggle |cffcccccc- Toggle window")
     return
   end
@@ -127,6 +128,16 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Texture: " .. config.texture)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 1-" .. table.getn(textures))
+    end
+  elseif strlower(cmd) == "pastel" then
+    if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
+      config.pastel = tonumber(args)
+      ShaguDPS_Config = config
+      window.Refresh(true)
+
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Use pastel colors: " .. config.pastel)
+    else
+      p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end
   end
 end
