@@ -76,6 +76,7 @@ local config = {
   -- appearance
   visible = 1,
   texture = 2,
+  pastel = 0,
 
   -- window
   view = 1,
