@@ -22,12 +22,24 @@ local classes = {
   SHAMAN = true, PRIEST = true, WARLOCK = true, PALADIN = true,
 }
 
--- default button backdrop
-local backdrop =  {
+-- default backdrops
+local backdrop = {
   bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
   edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
   tile = true, tileSize = 16, edgeSize = 8,
   insets = { left = 2, right = 2, top = 2, bottom = 2 }
+}
+
+local backdrop_window = {
+  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+  tile = true, tileSize = 16, edgeSize = 16,
+  insets = { left = 3, right = 3, top = 3, bottom = 3 }
+}
+
+local backdrop_border = {
+  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+  tile = true, tileSize = 16, edgeSize = 16,
+  insets = { left = 3, right = 3, top = 3, bottom = 3 }
 }
 
 -- templates describing the window contents
@@ -340,12 +352,6 @@ window:SetScript("OnDragStart", function() window:StartMoving() end)
 window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
-window:SetBackdrop({
-  bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-  tile = true, tileSize = 16, edgeSize = 16,
-  insets = { left = 3, right = 3, top = 3, bottom = 3 }
-})
-window:SetBackdropColor(.5,.5,.5,.5)
 
 window.title = window:CreateTexture(nil, "NORMAL")
 window.title:SetTexture(0,0,0,.6)
@@ -547,12 +553,6 @@ window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
 window.border:ClearAllPoints()
 window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
 window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)
-window.border:SetBackdrop({
-  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-  tile = true, tileSize = 16, edgeSize = 16,
-  insets = { left = 3, right = 3, top = 3, bottom = 3 }
-})
-window.border:SetBackdropBorderColor(.7,.7,.7,1)
 window.border:SetFrameLevel(100)
 
 window.bars = {}
@@ -684,6 +684,20 @@ window.Refresh = function(force, report)
 
     for _, button in pairs(buttons) do
       button.caption:SetTextColor(.5,.5,.5,1)
+    end
+
+    -- update backdrop borders
+    if config.backdrop == 1 then
+      -- window background
+      window:SetBackdrop(backdrop_window)
+      window:SetBackdropColor(.5,.5,.5,.5)
+
+      -- window border
+      window.border:SetBackdrop(backdrop_border)
+      window.border:SetBackdropBorderColor(.7,.7,.7,1)
+    else
+      window:SetBackdrop(nil)
+      window.border:SetBackdrop(nil)
     end
 
     -- update panel button appearance

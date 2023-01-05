@@ -79,6 +79,7 @@ local config = {
   pastel = 0,
 
   -- window
+  backdrop = 1,
   view = 1,
 }
 

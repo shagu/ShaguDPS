@@ -39,6 +39,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     p("  /sdps mergepet " .. config.merge_pets .. " |cffcccccc- Merge pets into owner data")
     p("  /sdps texture " .. config.texture .. " |cffcccccc- Set the statusbar texture")
     p("  /sdps pastel " .. config.pastel .. " |cffcccccc- Use pastel colors")
+    p("  /sdps backdrop " .. config.borders .. " |cffcccccc- Show window backdrop and border")
     p("  /sdps toggle |cffcccccc- Toggle window")
     return
   end
@@ -136,6 +137,16 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
       window.Refresh(true)
 
       p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Use pastel colors: " .. config.pastel)
+    else
+      p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
+    end
+  elseif strlower(cmd) == "backdrop" then
+    if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
+      config.backdrop = tonumber(args)
+      ShaguDPS_Config = config
+      window.Refresh(true)
+
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Show window backdrop: " .. config.backdrop)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end

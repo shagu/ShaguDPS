@@ -43,5 +43,6 @@ Available options are:
 /sdps trackall 0       Track all nearby units (0 or 1)
 /sdps texture 2        Set the statusbar texture (1 to 4)
 /sdps pastel 0         Use pastel colors (0 or 1)
+/sdps backdrop 1       Show window backdrop and border (0 or 1)
 /sdps toggle           Toggle visibility of the main window
 ```
