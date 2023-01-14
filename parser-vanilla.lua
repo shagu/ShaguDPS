@@ -281,12 +281,12 @@ local combatlog_strings = {
   --[[ me target ]]--
   { -- %s's %s critically heals you for %d.
     HEALEDCRITOTHERSELF, function(d, source, spell, value)
-      return d.source, spell, d.target, value, d.school, "heal"
+      return source, spell, d.target, value, d.school, "heal"
     end
   },
   { -- %s's %s heals you for %d.
     HEALEDOTHERSELF, function(d, source, spell, value)
-      return d.source, spell, d.target, value, d.school, "heal"
+      return source, spell, d.target, value, d.school, "heal"
     end
   },
   { -- You gain %d health from %s's %s.
