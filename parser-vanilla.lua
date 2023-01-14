@@ -243,6 +243,22 @@ local combatlog_strings = {
   },
 
   -- [[ HEAL ]] --
+  --[[ me target ]]--
+  { -- %s's %s critically heals you for %d.
+    HEALEDCRITOTHERSELF, function(d, source, spell, value)
+      return source, spell, d.target, value, d.school, "heal"
+    end
+  },
+  { -- %s's %s heals you for %d.
+    HEALEDOTHERSELF, function(d, source, spell, value)
+      return source, spell, d.target, value, d.school, "heal"
+    end
+  },
+  { -- You gain %d health from %s's %s.
+    PERIODICAURAHEALOTHERSELF, function(d, value, source, spell)
+      return source, spell, d.target, value, d.school, "heal"
+    end
+  },
 
   --[[ me source me target ]]--
   { -- Your %s critically heals you for %d.
@@ -275,23 +291,6 @@ local combatlog_strings = {
   { -- %s gains %d health from your %s.
     PERIODICAURAHEALSELFOTHER, function(d, target, value, spell)
       return d.source, spell, target, value, d.school, "heal"
-    end
-  },
-
-  --[[ me target ]]--
-  { -- %s's %s critically heals you for %d.
-    HEALEDCRITOTHERSELF, function(d, source, spell, value)
-      return source, spell, d.target, value, d.school, "heal"
-    end
-  },
-  { -- %s's %s heals you for %d.
-    HEALEDOTHERSELF, function(d, source, spell, value)
-      return source, spell, d.target, value, d.school, "heal"
-    end
-  },
-  { -- You gain %d health from %s's %s.
-    PERIODICAURAHEALOTHERSELF, function(d, value, source, spell)
-      return source, spell, d.target, value, d.school, "heal"
     end
   },
 
