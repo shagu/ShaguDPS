@@ -39,7 +39,7 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
     p("  /sdps mergepet " .. config.merge_pets .. " |cffcccccc- Merge pets into owner data")
     p("  /sdps texture " .. config.texture .. " |cffcccccc- Set the statusbar texture")
     p("  /sdps pastel " .. config.pastel .. " |cffcccccc- Use pastel colors")
-    p("  /sdps backdrop " .. config.borders .. " |cffcccccc- Show window backdrop and border")
+    p("  /sdps backdrop " .. config.backdrop .. " |cffcccccc- Show window backdrop and border")
     p("  /sdps toggle |cffcccccc- Toggle window")
     return
   end
