@@ -46,3 +46,24 @@ Available options are:
 /sdps backdrop 1       Show window backdrop and border (0 or 1)
 /sdps toggle           Toggle visibility of the main window
 ```
+
+## Combat Log Range
+
+ShaguDPS relies fully on the combat log and does not have any sort of raid-syncing between players.
+That means, thing you see are limited by the maximum range your combat log can display. The game defaults are set to 40 yards.
+If you want to increase that range, you can run the following command in order to set it to 200:
+
+    /run for _,n in pairs({"Party", "PartyPet", "FriendlyPlayers", "FriendlyPlayersPets", "HostilePlayers", "HostilePlayersPets", "Creature" }) do SetCVar("CombatLogRange"..n, 200) end
+
+Alternatively you can set it manually in your Config.wtf:
+
+    SET CombatLogRangeParty "200"
+    SET CombatLogRangePartyPet "200"
+    SET CombatLogRangeFriendlyPlayers "200"
+    SET CombatLogRangeFriendlyPlayersPets "200"
+    SET CombatLogRangeHostilePlayers "200"
+    SET CombatLogRangeHostilePlayersPets "200"
+    SET CombatLogRangeCreature "200"
+
+You should keep in mind that some unitframe-addons rely on the combat log range to be set exactly to "40".
+Increasing the range, can break the 40y range checks of those, and others might simply reset it back to "40".
