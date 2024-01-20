@@ -141,6 +141,11 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
   -- trim leading and trailing spaces
   source = trim(source)
 
+  -- prevent self-damage from being tracked
+  if datatype == "damage" and source == target then
+    return
+  end
+
   -- clear "current" on fight start
   if start_next_segment and data["classes"][source] and data["classes"][source] ~= "__other__" then
     data["damage"][1] = {}
