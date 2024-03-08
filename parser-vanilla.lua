@@ -350,10 +350,18 @@ parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
 -- cache default table
 local defaults = { }
 
+local absorb = sanitize(ABSORB_TRAILER)
+local resist = sanitize(RESIST_TRAILER)
+
 -- call all datasources on each event
 parser:SetScript("OnEvent", function()
   if not arg1 then return end
 
+  -- remove absorb and resist suffixes
+  arg1 = string.gsub(arg1, absorb, "")
+  arg1 = string.gsub(arg1, resist, "")
+
+  -- write default values
   defaults.source = UnitName("player")
   defaults.target = UnitName("player")
   defaults.school = "physical"
