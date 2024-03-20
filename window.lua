@@ -433,8 +433,8 @@ for name, template in pairs(menubuttons) do
   local button = window["btn"..name]
   local template = template
 
-  button:SetPoint("CENTER", window.title, "CENTER", template[3], 18+template[1]*16)
-  button:SetFrameStrata("MEDIUM")
+  button:SetPoint("CENTER", window.title, "CENTER", template[3], -18-template[1]*15)
+  button:SetFrameStrata("HIGH")
   button:SetHeight(16)
   button:SetWidth(50)
   button:SetBackdrop(backdrop)
