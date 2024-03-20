@@ -670,7 +670,9 @@ local buttons = {
   window.btnDamage,
   window.btnDPS,
   window.btnHeal,
-  window.btnHPS
+  window.btnHPS,
+  window.btnOverall,
+  window.btnCurrent
 }
 
 window.Refresh = function(force, report)
@@ -683,7 +685,7 @@ window.Refresh = function(force, report)
     end
 
     for _, button in pairs(buttons) do
-      button.caption:SetTextColor(.5,.5,.5,1)
+      button.caption:SetTextColor(1,1,1,1)
     end
 
     -- update backdrop borders
@@ -717,10 +719,8 @@ window.Refresh = function(force, report)
 
     if config.segment == 0 then
       window.btnOverall.caption:SetTextColor(1,.9,0,1)
-      window.btnCurrent.caption:SetTextColor(.5,.5,.5,1)
       window.btnSegment.caption:SetText("Overall")
     elseif config.segment == 1 then
-      window.btnOverall.caption:SetTextColor(.5,.5,.5,1)
       window.btnCurrent.caption:SetTextColor(1,.9,0,1)
       window.btnSegment.caption:SetText("Current")
     end
