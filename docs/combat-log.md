@@ -1,0 +1,154 @@
+# World of Warcraft: Combat Log - Events & Strings
+
+An overview of World of Warcraft 1.12.1 (Vanilla) combat log events and the related global strings they can produce.
+The goal of this list is to identify which strings can be fired by which event as accurate as possible. Some events
+might overlap with other strings, and some strings might be used across several events, which is why there are clusters.
+
+The list might be incomplete and faulty. If you came here and found mistakes, please let me know or send a PR.
+
+## Damage
+
+### Damage - Self
+
+#### Hit Damage (Self)
+
+- Events: 
+  - `CHAT_MSG_COMBAT_SELF_HITS`  
+  
+- Strings: 
+  - `COMBATHITSELFOTHER`
+  - `COMBATHITSCHOOLSELFOTHER`
+  - `COMBATHITCRITSELFOTHER`
+  - `COMBATHITCRITSCHOOLSELFOTHER`
+
+
+#### Spell Damage (Self)
+
+- Events: 
+  - `CHAT_MSG_SPELL_SELF_DAMAGE`
+  
+- Strings: 
+  - `SPELLLOGSCHOOLSELFOTHER`
+  - `SPELLLOGCRITSCHOOLSELFOTHER`
+  - `SPELLLOGSELFOTHER`
+  - `SPELLLOGCRITSELFOTHER`
+
+
+#### Shield Damage (Self)
+
+- Events: 
+  - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF`
+  
+- Strings: 
+  - `DAMAGESHIELDSELFOTHER`
+
+
+### Damage - Others
+
+#### Hit Damage
+
+- Events:
+  - `CHAT_MSG_COMBAT_PARTY_HITS`
+  - `CHAT_MSG_COMBAT_FRIENDLYPLAYER_HITS`
+  - `CHAT_MSG_COMBAT_PET_HITS`
+  - `CHAT_MSG_COMBAT_CREATURE_VS_CREATURE_HITS`
+  - `CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS`
+
+- Strings:
+  - `COMBATHITOTHEROTHER`
+  - `COMBATHITCRITOTHEROTHER`
+  - `COMBATHITSCHOOLOTHEROTHER`
+  - `COMBATHITCRITSCHOOLOTHEROTHER`
+
+
+#### Spell Damage
+
+- Events:
+  - `CHAT_MSG_SPELL_PARTY_DAMAGE`
+  - `CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE`
+  - `CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE`
+  - `CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE`
+  - `CHAT_MSG_SPELL_PET_DAMAGE`
+  
+- Strings:
+  - `SPELLLOGSCHOOLOTHEROTHER`
+  - `SPELLLOGCRITSCHOOLOTHEROTHER`
+  - `SPELLLOGOTHEROTHER`
+  - `SPELLLOGCRITOTHEROTHER`
+
+
+#### Shield Damage
+
+- Events:
+  - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS`
+  
+- Strings:
+  - `DAMAGESHIELDOTHEROTHER`
+
+
+#### Periodic Damage
+
+- Events:   
+   - `CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE`
+   - `CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE`
+   - `CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE`
+   - `CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE`
+   - `CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE`  
+
+- Strings:
+  - `PERIODICAURADAMAGEOTHEROTHER`
+  - `PERIODICAURADAMAGESELFOTHER`
+
+
+## Heal
+
+### Heal - Self
+
+#### Heal (Self)
+
+- Events:
+  - `CHAT_MSG_SPELL_SELF_BUFF`
+  
+- Strings:
+  - `HEALEDCRITSELFSELF`
+  - `HEALEDSELFSELF`
+  - `HEALEDCRITSELFOTHER`
+  - `HEALEDSELFOTHER`
+    
+
+#### Periodic Heal (Self)
+
+- Events:
+  - `CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS`
+  
+- Strings:
+  - `PERIODICAURAHEALSELFSELF`
+  - `PERIODICAURAHEALOTHERSELF`
+
+
+### Heal -Others
+
+#### Heal
+
+- Events:
+  - `CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF`
+  - `CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF`
+  - `CHAT_MSG_SPELL_PARTY_BUFF`
+  
+- Strings:
+  - `HEALEDCRITOTHEROTHER`
+  - `HEALEDOTHEROTHER`
+  - `HEALEDCRITOTHERSELF`
+  - `HEALEDOTHERSELF`
+
+
+#### Periodic Heal
+
+- Events:
+  - `CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS`
+  - `CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS`
+  - `CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS`
+  
+- Strings:
+  - `PERIODICAURAHEALOTHEROTHER`
+  - `PERIODICAURAHEALSELFOTHER`
