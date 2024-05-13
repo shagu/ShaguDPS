@@ -1,3 +1,6 @@
+## Pepo changes
+Significantly improved performance by separating the event listeners along with other changes.  Additionally if you are on damage or dps mode it will ignore heal events and vice versa so you can't see healing for a fight after the fact.
+
 # ShaguDPS
 
 A very small and lightweight damage meter. The combat log is parsed in a locale-independent way and should work on every 1.12 (vanilla) and 2.4.3 (burning crusade) based client.
