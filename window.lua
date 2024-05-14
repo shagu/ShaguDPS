@@ -1,5 +1,5 @@
 -- check for expansion
-local tbc = ShaguDPS.expansion() == "tbc" and true or nil
+local tbc = ShaguDPS.expansion()=="tbc" and true or nil
 
 -- load public variables into local
 local window = ShaguDPS.window
@@ -93,14 +93,14 @@ local view_templates = {
 -- panel button templates
 local menubuttons = {
   -- segments
-  ["Current"]  = { 0, 1, -25.5, "Current Segment", "|cffffffffShow current fight",      "segment" },
-  ["Overall"]  = { 1, 0, -25.5, "Overall Segment", "|cffffffffShow all fights",         "segment" },
+  ["Current"] = { 0, 1, -25.5, "Current Segment", "|cffffffffShow current fight", "segment" },
+  ["Overall"] = { 1, 0, -25.5, "Overall Segment", "|cffffffffShow all fights", "segment" },
 
   -- modes
-  ["Damage"]   = { 0, 1, 25.5,  "Damage View",     "|cffffffffShow Damage Done",        "view" },
-  ["DPS"]      = { 1, 2, 25.5,  "DPS View",        "|cffffffffShow Damage Per Second",  "view" },
-  ["Heal"]     = { 2, 3, 25.5,  "Heal View",       "|cffffffffShow Healing Done",       "view" },
-  ["HPS"]      = { 3, 4, 25.5,  "HPS View",        "|cffffffffShow Heal Per Second",    "view" },
+  ["Damage"] = { 0, 1, 25.5, "Damage View", "|cffffffffShow Damage Done", "view" },
+  ["DPS"] = { 1, 2, 25.5, "DPS View", "|cffffffffShow Damage Per Second", "view" },
+  ["Heal"] = { 2, 3, 25.5, "Heal View", "|cffffffffShow Healing Done", "view" },
+  ["HPS"] = { 3, 4, 25.5, "HPS View", "|cffffffffShow Heal Per Second", "view" },
 }
 
 -- default colors of chat types
@@ -119,58 +119,68 @@ local chatcolors = {
 }
 
 local sort_algorithms = {
-  normal = function(t,a,b)
-    if t[a]["_esum"] and t[b]["_esum"] and t[a]["_esum"] ~= t[b]["_esum"] then
-      return t[b]["_esum"] < t[a]["_esum"]
+  normal = function(t, a, b)
+    if t[a]["_esum"] and t[b]["_esum"] and t[a]["_esum"]~=t[b]["_esum"] then
+      return t[b]["_esum"]<t[a]["_esum"]
     else
-      return t[b]["_sum"] < t[a]["_sum"]
+      return t[b]["_sum"]<t[a]["_sum"]
     end
   end,
-  per_second = function(t,a,b)
-    if t[a]["_esum"] and t[b]["_esum"] and t[a]["_esum"] ~= t[b]["_esum"] then
-      return t[b]["_esum"] / t[b]["_ctime"] < t[a]["_esum"] / t[a]["_ctime"]
+  per_second = function(t, a, b)
+    if t[a]["_esum"] and t[b]["_esum"] and t[a]["_esum"]~=t[b]["_esum"] then
+      return t[b]["_esum"]/t[b]["_ctime"]<t[a]["_esum"]/t[a]["_ctime"]
     else
-      return t[b]["_sum"] / t[b]["_ctime"] < t[a]["_sum"] / t[a]["_ctime"]
+      return t[b]["_sum"]/t[b]["_ctime"]<t[a]["_sum"]/t[a]["_ctime"]
     end
   end,
-  single_spell = function(t,a,b)
-    if t["_effective"] and t["_effective"][a] and t["_effective"][b] and t["_effective"][a] ~= t["_effective"][b] then
-      return t["_effective"][b] < t["_effective"][a]
+  single_spell = function(t, a, b)
+    if t["_effective"] and t["_effective"][a] and t["_effective"][b] and t["_effective"][a]~=t["_effective"][b] then
+      return t["_effective"][b]<t["_effective"][a]
     else
-      if tonumber(t[b]) and tonumber(t[a]) then return t[b] < t[a] end
+      if tonumber(t[b]) and tonumber(t[a]) then
+        return t[b]<t[a]
+      end
     end
   end
 }
 
 local rgbcache = {}
 local function str2rgb(text)
-  if not text then return 1, 1, 1 end
-  if rgbcache[text] then return unpack(rgbcache[text]) end
+  if not text then
+    return 1, 1, 1
+  end
+  if rgbcache[text] then
+    return unpack(rgbcache[text])
+  end
   local counter = 1
   local l = string.len(text)
   for i = 1, l, 3 do
-    counter = mod(counter*8161, 4294967279) +
-        (string.byte(text,i)*16776193) +
-        ((string.byte(text,i+1) or (l-i+256))*8372226) +
-        ((string.byte(text,i+2) or (l-i+256))*3932164)
+    counter = mod(counter*8161, 4294967279)+
+        (string.byte(text, i)*16776193)+
+        ((string.byte(text, i+1) or (l-i+256))*8372226)+
+        ((string.byte(text, i+2) or (l-i+256))*3932164)
   end
-  local hash = mod(mod(counter, 4294967291),16777216)
-  local r = (hash - (mod(hash,65536))) / 65536
-  local g = ((hash - r*65536) - ( mod((hash - r*65536),256)) ) / 256
-  local b = hash - r*65536 - g*256
-  rgbcache[text] = { r / 255, g / 255, b / 255 }
+  local hash = mod(mod(counter, 4294967291), 16777216)
+  local r = (hash-(mod(hash, 65536)))/65536
+  local g = ((hash-r*65536)-(mod((hash-r*65536), 256)))/256
+  local b = hash-r*65536-g*256
+  rgbcache[text] = { r/255, g/255, b/255 }
   return unpack(rgbcache[text])
 end
 
 local function spairs(t, order)
   -- collect the keys
   local keys = {}
-  for k in pairs(t) do keys[table.getn(keys)+1] = k end
+  for k in pairs(t) do
+    keys[table.getn(keys)+1] = k
+  end
 
   -- if order function given, sort by it by passing the table and keys a, b,
   -- otherwise just sort the keys
   if order then
-    table.sort(keys, function(a,b) return order(t, a, b) end)
+    table.sort(keys, function(a, b)
+      return order(t, a, b)
+    end)
   else
     table.sort(keys)
   end
@@ -178,7 +188,7 @@ local function spairs(t, order)
   -- return the iterator function
   local i = 0
   return function()
-    i = i + 1
+    i = i+1
     if keys[i] then
       return keys[i], t[keys[i]]
     end
@@ -189,22 +199,22 @@ local function barTooltipShow()
   GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 
   local value = segment[this.unit]["_sum"]
-  local persec = round(segment[this.unit]["_sum"] / segment[this.unit]["_ctime"], 1)
+  local persec = round(segment[this.unit]["_sum"]/segment[this.unit]["_ctime"], 1)
 
-  GameTooltip:AddLine(this.title .. ":")
+  GameTooltip:AddLine(this.title..":")
 
-  if config.view == 1 or config.view == 2 then
-    GameTooltip:AddDoubleLine("|cffffffffDamage", "|cffffffff" .. value)
-    GameTooltip:AddDoubleLine("|cffffffffDamage Per Second", "|cffffffff" .. persec)
-  elseif config.view == 3 or config.view == 4 then
+  if config.view==1 or config.view==2 then
+    GameTooltip:AddDoubleLine("|cffffffffDamage", "|cffffffff"..value)
+    GameTooltip:AddDoubleLine("|cffffffffDamage Per Second", "|cffffffff"..persec)
+  elseif config.view==3 or config.view==4 then
     local evalue = segment[this.unit]["_esum"]
-    local epersec = round(segment[this.unit]["_esum"] / segment[this.unit]["_ctime"], 1)
+    local epersec = round(segment[this.unit]["_esum"]/segment[this.unit]["_ctime"], 1)
 
-    GameTooltip:AddDoubleLine("|cffffffffHealing", "|cffffffff" .. evalue)
-    GameTooltip:AddDoubleLine("|cffaaaaaaOverheal", "|cffcc8888+" .. value - evalue)
+    GameTooltip:AddDoubleLine("|cffffffffHealing", "|cffffffff"..evalue)
+    GameTooltip:AddDoubleLine("|cffaaaaaaOverheal", "|cffcc8888+"..value-evalue)
     GameTooltip:AddLine(" ")
-    GameTooltip:AddDoubleLine("|cffffffffHealing Per Second", "|cffffffff" .. epersec)
-    GameTooltip:AddDoubleLine("|cffaaaaaaOverheal Per Second", "|cffcc8888+" .. persec - epersec)
+    GameTooltip:AddDoubleLine("|cffffffffHealing Per Second", "|cffffffff"..epersec)
+    GameTooltip:AddDoubleLine("|cffaaaaaaOverheal Per Second", "|cffcc8888+"..persec-epersec)
   end
 
   GameTooltip:AddLine(" ")
@@ -212,18 +222,18 @@ local function barTooltipShow()
 
   for attack, damage in spairs(segment[this.unit], sort_algorithms.single_spell) do
     if attack and not internals[attack] then
-      local percent = damage == 0 and 0 or round(damage / segment[this.unit]["_sum"] * 100,1)
+      local percent = damage==0 and 0 or round(damage/segment[this.unit]["_sum"]*100, 1)
       if segment[this.unit]["_effective"] and segment[this.unit]["_effective"][attack] then
         -- heal / effective heal
         local effective = segment[this.unit]["_effective"][attack]
-        local epercent = effective == 0 and 0 or round(effective / segment[this.unit]["_esum"] * 100,1)
+        local epercent = effective==0 and 0 or round(effective/segment[this.unit]["_esum"]*100, 1)
 
-        local str = string.format("|cffcc8888+%s|cffffffff %s (%.1f%%)", damage - effective, effective, epercent)
-        GameTooltip:AddDoubleLine("|cffffffff" .. attack, str)
+        local str = string.format("|cffcc8888+%s|cffffffff %s (%.1f%%)", damage-effective, effective, epercent)
+        GameTooltip:AddDoubleLine("|cffffffff"..attack, str)
       else
         -- damage
         local str = string.format("|cffffffff %s (%.1f%%)", damage, percent)
-        GameTooltip:AddDoubleLine("|cffffffff" .. attack, str)
+        GameTooltip:AddDoubleLine("|cffffffff"..attack, str)
       end
     end
   end
@@ -235,15 +245,15 @@ local function barTooltipHide()
 end
 
 local function barScrollWheel()
-  scroll = arg1 > 0 and scroll - 1 or scroll
-  scroll = arg1 < 0 and scroll + 1 or scroll
+  scroll = arg1>0 and scroll-1 or scroll
+  scroll = arg1<0 and scroll+1 or scroll
 
   local count = 0
-  for k,v in pairs(segment) do
-    count = count + 1
+  for k, v in pairs(segment) do
+    count = count+1
   end
 
-  scroll = math.min(scroll, count + 1 - config.bars)
+  scroll = math.min(scroll, count+1-config.bars)
   scroll = math.max(scroll, 0)
 
   window.Refresh()
@@ -276,19 +286,19 @@ local function ResetData()
 end
 
 local function CreateBar(parent, i, background)
-  parent.bars[i] = parent.bars[i] or CreateFrame("StatusBar", "ShaguDPSBar" .. i, parent)
+  parent.bars[i] = parent.bars[i] or CreateFrame("StatusBar", "ShaguDPSBar"..i, parent)
   parent.bars[i]:SetStatusBarTexture(textures[config.texture] or textures[1])
-  parent.bars[i]:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height * (i-1) - 22)
-  parent.bars[i]:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height * (i-1) - 22)
-  parent.bars[i]:SetHeight(config.height - config.spacing)
+  parent.bars[i]:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height*(i-1)-22)
+  parent.bars[i]:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height*(i-1)-22)
+  parent.bars[i]:SetHeight(config.height-config.spacing)
   parent.bars[i]:SetFrameLevel(4)
 
-  parent.bars[i].lowerBar = parent.bars[i].lowerBar or CreateFrame("StatusBar", "ShaguDPSLowerBar" .. i, parent)
+  parent.bars[i].lowerBar = parent.bars[i].lowerBar or CreateFrame("StatusBar", "ShaguDPSLowerBar"..i, parent)
   parent.bars[i].lowerBar:SetStatusBarTexture(textures[config.texture] or textures[1])
-  parent.bars[i].lowerBar:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height * (i-1) - 22)
-  parent.bars[i].lowerBar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height * (i-1) - 22)
+  parent.bars[i].lowerBar:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height*(i-1)-22)
+  parent.bars[i].lowerBar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height*(i-1)-22)
   parent.bars[i].lowerBar:SetStatusBarColor(1, 1, 1, .4)
-  parent.bars[i].lowerBar:SetHeight(config.height - config.spacing)
+  parent.bars[i].lowerBar:SetHeight(config.height-config.spacing)
   parent.bars[i].lowerBar:SetFrameLevel(2)
 
   parent.bars[i].textLeft = parent.bars[i].textLeft or parent.bars[i]:CreateFontString("Status", "OVERLAY", "GameFontNormal")
@@ -320,16 +330,16 @@ local function btnEnter()
   if this.tooltip then
     GameTooltip_SetDefaultAnchor(GameTooltip, this)
     for i, data in pairs(this.tooltip) do
-      if type(data) == "string" then
+      if type(data)=="string" then
         GameTooltip:AddLine(data)
-      elseif type(data) == "table" then
+      elseif type(data)=="table" then
         GameTooltip:AddDoubleLine(data[1], data[2])
       end
     end
     GameTooltip:Show()
   end
 
-  this:SetBackdropBorderColor(1,.9,0,1)
+  this:SetBackdropBorderColor(1, .9, 0, 1)
 end
 
 local function btnLeave()
@@ -337,7 +347,7 @@ local function btnLeave()
     GameTooltip:Hide()
   end
 
-  this:SetBackdropBorderColor(.4,.4,.4,1)
+  this:SetBackdropBorderColor(.4, .4, .4, 1)
 end
 
 window:ClearAllPoints()
@@ -348,13 +358,17 @@ window:EnableMouseWheel(1)
 window:RegisterForDrag("LeftButton")
 window:SetMovable(true)
 window:SetUserPlaced(true)
-window:SetScript("OnDragStart", function() window:StartMoving() end)
-window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
+window:SetScript("OnDragStart", function()
+  window:StartMoving()
+end)
+window:SetScript("OnDragStop", function()
+  window:StopMovingOrSizing()
+end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
 
 window.title = window:CreateTexture(nil, "NORMAL")
-window.title:SetTexture(0,0,0,.6)
+window.title:SetTexture(0, 0, 0, .6)
 window.title:SetHeight(20)
 window.title:SetPoint("TOPLEFT", 2, -2)
 window.title:SetPoint("TOPRIGHT", -2, -2)
@@ -365,8 +379,8 @@ window.btnSegment:SetFrameStrata("MEDIUM")
 window.btnSegment:SetHeight(16)
 window.btnSegment:SetWidth(50)
 window.btnSegment:SetBackdrop(backdrop)
-window.btnSegment:SetBackdropColor(.2,.2,.2,1)
-window.btnSegment:SetBackdropBorderColor(.4,.4,.4,1)
+window.btnSegment:SetBackdropColor(.2, .2, .2, 1)
+window.btnSegment:SetBackdropBorderColor(.4, .4, .4, 1)
 
 window.btnSegment.caption = window.btnSegment:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
 window.btnSegment.caption:SetFont(STANDARD_TEXT_FONT, 9)
@@ -399,8 +413,8 @@ window.btnMode:SetFrameStrata("MEDIUM")
 window.btnMode:SetHeight(16)
 window.btnMode:SetWidth(50)
 window.btnMode:SetBackdrop(backdrop)
-window.btnMode:SetBackdropColor(.2,.2,.2,1)
-window.btnMode:SetBackdropBorderColor(.4,.4,.4,1)
+window.btnMode:SetBackdropColor(.2, .2, .2, 1)
+window.btnMode:SetBackdropBorderColor(.4, .4, .4, 1)
 
 window.btnMode.caption = window.btnMode:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
 window.btnMode.caption:SetFont(STANDARD_TEXT_FONT, 9)
@@ -428,7 +442,7 @@ window.btnMode:SetScript("OnClick", function()
 end)
 
 for name, template in pairs(menubuttons) do
-  window["btn"..name] = CreateFrame("Button", "ShaguDPS" .. name, window)
+  window["btn"..name] = CreateFrame("Button", "ShaguDPS"..name, window)
 
   local button = window["btn"..name]
   local template = template
@@ -438,8 +452,8 @@ for name, template in pairs(menubuttons) do
   button:SetHeight(16)
   button:SetWidth(50)
   button:SetBackdrop(backdrop)
-  button:SetBackdropColor(.2,.2,.2,1)
-  button:SetBackdropBorderColor(.4,.4,.4,1)
+  button:SetBackdropColor(.2, .2, .2, 1)
+  button:SetBackdropBorderColor(.4, .4, .4, 1)
   button:Hide()
 
   button.caption = button:CreateFontString("ShaguDPS"..name.."Title", "OVERLAY", "GameFontWhite")
@@ -451,6 +465,14 @@ for name, template in pairs(menubuttons) do
   button:SetScript("OnLeave", btnLeave)
   button:SetScript("OnClick", function()
     config[template[6]] = template[2]
+
+    if config.view==1 or config.view==2 then
+      parser:RegisterDamageEvents()
+      parser:UnregisterHealEvents()
+    else
+      parser:UnregisterDamageEvents()
+      parser:RegisterHealEvents()
+    end
 
     scroll = 0
     window.Refresh(true)
@@ -467,19 +489,19 @@ window.btnReset:SetFrameStrata("MEDIUM")
 window.btnReset:SetHeight(16)
 window.btnReset:SetWidth(16)
 window.btnReset:SetBackdrop(backdrop)
-window.btnReset:SetBackdropColor(.2,.2,.2,1)
-window.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
+window.btnReset:SetBackdropColor(.2, .2, .2, 1)
+window.btnReset:SetBackdropBorderColor(.4, .4, .4, 1)
 window.btnReset.tooltip = {
   "Reset Data",
-  { "|cffffffffClick", "|cffaaaaaaAsk to reset all data."},
-  { "|cffffffffShift-Click", "|cffaaaaaaReset all data."},
+  { "|cffffffffClick", "|cffaaaaaaAsk to reset all data." },
+  { "|cffffffffShift-Click", "|cffaaaaaaReset all data." },
 }
 
 window.btnReset.tex = window.btnReset:CreateTexture()
 window.btnReset.tex:SetWidth(10)
 window.btnReset.tex:SetHeight(10)
 window.btnReset.tex:SetPoint("CENTER", 0, 0)
-window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\reset")
+window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS"..(tbc and "-tbc" or "").."\\img\\reset")
 window.btnReset:SetScript("OnEnter", btnEnter)
 window.btnReset:SetScript("OnLeave", btnLeave)
 window.btnReset:SetScript("OnClick", function()
@@ -499,9 +521,9 @@ local function announce(text)
   local channel = tbc and ChatFrameEditBox:GetAttribute("channelTarget") or ChatFrameEditBox.channelTarget
   local target = tbc and ChatFrameEditBox:GetAttribute("tellTarget") or ChatFrameEditBox.tellTarget
 
-  if type == "WHISPER" then
+  if type=="WHISPER" then
     SendChatMessage(text, type, language, target)
-  elseif type == "CHANNEL" then
+  elseif type=="CHANNEL" then
     SendChatMessage(text, type, language, channel);
   else
     SendChatMessage(text, type, language);
@@ -514,19 +536,19 @@ window.btnAnnounce:SetFrameStrata("MEDIUM")
 window.btnAnnounce:SetHeight(16)
 window.btnAnnounce:SetWidth(16)
 window.btnAnnounce:SetBackdrop(backdrop)
-window.btnAnnounce:SetBackdropColor(.2,.2,.2,1)
-window.btnAnnounce:SetBackdropBorderColor(.4,.4,.4,1)
+window.btnAnnounce:SetBackdropColor(.2, .2, .2, 1)
+window.btnAnnounce:SetBackdropBorderColor(.4, .4, .4, 1)
 window.btnAnnounce.tooltip = {
   "Send to Chat",
-  { "|cffffffffClick", "|cffaaaaaaAsk to anounce all data."},
-  { "|cffffffffShift-Click", "|cffaaaaaaAnnounce all data."},
+  { "|cffffffffClick", "|cffaaaaaaAsk to anounce all data." },
+  { "|cffffffffShift-Click", "|cffaaaaaaAnnounce all data." },
 }
 
 window.btnAnnounce.tex = window.btnAnnounce:CreateTexture()
 window.btnAnnounce.tex:SetWidth(10)
 window.btnAnnounce.tex:SetHeight(10)
 window.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
-window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\announce")
+window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS"..(tbc and "-tbc" or "").."\\img\\announce")
 window.btnAnnounce:SetScript("OnEnter", btnEnter)
 window.btnAnnounce:SetScript("OnLeave", btnLeave)
 window.btnAnnounce:SetScript("OnClick", function()
@@ -536,23 +558,27 @@ window.btnAnnounce:SetScript("OnClick", function()
   else
     local ctype = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
     local color = chatcolors[ctype]
-    if not color then color = "|cff00FAF6" end
+    if not color then
+      color = "|cff00FAF6"
+    end
 
     local name = view_templates[config.view].name
-    local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
+    local text = "Post |cffffdd00"..name.."|r data into /"..color..string.lower(ctype).."|r?"
 
     local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
     dialog.text = text
 
-    dialog.OnAccept = function() window.Refresh(nil, true) end
+    dialog.OnAccept = function()
+      window.Refresh(nil, true)
+    end
     StaticPopup_Show("SHAGUMETER_QUESTION")
   end
 end)
 
 window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
 window.border:ClearAllPoints()
-window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
-window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)
+window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1, 1)
+window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1, -1)
 window.border:SetFrameLevel(100)
 
 window.bars = {}
@@ -575,27 +601,27 @@ window.GetCaps = function(view, values)
 
     -- calculate normal values
     if data["_sum"] and data["_ctime"] then
-      values.all = values.all + data["_sum"]
-      if data["_sum"] > values.best then
+      values.all = values.all+data["_sum"]
+      if data["_sum"]>values.best then
         values.best = data["_sum"]
       end
 
-      values.persecond_all = values.persecond_all + data["_sum"] / data["_ctime"]
-      if data["_sum"] / data["_ctime"] > values.persecond_best then
-        values.persecond_best = data["_sum"] / data["_ctime"]
+      values.persecond_all = values.persecond_all+data["_sum"]/data["_ctime"]
+      if data["_sum"]/data["_ctime"]>values.persecond_best then
+        values.persecond_best = data["_sum"]/data["_ctime"]
       end
     end
 
     -- calculate effective values
     if data["_esum"] and data["_ctime"] then
-      values.effective_all = values.effective_all + data["_esum"]
-      if data["_esum"] > values.effective_all then
+      values.effective_all = values.effective_all+data["_esum"]
+      if data["_esum"]>values.effective_all then
         values.persecond_best = data["_esum"]
       end
 
-      values.effective_persecond_all = values.effective_persecond_all + data["_esum"] / data["_ctime"]
-      if data["_esum"] / data["_ctime"] > values.effective_persecond_best then
-        values.effective_persecond_best = data["_esum"] / data["_ctime"]
+      values.effective_persecond_all = values.effective_persecond_all+data["_esum"]/data["_ctime"]
+      if data["_esum"]/data["_ctime"]>values.effective_persecond_best then
+        values.effective_persecond_best = data["_esum"]/data["_ctime"]
       end
     end
   end
@@ -608,18 +634,18 @@ window.GetData = function(unitdata, values)
 
   -- read normal values
   values.value = unitdata["_sum"]
-  values.value_persecond = round(values.value / unitdata["_ctime"], 1)
-  values.percent = values.value == 0 and 0 or round(values.value / values.all * 100,1)
-  values.percent_persecond = values.value_persecond == 0 and 0 or round(values.value_persecond / values.persecond_all * 100, 1)
+  values.value_persecond = round(values.value/unitdata["_ctime"], 1)
+  values.percent = values.value==0 and 0 or round(values.value/values.all*100, 1)
+  values.percent_persecond = values.value_persecond==0 and 0 or round(values.value_persecond/values.persecond_all*100, 1)
 
   -- read effective values
   if unitdata["_esum"] then
     values.effective_value = unitdata["_esum"]
-    values.effective_value_persecond = round(values.effective_value / unitdata["_ctime"], 1)
-    values.effective_percent = values.effective_value == 0 and 0 or round(values.effective_value / values.effective_all * 100, 1)
-    values.effective_percent_persecond = values.effective_value_persecond == 0 and 0 or round(values.effective_value_persecond / values.effective_persecond_all * 100,1)
-    values.uneffective_value = values.value - values.effective_value
-    values.uneffective_value_persecond = values.value_persecond - values.effective_value_persecond
+    values.effective_value_persecond = round(values.effective_value/unitdata["_ctime"], 1)
+    values.effective_percent = values.effective_value==0 and 0 or round(values.effective_value/values.effective_all*100, 1)
+    values.effective_percent_persecond = values.effective_value_persecond==0 and 0 or round(values.effective_value_persecond/values.effective_persecond_all*100, 1)
+    values.uneffective_value = values.value-values.effective_value
+    values.uneffective_value_persecond = values.value_persecond-values.effective_value_persecond
   else
     values.effective_value = 0
     values.effective_value_persecond = 0
@@ -630,12 +656,12 @@ window.GetData = function(unitdata, values)
   end
 
   -- check pet and detect owner/unit names
-  local pet  = not classes[data["classes"][values.name]] and data["classes"][values.name] ~= "__other__"
+  local pet = not classes[data["classes"][values.name]] and data["classes"][values.name]~="__other__"
   local unit = pet and data["classes"][values.name] or values.name
 
   -- merge pet/owner strings if option is set
-  if config.merge_pets == 0 then
-    values.name = pet and unit .. " - " .. values.name or unit
+  if config.merge_pets==0 then
+    values.name = pet and unit.." - "..values.name or unit
   else
     values.name = unit
   end
@@ -644,9 +670,9 @@ window.GetData = function(unitdata, values)
   -- default to faded name colors
   local r, g, b = str2rgb(values.name)
   values.color = values.color or {}
-  values.color.r = r / 4 + .4
-  values.color.g = g / 4 + .4
-  values.color.b = b / 4 + .4
+  values.color.r = r/4+.4
+  values.color.g = g/4+.4
+  values.color.b = b/4+.4
 
   -- replace color by class colors if possible
   if classes[data["classes"][unit]] then
@@ -655,10 +681,10 @@ window.GetData = function(unitdata, values)
     values.color.g = RAID_CLASS_COLORS[data["classes"][unit]].g
     values.color.b = RAID_CLASS_COLORS[data["classes"][unit]].b
 
-    if config.pastel == 1 then
-      values.color.r = (values.color.r + .5) * .5
-      values.color.g = (values.color.g + .5) * .5
-      values.color.b = (values.color.b + .5) * .5
+    if config.pastel==1 then
+      values.color.r = (values.color.r+.5)*.5
+      values.color.g = (values.color.g+.5)*.5
+      values.color.b = (values.color.b+.5)*.5
     end
   end
 
@@ -678,55 +704,55 @@ local buttons = {
 window.Refresh = function(force, report)
   -- config changes
   if force then
-    if config.visible == 1 then
+    if config.visible==1 then
       window:Show()
     else
       window:Hide()
     end
 
     for _, button in pairs(buttons) do
-      button.caption:SetTextColor(1,1,1,1)
+      button.caption:SetTextColor(1, 1, 1, 1)
     end
 
     -- update backdrop borders
-    if config.backdrop == 1 then
+    if config.backdrop==1 then
       -- window background
       window:SetBackdrop(backdrop_window)
-      window:SetBackdropColor(.5,.5,.5,.5)
+      window:SetBackdropColor(.5, .5, .5, .5)
 
       -- window border
       window.border:SetBackdrop(backdrop_border)
-      window.border:SetBackdropBorderColor(.7,.7,.7,1)
+      window.border:SetBackdropBorderColor(.7, .7, .7, 1)
     else
       window:SetBackdrop(nil)
       window.border:SetBackdrop(nil)
     end
 
     -- update panel button appearance
-    if config.view == 1 then
-      window.btnDamage.caption:SetTextColor(1,.9,0,1)
+    if config.view==1 then
+      window.btnDamage.caption:SetTextColor(1, .9, 0, 1)
       window.btnMode.caption:SetText("Damage")
-    elseif config.view == 2 then
-      window.btnDPS.caption:SetTextColor(1,.9,0,1)
+    elseif config.view==2 then
+      window.btnDPS.caption:SetTextColor(1, .9, 0, 1)
       window.btnMode.caption:SetText("DPS")
-    elseif config.view == 3 then
-      window.btnHeal.caption:SetTextColor(1,.9,0,1)
+    elseif config.view==3 then
+      window.btnHeal.caption:SetTextColor(1, .9, 0, 1)
       window.btnMode.caption:SetText("Heal")
-    elseif config.view == 4 then
-      window.btnHPS.caption:SetTextColor(1,.9,0,1)
+    elseif config.view==4 then
+      window.btnHPS.caption:SetTextColor(1, .9, 0, 1)
       window.btnMode.caption:SetText("HPS")
     end
 
-    if config.segment == 0 then
-      window.btnOverall.caption:SetTextColor(1,.9,0,1)
+    if config.segment==0 then
+      window.btnOverall.caption:SetTextColor(1, .9, 0, 1)
       window.btnSegment.caption:SetText("Overall")
-    elseif config.segment == 1 then
-      window.btnCurrent.caption:SetTextColor(1,.9,0,1)
+    elseif config.segment==1 then
+      window.btnCurrent.caption:SetTextColor(1, .9, 0, 1)
       window.btnSegment.caption:SetText("Current")
     end
 
     window:SetWidth(config.width)
-    window:SetHeight(config.height * config.bars + 22 + 4)
+    window:SetHeight(config.height*config.bars+22+4)
   end
 
   -- clear previous results
@@ -736,15 +762,15 @@ window.Refresh = function(force, report)
   end
 
   -- set view to damage or heal
-  if config.view == 1 or config.view == 2 then
+  if config.view==1 or config.view==2 then
     segment = data.damage[(config.segment or 0)]
-  elseif config.view == 3 or config.view == 4 then
+  elseif config.view==3 or config.view==4 then
     segment = data.heal[(config.segment or 0)]
   end
 
   -- read view settings
-  local view_per_second = (config.view == 2 or config.view == 4) and true or nil
-  local view_effective  = (config.view == 3 or config.view == 4) and true or nil
+  local view_per_second = (config.view==2 or config.view==4) and true or nil
+  local view_effective = (config.view==3 or config.view==4) and true or nil
 
   local template = view_templates[config.view]
   local sort = sort_algorithms[template.sort]
@@ -752,8 +778,8 @@ window.Refresh = function(force, report)
   -- report to chat if flag is set
   if report then
     local name = view_templates[config.view].name
-    local seg = config.segment == 1 and "Current" or "Overall"
-    announce("ShaguDPS - " .. seg .. " " .. name .. ":")
+    local seg = config.segment==1 and "Current" or "Overall"
+    announce("ShaguDPS - "..seg.." "..name..":")
   end
 
   -- load caps of the current view
@@ -767,8 +793,8 @@ window.Refresh = function(force, report)
     -- load data values of the current unit
     values = window.GetData(unitdata, values)
 
-    local bar = i - scroll
-    if bar >= 1 and bar <= config.bars then
+    local bar = i-scroll
+    if bar>=1 and bar<=config.bars then
       window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
 
       -- attach unit and titles to bar
@@ -788,25 +814,25 @@ window.Refresh = function(force, report)
       end
 
       window.bars[bar]:SetStatusBarColor(values.color.r, values.color.g, values.color.b)
-      window.bars[bar].textLeft:SetText(i .. ". " .. values.name)
+      window.bars[bar].textLeft:SetText(i..". "..values.name)
 
       local a = template.bar_string_params
       local line = string.format(template.bar_string,
-        values[a[1]], values[a[2]], values[a[3]], values[a[4]], values[a[5]])
+          values[a[1]], values[a[2]], values[a[3]], values[a[4]], values[a[5]])
 
       window.bars[bar].textRight:SetText(line)
       window.bars[bar]:Show()
 
       -- report to chat if flag is set
-      if report and i <= 10 then
+      if report and i<=10 then
         local chat = string.format(template.chat_string,
-          values[a[1]], values[a[2]], values[a[3]], values[a[4]], values[a[5]])
+            values[a[1]], values[a[2]], values[a[3]], values[a[4]], values[a[5]])
 
-        announce(i .. ". " .. values.name .. " " .. chat)
+        announce(i..". "..values.name.." "..chat)
       end
     end
 
-    i = i + 1
+    i = i+1
   end
 end
 
