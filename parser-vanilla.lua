@@ -44,11 +44,11 @@ function captures(pat)
 end
 
 -- same as string.find but aware of up to 5 capture indexes
-local ra, rb, rc, rd, re
+local ra, rb, rc, rd, re, a, b, c, d, e, match, num, va, vb, vc, vd, ve
 function cfind(str, pat)
   -- read capture indexes
-  local a, b, c, d, e = captures(pat)
-  local match, num, va, vb, vc, vd, ve = string.find(str, sanitize(pat))
+  a, b, c, d, e = captures(pat)
+  match, num, va, vb, vc, vd, ve = string.find(str, sanitize(pat))
 
   -- put entries into the proper return values
   ra = e == 1 and ve or d == 1 and vd or c == 1 and vc or b == 1 and vb or va
