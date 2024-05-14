@@ -402,25 +402,32 @@ local defaults = { }
 local absorb = sanitize(ABSORB_TRAILER)
 local resist = sanitize(RESIST_TRAILER)
 
+-- scope all required variables
+local _, num, pattern, result, a1, a2, a3, a4, a5
+
+-- use same strings each time
+local empty, physical, autohit = "", "physical", "Auto Hit"
+local player = UnitName("player")
+
 -- call all datasources on each event
 parser:SetScript("OnEvent", function()
   if not arg1 then return end
 
   -- remove absorb and resist suffixes
-  arg1 = string.gsub(arg1, absorb, "")
-  arg1 = string.gsub(arg1, resist, "")
+  arg1 = string.gsub(arg1, absorb, empty)
+  arg1 = string.gsub(arg1, resist, empty)
 
   -- write default values
-  defaults.source = UnitName("player")
-  defaults.target = UnitName("player")
-  defaults.school = "physical"
-  defaults.attack = "Auto Hit"
+  defaults.source = player
+  defaults.target = player
+  defaults.school = physical
+  defaults.attack = autohit
   defaults.spell  = UNKNOWN
-  defaults.value = 0
+  defaults.value  = 0
 
   -- iterate over all patterns assigned to the current event
   for _, pattern in pairs(combatlog_events[event]) do
-    local result, _, a1, a2, a3, a4, a5 = cfind(arg1, pattern)
+    result, num, a1, a2, a3, a4, a5 = cfind(arg1, pattern)
 
     if result then
       return parser:AddData(combatlog_parser[pattern](defaults, a1, a2, a3, a4, a5))
