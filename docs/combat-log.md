@@ -109,22 +109,14 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
   - `DAMAGESHIELDSELFOTHER`
 
 
-#### Shield Damage (other vs. other)
-
-- Events:
-  - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS`
-
-- Strings:
-  - `DAMAGESHIELDOTHEROTHER`
-
-
-#### Shield Damage (other vs. self)
+#### Shield Damage (other vs. self/other)
 
 - Events:
   - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS`
 
 - Strings:
   - `DAMAGESHIELDOTHERSELF`
+  - `DAMAGESHIELDOTHEROTHER`
 
 
 ### Periodic Damage
