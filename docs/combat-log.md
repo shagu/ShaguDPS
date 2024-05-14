@@ -8,48 +8,33 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
 
 ## Damage
 
-### Damage - Self
+### Hit Damage
 
-#### Hit Damage (Self)
+#### Hit Damage (self vs. other)
 
-- Events: 
-  - `CHAT_MSG_COMBAT_SELF_HITS`  
-  
-- Strings: 
+- Events:
+  - `CHAT_MSG_COMBAT_SELF_HITS`
+
+- Strings:
   - `COMBATHITSELFOTHER`
   - `COMBATHITSCHOOLSELFOTHER`
   - `COMBATHITCRITSELFOTHER`
   - `COMBATHITCRITSCHOOLSELFOTHER`
 
 
-#### Spell Damage (Self)
+#### Hit Damage (other vs. self)
 
-- Events: 
-  - `CHAT_MSG_SPELL_SELF_DAMAGE`
-  
-- Strings: 
-  - `SPELLLOGSCHOOLSELFSELF`
-  - `SPELLLOGCRITSCHOOLSELFSELF`
-  - `SPELLLOGSELFSELF`
-  - `SPELLLOGCRITSELFSELF`
-  - `SPELLLOGSCHOOLSELFOTHER`
-  - `SPELLLOGCRITSCHOOLSELFOTHER`
-  - `SPELLLOGSELFOTHER`
-  - `SPELLLOGCRITSELFOTHER`
+- Events:
+  - `CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS`
+
+- Strings:
+  - `COMBATHITOTHERSELF`
+  - `COMBATHITCRITOTHERSELF`
+  - `COMBATHITSCHOOLOTHERSELF`
+  - `COMBATHITCRITSCHOOLOTHERSELF`
 
 
-#### Shield Damage (Self)
-
-- Events: 
-  - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF`
-  
-- Strings: 
-  - `DAMAGESHIELDSELFOTHER`
-
-
-### Damage - Others
-
-#### Hit Damage
+#### Hit Damage (other vs. other)
 
 - Events:
   - `CHAT_MSG_COMBAT_PARTY_HITS`
@@ -65,36 +50,26 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
   - `COMBATHITSCHOOLOTHEROTHER`
   - `COMBATHITCRITSCHOOLOTHEROTHER`
 
-#### Hit Damage on Self
+
+### Spell Damage
+
+#### Spell Damage (self vs. self/other)
 
 - Events:
-  - `CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS`
+  - `CHAT_MSG_SPELL_SELF_DAMAGE`
 
 - Strings:
-  - `COMBATHITOTHERSELF`
-  - `COMBATHITCRITOTHERSELF`
-  - `COMBATHITSCHOOLOTHERSELF`
-  - `COMBATHITCRITSCHOOLOTHERSELF`
+  - `SPELLLOGSCHOOLSELFSELF`
+  - `SPELLLOGCRITSCHOOLSELFSELF`
+  - `SPELLLOGSELFSELF`
+  - `SPELLLOGCRITSELFSELF`
+  - `SPELLLOGSCHOOLSELFOTHER`
+  - `SPELLLOGCRITSCHOOLSELFOTHER`
+  - `SPELLLOGSELFOTHER`
+  - `SPELLLOGCRITSELFOTHER`
 
 
-#### Spell Damage
-
-- Events:
-  - `CHAT_MSG_SPELL_PARTY_DAMAGE`
-  - `CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE`
-  - `CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE`
-  - `CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE`
-  - `CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE`
-  - `CHAT_MSG_SPELL_PET_DAMAGE`
-  
-- Strings:
-  - `SPELLLOGSCHOOLOTHEROTHER`
-  - `SPELLLOGCRITSCHOOLOTHEROTHER`
-  - `SPELLLOGOTHEROTHER`
-  - `SPELLLOGCRITOTHEROTHER`
-
-
-#### Spell Damage on Self
+#### Spell Damage (other vs. self)
 
 - Events:
   - `CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE`
@@ -106,18 +81,57 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
   - `SPELLLOGCRITOTHERSELF`
 
 
-#### Shield Damage
+#### Spell Damage (other vs. other)
+
+- Events:
+  - `CHAT_MSG_SPELL_PARTY_DAMAGE`
+  - `CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE`
+  - `CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE`
+  - `CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE`
+  - `CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE`
+  - `CHAT_MSG_SPELL_PET_DAMAGE`
+
+- Strings:
+  - `SPELLLOGSCHOOLOTHEROTHER`
+  - `SPELLLOGCRITSCHOOLOTHEROTHER`
+  - `SPELLLOGOTHEROTHER`
+  - `SPELLLOGCRITOTHEROTHER`
+
+
+### Shield Damage
+
+#### Shield Damage (self vs. other)
+
+- Events:
+  - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF`
+
+- Strings:
+  - `DAMAGESHIELDSELFOTHER`
+
+
+#### Shield Damage (other vs. other)
 
 - Events:
   - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS`
-  
+
 - Strings:
   - `DAMAGESHIELDOTHEROTHER`
 
 
-#### Periodic Damage
+#### Shield Damage (other vs. self)
 
-- Events:   
+- Events:
+  - `CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS`
+
+- Strings:
+  - `DAMAGESHIELDOTHERSELF`
+
+
+### Periodic Damage
+
+#### Periodic Damage (self/other vs. other)
+
+- Events:
    - `CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE`
    - `CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE`
    - `CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE`
@@ -127,50 +141,40 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
   - `PERIODICAURADAMAGEOTHEROTHER`
   - `PERIODICAURADAMAGESELFOTHER`
 
-#### Periodic Damage vs Self
+
+#### Periodic Damage (self/other vs. self)
 
 - Events:
-   - `CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE`  
+   - `CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE`
 
 - Strings:
   - `PERIODICAURADAMAGEOTHERSELF`
   - `PERIODICAURADAMAGESELFSELF`
 
+
 ## Heal
 
-### Heal - Self
+### Heal
 
-#### Heal (Self)
+#### Heal (self vs. self/other)
 
 - Events:
   - `CHAT_MSG_SPELL_SELF_BUFF`
-  
+
 - Strings:
   - `HEALEDCRITSELFSELF`
   - `HEALEDSELFSELF`
   - `HEALEDCRITSELFOTHER`
   - `HEALEDSELFOTHER`
-    
-
-#### Periodic Heal (Self)
-
-- Events:
-  - `CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS`
-  
-- Strings:
-  - `PERIODICAURAHEALSELFSELF`
-  - `PERIODICAURAHEALOTHERSELF`
 
 
-### Heal -Others
-
-#### Heal
+#### Heal (other vs. self/other)
 
 - Events:
   - `CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF`
   - `CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF`
   - `CHAT_MSG_SPELL_PARTY_BUFF`
-  
+
 - Strings:
   - `HEALEDCRITOTHEROTHER`
   - `HEALEDOTHEROTHER`
@@ -178,13 +182,25 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
   - `HEALEDOTHERSELF`
 
 
-#### Periodic Heal
+### Periodic Heal
+
+#### Periodic Heal (self/other vs. other)
 
 - Events:
   - `CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS`
   - `CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS`
   - `CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS`
-  
+
 - Strings:
   - `PERIODICAURAHEALOTHEROTHER`
   - `PERIODICAURAHEALSELFOTHER`
+
+
+#### Periodic Heal (other vs. self/other)
+
+- Events:
+  - `CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS`
+
+- Strings:
+  - `PERIODICAURAHEALSELFSELF`
+  - `PERIODICAURAHEALOTHERSELF`
