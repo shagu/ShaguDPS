@@ -60,296 +60,345 @@ function cfind(str, pat)
   return match, num, ra, rb, rc, rd, re
 end
 
-
+-- list of possible combat log patterns that may appear on the same events
 local combatlog_strings = {
-  -- [[ DAMAGE ]] --
-
-  --[[ me source me target ]]--
-  { -- Your %s hits you for %d %s damage.
-    SPELLLOGSCHOOLSELFSELF, function(d, attack, value, school)
-      return d.source, attack, d.target, value, school, "damage"
-    end
+  -- Damage
+  ["Hit Damage (self vs. other)"] = {
+    COMBATHITSELFOTHER, COMBATHITSCHOOLSELFOTHER, COMBATHITCRITSELFOTHER, COMBATHITCRITSCHOOLSELFOTHER
   },
-  { -- Your %s crits you for %d %s damage.
-    SPELLLOGCRITSCHOOLSELFSELF, function(d, attack, value, school)
-      return d.source, attack, d.target, value, school, "damage"
-    end
+  ["Hit Damage (other vs. self)"] = {
+    COMBATHITOTHERSELF, COMBATHITCRITOTHERSELF, COMBATHITSCHOOLOTHERSELF, COMBATHITCRITSCHOOLOTHERSELF
   },
-  { -- Your %s hits you for %d.
-    SPELLLOGSELFSELF, function(d, attack, value)
-      return d.source, attack, d.target, value, d.school, "damage"
-    end
+  ["Hit Damage (other vs. other)"] = {
+    COMBATHITOTHEROTHER, COMBATHITCRITOTHEROTHER, COMBATHITSCHOOLOTHEROTHER, COMBATHITCRITSCHOOLOTHEROTHER
   },
-  { -- Your %s crits you for %d.
-    SPELLLOGCRITSELFSELF, function(d, attack, value)
-      return d.source, attack, d.target, value, d.school, "damage"
-    end
+  ["Spell Damage (self vs. self/other)"] = {
+    SPELLLOGSCHOOLSELFSELF, SPELLLOGCRITSCHOOLSELFSELF, SPELLLOGSELFSELF, SPELLLOGCRITSELFSELF, SPELLLOGSCHOOLSELFOTHER, SPELLLOGCRITSCHOOLSELFOTHER, SPELLLOGSELFOTHER, SPELLLOGCRITSELFOTHER
   },
-  { -- You suffer %d %s damage from your %s.
-    PERIODICAURADAMAGESELFSELF, function(d, value, school, attack)
-      return d.source, attack, d.target, value, school, "damage"
-    end
+  ["Spell Damage (other vs. self)"] = {
+    SPELLLOGSCHOOLOTHERSELF, SPELLLOGCRITSCHOOLOTHERSELF, SPELLLOGOTHERSELF, SPELLLOGCRITOTHERSELF
   },
-
-  --[[ me source ]]--
-  { -- Your %s hits %s for %d %s damage.
-    SPELLLOGSCHOOLSELFOTHER, function(d, attack, target, value, school)
-      return d.source, attack, target, value, school, "damage"
-    end
+  ["Spell Damage (other vs. other)"] = {
+    SPELLLOGSCHOOLOTHEROTHER, SPELLLOGCRITSCHOOLOTHEROTHER, SPELLLOGOTHEROTHER, SPELLLOGCRITOTHEROTHER
   },
-  { -- Your %s crits %s for %d %s damage.
-    SPELLLOGCRITSCHOOLSELFOTHER, function(d, attack, target, value, school)
-      return d.source, attack, target, value, school, "damage"
-    end
+  ["Shield Damage (self vs. other)"] = {
+    DAMAGESHIELDSELFOTHER
   },
-  { -- Your %s hits %s for %d.
-    SPELLLOGSELFOTHER, function(d, attack, target, value)
-      return d.source, attack, target, value, d.school, "damage"
-    end
+  ["Shield Damage (other vs. self/other)"] = {
+    DAMAGESHIELDOTHERSELF, DAMAGESHIELDOTHEROTHER
   },
-  { -- Your %s crits %s for %d.
-    SPELLLOGCRITSELFOTHER, function(d, attack, target, value)
-      return d.source, attack, target, value, d.school, "damage"
-    end
+  ["Periodic Damage (self/other vs. other)"] = {
+    PERIODICAURADAMAGESELFOTHER, PERIODICAURADAMAGEOTHEROTHER
   },
-  { -- %s suffers %d %s damage from your %s.
-    PERIODICAURADAMAGESELFOTHER, function(d, target, value, school, attack)
-      return d.source, attack, target, value, school, "damage"
-    end
-  },
-  { -- You hit %s for %d.
-    COMBATHITSELFOTHER, function(d, target, value)
-      return d.source, d.attack, target, value, d.school, "damage"
-    end
-  },
-  { -- You crit %s for %d.
-    COMBATHITCRITSELFOTHER, function(d, target, value)
-      return d.source, d.attack, target, value, d.school, "damage"
-    end
-  },
-  { -- You hit %s for %d %s damage.
-    COMBATHITSCHOOLSELFOTHER, function(d, target, value, school)
-      return d.source, d.attack, target, value, school, "damage"
-    end
-  },
-  { -- You crit %s for %d %s damage.
-    COMBATHITCRITSCHOOLSELFOTHER, function(d, target, value, school)
-      return d.source, d.attack, target, value, school, "damage"
-    end
-  },
-  { -- You reflect %d %s damage to %s.
-    DAMAGESHIELDSELFOTHER, function(d, value, school, target)
-      return d.source, "Reflect ("..school..")", target, value, school, "damage"
-    end
+  ["Periodic Damage (self/other vs. self)"] = {
+    PERIODICAURADAMAGESELFSELF, PERIODICAURADAMAGEOTHERSELF
   },
 
-  --[[ me target ]]--
-  { -- %s's %s hits you for %d %s damage.
-    SPELLLOGSCHOOLOTHERSELF, function(d, source, attack, value, school)
-      return source, attack, d.target, value, school, "damage"
-    end
+  -- Heal
+  ["Heal (self vs. self/other)"] = {
+    HEALEDCRITSELFSELF, HEALEDSELFSELF, HEALEDCRITSELFOTHER, HEALEDSELFOTHER
   },
-  { -- %s's %s crits you for %d %s damage.
-    SPELLLOGCRITSCHOOLOTHERSELF, function(d, source, attack, value, school)
-      return source, attack, d.target, value, school, "damage"
-    end
+  ["Heal (other vs. self/other)"] = {
+    HEALEDCRITOTHERSELF, HEALEDOTHERSELF, HEALEDCRITOTHEROTHER, HEALEDOTHEROTHER
   },
-  { -- %s's %s hits you for %d.
-    SPELLLOGOTHERSELF, function(d, source, attack, value)
-      return source, attack, d.target, value, d.school, "damage"
-    end
+  ["Periodic Heal (self/other vs. other)"] = {
+    PERIODICAURAHEALSELFOTHER, PERIODICAURAHEALOTHEROTHER
   },
-  { -- %s's %s crits you for %d.
-    SPELLLOGCRITOTHERSELF, function(d, source, attack, value)
-      return source, attack, d.target, value, d.school, "damage"
-    end
-  },
-  { -- You suffer %d %s damage from %s's %s.
-    PERIODICAURADAMAGEOTHERSELF, function(d, value, school, source, attack)
-      return source, attack, d.target, value, school, "damage"
-    end
-  },
-  { -- %s hits you for %d.
-    COMBATHITOTHERSELF, function(d, source, value)
-      return source, d.attack, d.target, value, d.school, "damage"
-    end
-  },
-  { -- %s crits you for %d.
-    COMBATHITCRITOTHERSELF, function(d, source, value)
-      return source, d.attack, d.target, value, d.school, "damage"
-    end
-  },
-  { -- %s hits you for %d %s damage.
-    COMBATHITSCHOOLOTHERSELF, function(d, source, value, school)
-      return source, d.attack, d.target, value, school, "damage"
-    end
-  },
-  { -- %s crits you for %d %s damage.
-    COMBATHITCRITSCHOOLOTHERSELF, function(d, source, value, school)
-      return source, d.attack, d.target, value, school, "damage"
-    end
-  },
-
-  --[[ other ]]--
-  { -- %s's %s hits %s for %d %s damage.
-    SPELLLOGSCHOOLOTHEROTHER, function(d, source, attack, target, value, school)
-      return source, attack, target, value, school, "damage"
-    end
-  },
-  { -- %s's %s crits %s for %d %s damage.
-    SPELLLOGCRITSCHOOLOTHEROTHER, function(d, source, attack, target, value, school)
-      return source, attack, target, value, school, "damage"
-    end
-  },
-  { -- %s's %s hits %s for %d.
-    SPELLLOGOTHEROTHER, function(d, source, attack, target, value)
-      return source, attack, target, value, d.school, "damage"
-    end
-  },
-  { -- %s's %s crits %s for %d.
-    SPELLLOGCRITOTHEROTHER, function(d, source, attack, target, value, school)
-      return source, attack, target, value, school, "damage"
-    end
-  },
-  { -- %s suffers %d %s damage from %s's %s.
-    PERIODICAURADAMAGEOTHEROTHER, function(d, target, value, school, source, attack)
-      return source, attack, target, value, school, "damage"
-    end
-  },
-  { -- %s hits %s for %d.
-    COMBATHITOTHEROTHER, function(d, source, target, value)
-      return source, d.attack, target, value, d.school, "damage"
-    end
-  },
-  { -- %s crits %s for %d.
-    COMBATHITCRITOTHEROTHER, function(d, source, target, value)
-      return source, d.attack, target, value, d.school, "damage"
-    end
-  },
-  { -- %s hits %s for %d %s damage.
-    COMBATHITSCHOOLOTHEROTHER, function(d, source, target, value, school)
-      return source, d.attack, target, value, school, "damage"
-    end
-  },
-  { -- %s crits %s for %d %s damage.
-    COMBATHITCRITSCHOOLOTHEROTHER, function(d, source, target, value, school)
-      return source, d.attack, target, value, school, "damage"
-    end
-  },
-  { -- %s reflects %d %s damage to %s.
-    DAMAGESHIELDOTHEROTHER, function(d, source, value, school, target)
-      return source, "Reflect ("..school..")", target, value, school, "damage"
-    end
-  },
-
-  -- [[ HEAL ]] --
-  --[[ me target ]]--
-  { -- %s's %s critically heals you for %d.
-    HEALEDCRITOTHERSELF, function(d, source, spell, value)
-      return source, spell, d.target, value, d.school, "heal"
-    end
-  },
-  { -- %s's %s heals you for %d.
-    HEALEDOTHERSELF, function(d, source, spell, value)
-      return source, spell, d.target, value, d.school, "heal"
-    end
-  },
-  { -- You gain %d health from %s's %s.
-    PERIODICAURAHEALOTHERSELF, function(d, value, source, spell)
-      return source, spell, d.target, value, d.school, "heal"
-    end
-  },
-
-  --[[ me source me target ]]--
-  { -- Your %s critically heals you for %d.
-    HEALEDCRITSELFSELF, function(d, spell, value)
-      return d.source, spell, d.target, value, d.school, "heal"
-    end
-  },
-  { -- Your %s heals you for %d.
-    HEALEDSELFSELF, function(d, spell, value)
-      return d.source, spell, d.target, value, d.school, "heal"
-    end
-  },
-  { -- You gain %d health from %s.
-    PERIODICAURAHEALSELFSELF, function(d, value, spell)
-      return d.source, spell, d.target, value, d.school, "heal"
-    end
-  },
-
-  --[[ me source ]]--
-  { -- Your %s critically heals %s for %d.
-    HEALEDCRITSELFOTHER, function(d, spell, target, value)
-      return d.source, spell, target, value, d.school, "heal"
-    end
-  },
-  { -- Your %s heals %s for %d.
-    HEALEDSELFOTHER, function(d, spell, target, value)
-      return d.source, spell, target, value, d.school, "heal"
-    end
-  },
-  { -- %s gains %d health from your %s.
-    PERIODICAURAHEALSELFOTHER, function(d, target, value, spell)
-      return d.source, spell, target, value, d.school, "heal"
-    end
-  },
-
-  --[[ other ]]--
-  { -- %s's %s critically heals %s for %d.
-    HEALEDCRITOTHEROTHER, function(d, source, spell, target, value)
-      return source, spell, target, value, d.school, "heal"
-    end
-  },
-  { -- %s's %s heals %s for %d.
-    HEALEDOTHEROTHER, function(d, source, spell, target, value)
-      return source, spell, target, value, d.school, "heal"
-    end
-  },
-  { -- %s gains %d health from %s's %s.
-    PERIODICAURAHEALOTHEROTHER, function(d, target, value, source, spell)
-      return source, spell, target, value, d.school, "heal"
-    end
-  },
+  ["Periodic Heal (other vs. self/other)"] = {
+    PERIODICAURAHEALSELFSELF, PERIODICAURAHEALOTHERSELF
+  }
 }
 
--- register to all damage combat log events
-parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF")
-parser:RegisterEvent("CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS")
-parser:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_COMBAT_SELF_HITS")
-parser:RegisterEvent("CHAT_MSG_SPELL_PARTY_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_COMBAT_PARTY_HITS")
-parser:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS")
-parser:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_COMBAT_FRIENDLYPLAYER_HITS")
-parser:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_CREATURE_HITS")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_PARTY_HITS")
-parser:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS")
-parser:RegisterEvent("CHAT_MSG_SPELL_PET_DAMAGE")
-parser:RegisterEvent("CHAT_MSG_COMBAT_PET_HITS")
+-- list of combat log events with possible patterns assigned to them
+local combatlog_events = {
+  -- Damage
+  ["CHAT_MSG_COMBAT_SELF_HITS"] = combatlog_strings["Hit Damage (self vs. other)"],
+  ["CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS"] = combatlog_strings["Hit Damage (other vs. self)"],
+  ["CHAT_MSG_COMBAT_PARTY_HITS"] = combatlog_strings["Hit Damage (other vs. other)"],
+  ["CHAT_MSG_COMBAT_FRIENDLYPLAYER_HITS"] = combatlog_strings["Hit Damage (other vs. other)"],
+  ["CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS"] = combatlog_strings["Hit Damage (other vs. other)"],
+  ["CHAT_MSG_COMBAT_CREATURE_VS_CREATURE_HITS"] = combatlog_strings["Hit Damage (other vs. other)"],
+  ["CHAT_MSG_COMBAT_CREATURE_VS_PARTY_HITS"] = combatlog_strings["Hit Damage (other vs. other)"],
+  ["CHAT_MSG_COMBAT_PET_HITS"] = combatlog_strings["Hit Damage (other vs. other)"],
+  ["CHAT_MSG_SPELL_SELF_DAMAGE"] = combatlog_strings["Spell Damage (self vs. self/other)"],
+  ["CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE"] = combatlog_strings["Spell Damage (other vs. self)"],
+  ["CHAT_MSG_SPELL_PARTY_DAMAGE"] = combatlog_strings["Spell Damage (other vs. other)"],
+  ["CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE"] = combatlog_strings["Spell Damage (other vs. other)"],
+  ["CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE"] = combatlog_strings["Spell Damage (other vs. other)"],
+  ["CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE"] = combatlog_strings["Spell Damage (other vs. other)"],
+  ["CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE"] = combatlog_strings["Spell Damage (other vs. other)"],
+  ["CHAT_MSG_SPELL_PET_DAMAGE"] = combatlog_strings["Spell Damage (other vs. other)"],
+  ["CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF"] = combatlog_strings["Shield Damage (self vs. other)"],
+  ["CHAT_MSG_SPELL_DAMAGESHIELDS_ON_OTHERS"] = combatlog_strings["Shield Damage (other vs. self/other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE"] = combatlog_strings["Periodic Damage (self/other vs. other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE"] = combatlog_strings["Periodic Damage (self/other vs. other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE"] = combatlog_strings["Periodic Damage (self/other vs. other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE"] = combatlog_strings["Periodic Damage (self/other vs. other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE"] = combatlog_strings["Periodic Damage (self/other vs. self)"],
 
--- register to all heal combat log events
-parser:RegisterEvent("CHAT_MSG_SPELL_SELF_BUFF")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS")
-parser:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS")
-parser:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS")
-parser:RegisterEvent("CHAT_MSG_SPELL_PARTY_BUFF")
-parser:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
+  -- Heal
+  ["CHAT_MSG_SPELL_SELF_BUFF"] = combatlog_strings["Heal (self vs. self/other)"],
+  ["CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF"] = combatlog_strings["Heal (other vs. self/other)"],
+  ["CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF"] = combatlog_strings["Heal (other vs. self/other)"],
+  ["CHAT_MSG_SPELL_PARTY_BUFF"] = combatlog_strings["Heal (other vs. self/other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS"] = combatlog_strings["Periodic Heal (self/other vs. other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS"] = combatlog_strings["Periodic Heal (self/other vs. other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS"] = combatlog_strings["Periodic Heal (self/other vs. other)"],
+  ["CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS"] = combatlog_strings["Periodic Heal (other vs. self/other)"]
+}
+
+-- list of all possible patterns including the logic on how to parse them
+local combatlog_parser = {
+  [SPELLLOGSCHOOLSELFSELF] = function(d, attack, value, school)
+    -- Your %s hits you for %d %s damage.
+    return d.source, attack, d.target, value, school, "damage"
+  end,
+
+  [SPELLLOGCRITSCHOOLSELFSELF] = function(d, attack, value, school)
+    -- Your %s crits you for %d %s damage.
+    return d.source, attack, d.target, value, school, "damage"
+  end,
+
+  [SPELLLOGSELFSELF] = function(d, attack, value)
+    -- Your %s hits you for %d.
+    return d.source, attack, d.target, value, d.school, "damage"
+  end,
+
+  [SPELLLOGCRITSELFSELF] = function(d, attack, value)
+    -- Your %s crits you for %d.
+    return d.source, attack, d.target, value, d.school, "damage"
+  end,
+
+  [PERIODICAURADAMAGESELFSELF] = function(d, value, school, attack)
+    -- You suffer %d %s damage from your %s.
+    return d.source, attack, d.target, value, school, "damage"
+  end,
+
+  [SPELLLOGSCHOOLSELFOTHER] = function(d, attack, target, value, school)
+    -- Your %s hits %s for %d %s damage.
+    return d.source, attack, target, value, school, "damage"
+  end,
+
+  [SPELLLOGCRITSCHOOLSELFOTHER] = function(d, attack, target, value, school)
+    -- Your %s crits %s for %d %s damage.
+    return d.source, attack, target, value, school, "damage"
+  end,
+
+  [SPELLLOGSELFOTHER] = function(d, attack, target, value)
+    -- Your %s hits %s for %d.
+    return d.source, attack, target, value, d.school, "damage"
+  end,
+
+  [SPELLLOGCRITSELFOTHER] = function(d, attack, target, value)
+    -- Your %s crits %s for %d.
+    return d.source, attack, target, value, d.school, "damage"
+  end,
+
+  [PERIODICAURADAMAGESELFOTHER] = function(d, target, value, school, attack)
+    -- %s suffers %d %s damage from your %s.
+    return d.source, attack, target, value, school, "damage"
+  end,
+
+  [COMBATHITSELFOTHER] = function(d, target, value)
+    -- You hit %s for %d.
+    return d.source, d.attack, target, value, d.school, "damage"
+  end,
+
+  [COMBATHITCRITSELFOTHER] = function(d, target, value)
+    -- You crit %s for %d.
+    return d.source, d.attack, target, value, d.school, "damage"
+  end,
+
+  [COMBATHITSCHOOLSELFOTHER] = function(d, target, value, school)
+    -- You hit %s for %d %s damage.
+    return d.source, d.attack, target, value, school, "damage"
+  end,
+
+  [COMBATHITCRITSCHOOLSELFOTHER] = function(d, target, value, school)
+    -- You crit %s for %d %s damage.
+    return d.source, d.attack, target, value, school, "damage"
+  end,
+
+  [DAMAGESHIELDSELFOTHER] = function(d, value, school, target)
+    -- You reflect %d %s damage to %s.
+    return d.source, "Reflect ("..school..")", target, value, school, "damage"
+  end,
+
+  [SPELLLOGSCHOOLOTHERSELF] = function(d, source, attack, value, school)
+    -- %s's %s hits you for %d %s damage.
+    return source, attack, d.target, value, school, "damage"
+  end,
+
+  [SPELLLOGCRITSCHOOLOTHERSELF] = function(d, source, attack, value, school)
+    -- %s's %s crits you for %d %s damage.
+    return source, attack, d.target, value, school, "damage"
+  end,
+
+  [SPELLLOGOTHERSELF] = function(d, source, attack, value)
+    -- %s's %s hits you for %d.
+    return source, attack, d.target, value, d.school, "damage"
+  end,
+
+  [SPELLLOGCRITOTHERSELF] = function(d, source, attack, value)
+    -- %s's %s crits you for %d.
+    return source, attack, d.target, value, d.school, "damage"
+  end,
+
+  [PERIODICAURADAMAGEOTHERSELF] = function(d, value, school, source, attack)
+    -- You suffer %d %s damage from %s's %s.
+    return source, attack, d.target, value, school, "damage"
+  end,
+
+  [COMBATHITOTHERSELF] = function(d, source, value)
+    -- %s hits you for %d.
+    return source, d.attack, d.target, value, d.school, "damage"
+  end,
+
+  [COMBATHITCRITOTHERSELF] = function(d, source, value)
+    -- %s crits you for %d.
+    return source, d.attack, d.target, value, d.school, "damage"
+  end,
+
+  [COMBATHITSCHOOLOTHERSELF] = function(d, source, value, school)
+    -- %s hits you for %d %s damage.
+    return source, d.attack, d.target, value, school, "damage"
+  end,
+
+  [COMBATHITCRITSCHOOLOTHERSELF] = function(d, source, value, school)
+    -- %s crits you for %d %s damage.
+    return source, d.attack, d.target, value, school, "damage"
+  end,
+
+  [SPELLLOGSCHOOLOTHEROTHER] = function(d, source, attack, target, value, school)
+    -- %s's %s hits %s for %d %s damage.
+    return source, attack, target, value, school, "damage"
+  end,
+
+  [SPELLLOGCRITSCHOOLOTHEROTHER] = function(d, source, attack, target, value, school)
+    -- %s's %s crits %s for %d %s damage.
+    return source, attack, target, value, school, "damage"
+  end,
+
+  [SPELLLOGOTHEROTHER] = function(d, source, attack, target, value)
+    -- %s's %s hits %s for %d.
+    return source, attack, target, value, d.school, "damage"
+  end,
+
+  [SPELLLOGCRITOTHEROTHER] = function(d, source, attack, target, value, school)
+    -- %s's %s crits %s for %d.
+    return source, attack, target, value, school, "damage"
+  end,
+
+  [PERIODICAURADAMAGEOTHEROTHER] = function(d, target, value, school, source, attack)
+    -- %s suffers %d %s damage from %s's %s.
+    return source, attack, target, value, school, "damage"
+  end,
+
+  [COMBATHITOTHEROTHER] = function(d, source, target, value)
+    -- %s hits %s for %d.
+    return source, d.attack, target, value, d.school, "damage"
+  end,
+
+  [COMBATHITCRITOTHEROTHER] = function(d, source, target, value)
+    -- %s crits %s for %d.
+    return source, d.attack, target, value, d.school, "damage"
+  end,
+
+  [COMBATHITSCHOOLOTHEROTHER] = function(d, source, target, value, school)
+    -- %s hits %s for %d %s damage.
+    return source, d.attack, target, value, school, "damage"
+  end,
+
+  [COMBATHITCRITSCHOOLOTHEROTHER] = function(d, source, target, value, school)
+    -- %s crits %s for %d %s damage.
+    return source, d.attack, target, value, school, "damage"
+  end,
+
+  [DAMAGESHIELDOTHERSELF] = function(d, source, value, school)
+    -- %s reflects %d %s damage to you.
+    return source, "Reflect ("..school..")", d.target, value, school, "damage"
+  end,
+
+  [DAMAGESHIELDOTHEROTHER] = function(d, source, value, school, target)
+    -- %s reflects %d %s damage to %s.
+    return source, "Reflect ("..school..")", target, value, school, "damage"
+  end,
+
+  [HEALEDCRITOTHERSELF] = function(d, source, spell, value)
+    -- %s's %s critically heals you for %d.
+    return source, spell, d.target, value, d.school, "heal"
+  end,
+
+  [HEALEDOTHERSELF] = function(d, source, spell, value)
+    -- %s's %s heals you for %d.
+    return source, spell, d.target, value, d.school, "heal"
+  end,
+
+  [PERIODICAURAHEALOTHERSELF] = function(d, value, source, spell)
+    -- You gain %d health from %s's %s.
+    return source, spell, d.target, value, d.school, "heal"
+  end,
+
+  [HEALEDCRITSELFSELF] = function(d, spell, value)
+    -- Your %s critically heals you for %d.
+    return d.source, spell, d.target, value, d.school, "heal"
+  end,
+
+  [HEALEDSELFSELF] = function(d, spell, value)
+    -- Your %s heals you for %d.
+    return d.source, spell, d.target, value, d.school, "heal"
+  end,
+
+  [PERIODICAURAHEALSELFSELF] = function(d, value, spell)
+    -- You gain %d health from %s.
+    return d.source, spell, d.target, value, d.school, "heal"
+  end,
+
+  [HEALEDCRITSELFOTHER] = function(d, spell, target, value)
+    -- Your %s critically heals %s for %d.
+    return d.source, spell, target, value, d.school, "heal"
+  end,
+
+  [HEALEDSELFOTHER] = function(d, spell, target, value)
+    -- Your %s heals %s for %d.
+    return d.source, spell, target, value, d.school, "heal"
+  end,
+
+  [PERIODICAURAHEALSELFOTHER] = function(d, target, value, spell)
+    -- %s gains %d health from your %s.
+    return d.source, spell, target, value, d.school, "heal"
+  end,
+
+  [HEALEDCRITOTHEROTHER] = function(d, source, spell, target, value)
+    -- %s's %s critically heals %s for %d.
+    return source, spell, target, value, d.school, "heal"
+  end,
+
+  [HEALEDOTHEROTHER] = function(d, source, spell, target, value)
+    -- %s's %s heals %s for %d.
+    return source, spell, target, value, d.school, "heal"
+  end,
+
+  [PERIODICAURAHEALOTHEROTHER] = function(d, target, value, source, spell)
+    -- %s gains %d health from %s's %s.
+    return source, spell, target, value, d.school, "heal"
+  end,
+}
+
+-- register to all combat log events
+for event in pairs(combatlog_events) do
+  parser:RegisterEvent(event)
+end
+
+-- preload all combat log patterns
+for pattern in pairs(combatlog_parser) do
+  sanitize(pattern)
+end
 
 -- cache default table
 local defaults = { }
 
+-- initialize absorb and resist pattern
 local absorb = sanitize(ABSORB_TRAILER)
 local resist = sanitize(RESIST_TRAILER)
 
@@ -369,12 +418,12 @@ parser:SetScript("OnEvent", function()
   defaults.spell  = UNKNOWN
   defaults.value = 0
 
-  -- detection on all damage sources
-  for id, data in pairs(combatlog_strings) do
-    local result, _, a1, a2, a3, a4, a5 = cfind(arg1, data[1])
+  -- iterate over all patterns assigned to the current event
+  for _, pattern in pairs(combatlog_events[event]) do
+    local result, _, a1, a2, a3, a4, a5 = cfind(arg1, pattern)
 
     if result then
-      return parser:AddData(data[2](defaults, a1, a2, a3, a4, a5))
+      return parser:AddData(combatlog_parser[pattern](defaults, a1, a2, a3, a4, a5))
     end
   end
 end)
