@@ -61,6 +61,17 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
   - `COMBATHITSCHOOLOTHEROTHER`
   - `COMBATHITCRITSCHOOLOTHEROTHER`
 
+#### Hit Damage on Self
+
+- Events:
+  - `CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS`
+
+- Strings:
+  - `COMBATHITOTHERSELF`
+  - `COMBATHITCRITOTHERSELF`
+  - `COMBATHITSCHOOLOTHERSELF`
+  - `COMBATHITCRITSCHOOLOTHERSELF`
+
 
 #### Spell Damage
 
@@ -77,6 +88,18 @@ The list might be incomplete and faulty. If you came here and found mistakes, pl
   - `SPELLLOGCRITSCHOOLOTHEROTHER`
   - `SPELLLOGOTHEROTHER`
   - `SPELLLOGCRITOTHEROTHER`
+
+
+#### Spell Damage on Self
+
+- Events:
+  - `CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE`
+
+- Strings:
+  - `SPELLLOGSCHOOLOTHERSELF`
+  - `SPELLLOGCRITSCHOOLOTHERSELF`
+  - `SPELLLOGOTHERSELF`
+  - `SPELLLOGCRITOTHERSELF`
 
 
 #### Shield Damage
