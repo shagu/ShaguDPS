@@ -353,6 +353,17 @@ window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
 
+window:SetScript("OnUpdate", function()
+  -- only check for updates every .2 seconds
+  if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + .2 end
+
+  -- refresh window if needed
+  if this.needs_refresh then
+    this.needs_refresh = nil
+    this.Refresh()
+  end
+end)
+
 window.title = window:CreateTexture(nil, "NORMAL")
 window.title:SetTexture(0,0,0,.6)
 window.title:SetHeight(20)
@@ -810,4 +821,6 @@ window.Refresh = function(force, report)
   end
 end
 
-table.insert(parser.callbacks.refresh, window.Refresh)
+table.insert(parser.callbacks.refresh, function()
+  window.needs_refresh = true
+end)
