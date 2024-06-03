@@ -109,6 +109,13 @@ parser.ScanName = function(self, name)
     end
   end
 
+  -- detect SuperWoW pet owner
+  local match, _, owner = string.find(name, "%((.*)%)", 1)
+  if match and owner then
+    data["classes"][name] = owner
+    return "PET"
+  end
+
   -- check if name matches a player pet
   for unit, _ in pairs(validPets) do
     if UnitExists(unit) and UnitName(unit) == name then
@@ -168,10 +175,6 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
   -- write both (overall and current segment)
   for segment = 0, 1 do
     local entry = data[datatype][segment]
-
-    -- detect SuperWoW pet owner
-    local match, _, owner = string.find(source, "%((.*)%)", 1)
-    if match then source = owner end
 
     -- detect source and write initial table
     if not entry[source] then
