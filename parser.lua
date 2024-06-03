@@ -169,6 +169,10 @@ parser.AddData = function(self, source, action, target, value, school, datatype)
   for segment = 0, 1 do
     local entry = data[datatype][segment]
 
+    -- detect SuperWoW pet owner
+    local match, _, owner = string.find(source, "%((.*)%)", 1)
+    if match then source = owner end
+
     -- detect source and write initial table
     if not entry[source] then
       local type = parser:ScanName(source)
