@@ -340,19 +340,20 @@ local function btnLeave()
   this:SetBackdropBorderColor(.4,.4,.4,1)
 end
 
-window:ClearAllPoints()
-window:SetPoint("RIGHT", UIParent, "RIGHT", -100, -100)
-
 window:EnableMouse(true)
 window:EnableMouseWheel(1)
 window:RegisterForDrag("LeftButton")
 window:SetMovable(true)
 window:SetUserPlaced(true)
 window:SetScript("OnDragStart", function() window:StartMoving() end)
-window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
+window:SetScript("OnDragStop", function() window:StopMovingOrSizing() ShaguDPS_windowPosition = {window:GetCenter()} end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
-
+window:RegisterEvent("PLAYER_LOGIN")
+window:SetScript("OnEvent", function()
+  window:ClearAllPoints()
+  window:SetPoint("CENTER", UIParent, "BOTTOMLEFT", unpack(ShaguDPS_windowPosition or {window:GetCenter()}))
+end)
 window:SetScript("OnUpdate", function()
   -- only check for updates every .2 seconds
   if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + .2 end
