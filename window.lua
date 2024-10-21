@@ -73,9 +73,9 @@ local view_templates = {
     bar_val = "effective_value",
     bar_lower_max = "best",
     bar_lower_val = "value",
-    chat_string = "[+%s] %s (%.1f%%)",
-    bar_string = "|cffcc8888+%s|r %s (%.1f%%)",
-    bar_string_params = { "uneffective_value", "effective_value", "effective_percent" },
+    chat_string = "%s (%.1f%%)",
+    bar_string = "%s (%.1f%%)",
+    bar_string_params = { "effective_value", "effective_percent" },
   },
   [4] = { -- hps
     name = "HPS",
@@ -84,9 +84,9 @@ local view_templates = {
     bar_val = "effective_value_persecond",
     bar_lower_max = "persecond_best",
     bar_lower_val = "value_persecond",
-    chat_string = "[+%s] %s (%.1f%%)",
-    bar_string = "|cffcc8888+%s|r %s (%.1f%%)",
-    bar_string_params = { "uneffective_value_persecond", "effective_value_persecond", "effective_percent" },
+    chat_string = "%s (%.1f%%)",
+    bar_string = "%s (%.1f%%)",
+    bar_string_params = { "effective_value_persecond", "effective_percent" },
   },
 }
 
@@ -340,19 +340,20 @@ local function btnLeave()
   this:SetBackdropBorderColor(.4,.4,.4,1)
 end
 
-window:ClearAllPoints()
-window:SetPoint("RIGHT", UIParent, "RIGHT", -100, -100)
-
 window:EnableMouse(true)
 window:EnableMouseWheel(1)
 window:RegisterForDrag("LeftButton")
 window:SetMovable(true)
 window:SetUserPlaced(true)
-window:SetScript("OnDragStart", function() window:StartMoving() end)
-window:SetScript("OnDragStop", function() window:StopMovingOrSizing() end)
+window:SetScript("OnDragStart", function() if IsShiftKeyDown() then window:StartMoving() end end)
+window:SetScript("OnDragStop", function() window:StopMovingOrSizing() ShaguDPS_windowPosition = {window:GetCenter()} end)
 window:SetScript("OnMouseWheel", barScrollWheel)
 window:SetClampedToScreen(true)
-
+window:RegisterEvent("PLAYER_LOGIN")
+window:SetScript("OnEvent", function()
+  window:ClearAllPoints()
+  window:SetPoint("CENTER", UIParent, "BOTTOMLEFT", unpack(ShaguDPS_windowPosition or {window:GetCenter()}))
+end)
 window:SetScript("OnUpdate", function()
   -- only check for updates every .2 seconds
   if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + .2 end
