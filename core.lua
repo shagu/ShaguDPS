@@ -81,6 +81,7 @@ local config = {
   -- window
   backdrop = 1,
   view = 1,
+  lock = 0,
 }
 
 local internals = {
