@@ -4,6 +4,8 @@ local window = ShaguDPS.window
 local parser = ShaguDPS.parser
 
 local config = ShaguDPS.config
+local configMain = ShaguDPS.config.window_one
+local configAlt = ShaguDPS.config.window_two
 local textures = ShaguDPS.textures
 local playerClasses = ShaguDPS.playerClasses
 
@@ -17,7 +19,7 @@ settings:SetScript("OnEvent", function()
   end
 
   ShaguDPS_Config = config
-  window.Refresh(true)
+  ShaguDPS:RefreshAll(true)
 end)
 
 -- Provide Slash Commands
@@ -30,17 +32,17 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
 
   if (msg == "" or msg == nil) then
     p("|cffffcc00Shagu|cffffffffDPS:")
-    p("  /sdps visible " .. config.visible .. " |cffcccccc- Show main window")
-    p("  /sdps width " .. config.width .. " |cffcccccc- Bar width")
-    p("  /sdps height " .. config.height .. " |cffcccccc- Bar height")
-    p("  /sdps spacing " .. config.spacing .. " |cffcccccc- Bar spacing")
-    p("  /sdps bars " .. config.bars .. " |cffcccccc- Visible Bars")
-    p("  /sdps trackall " .. config.track_all_units .. " |cffcccccc- Track all nearby units")
-    p("  /sdps mergepet " .. config.merge_pets .. " |cffcccccc- Merge pets into owner data")
-    p("  /sdps texture " .. config.texture .. " |cffcccccc- Set the statusbar texture")
-    p("  /sdps pastel " .. config.pastel .. " |cffcccccc- Use pastel colors")
-    p("  /sdps backdrop " .. config.backdrop .. " |cffcccccc- Show window backdrop and border")
-    p("  /sdps lock " .. config.lock .. " |cffcccccc- Lock window")
+    p("  /sdps visible " .. configMain.visible .. " |cffcccccc- Show main window")
+    p("  /sdps width " .. configMain.width .. " |cffcccccc- Bar width")
+    p("  /sdps height " .. configMain.height .. " |cffcccccc- Bar height")
+    p("  /sdps spacing " .. configMain.spacing .. " |cffcccccc- Bar spacing")
+    p("  /sdps bars " .. configMain.bars .. " |cffcccccc- Visible Bars")
+    p("  /sdps trackall " .. configMain.track_all_units .. " |cffcccccc- Track all nearby units")
+    p("  /sdps mergepet " .. configMain.merge_pets .. " |cffcccccc- Merge pets into owner data")
+    p("  /sdps texture " .. configMain.texture .. " |cffcccccc- Set the statusbar texture")
+    p("  /sdps pastel " .. configMain.pastel .. " |cffcccccc- Use pastel colors")
+    p("  /sdps backdrop " .. configMain.backdrop .. " |cffcccccc- Show window backdrop and border")
+    p("  /sdps lock " .. configMain.lock .. " |cffcccccc- Lock window")
     p("  /sdps toggle |cffcccccc- Toggle window")
     return
   end
@@ -49,114 +51,126 @@ SlashCmdList["SHAGUMETER"] = function(msg, editbox)
 
   if strlower(cmd) == "visible" then
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
-      config.visible = tonumber(args)
+      configMain.visible = tonumber(args)
+      configAlt.visible = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible: " .. config.visible)
+      ShaguDPS:RefreshAll(true)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible: " .. configMain.visible)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end
   elseif strlower(cmd) == "lock" then
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
-      config.lock = tonumber(args)
+      configMain.lock = tonumber(args)
+      configAlt.lock = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Lock: " .. config.lock)
+      ShaguDPS:RefreshAll(true)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Lock: " .. configMain.lock)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end
   elseif strlower(cmd) == "toggle" then
-    config.visible = config.visible == 1 and 0 or 1
+    configMain.visible = configMain.visible == 1 and 0 or 1
+    configAlt.visible = configAlt.visible == 1 or 0 or 1
     ShaguDPS_Config = config
-    window.Refresh(true)
-    p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible: " .. config.visible)
+    ShaguDPS:RefreshAll(true)
+    p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible: " .. configMain.visible)
   elseif strlower(cmd) == "width" then
     if tonumber(args) then
-      config.width = tonumber(args)
+      configMain.width = tonumber(args)
+      configAlt.width = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar width: " .. config.width)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar width: " .. configMain.width)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 1-999")
     end
   elseif strlower(cmd) == "height" then
     if tonumber(args) then
-      config.height = tonumber(args)
+      configMain.height = tonumber(args)
+      configAlt.height = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar height: " .. config.height)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar height: " .. configMain.height)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 1-999")
     end
   elseif strlower(cmd) == "spacing" then
     if tonumber(args) then
-      config.spacing = tonumber(args)
+      configMain.spacing = tonumber(args)
+      configAlt.spacing = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar spacing: " .. config.spacing)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Bar spacing: " .. configMain.spacing)
     else
-      p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-" .. config.height)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-" .. configMain.height)
     end
   elseif strlower(cmd) == "bars" then
     if tonumber(args) then
-      config.bars = tonumber(args)
+      configMain.bars = tonumber(args)
+      configAlt.bars = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible Bars: " .. config.bars)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Visible Bars: " .. configMain.bars)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 1-999")
     end
   elseif strlower(cmd) == "trackall" then
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
-      config.track_all_units = tonumber(args)
+      configMain.track_all_units = tonumber(args)
+      configAlt.track_all_units = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Track all units: " .. config.track_all_units)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Track all units: " .. configMain.track_all_units)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end
   elseif strlower(cmd) == "mergepet" then
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
-      config.merge_pets = tonumber(args)
+      configMain.merge_pets = tonumber(args)
+      configAlt.merge_pets = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Merge pet: " .. config.merge_pets)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Merge pet: " .. configMain.merge_pets)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end
   elseif strlower(cmd) == "texture" then
     if tonumber(args) and textures[tonumber(args)] then
-      config.texture = tonumber(args)
+      configMain.texture = tonumber(args)
+      configAlt.texture = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Texture: " .. config.texture)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Texture: " .. configMain.texture)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 1-" .. table.getn(textures))
     end
   elseif strlower(cmd) == "pastel" then
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
-      config.pastel = tonumber(args)
+      configMain.pastel = tonumber(args)
+      configAlt.pastel = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Use pastel colors: " .. config.pastel)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Use pastel colors: " .. configMain.pastel)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end
   elseif strlower(cmd) == "backdrop" then
     if tonumber(args) and (tonumber(args) == 1 or tonumber(args) == 0) then
-      config.backdrop = tonumber(args)
+      configMain.backdrop = tonumber(args)
+      configAlt.backdrop = tonumber(args)
       ShaguDPS_Config = config
-      window.Refresh(true)
+      ShaguDPS:RefreshAll(true)
 
-      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Show window backdrop: " .. config.backdrop)
+      p("|cffffcc00Shagu|cffffffffDPS:|cffffddcc Show window backdrop: " .. configMain.backdrop)
     else
       p("|cffffcc00Shagu|cffffffffDPS:|cffff5511 Valid Options are 0-1")
     end

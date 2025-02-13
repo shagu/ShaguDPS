@@ -57,31 +57,55 @@ local data = {
 }
 
 local dmg_table = {}
-local view_dmg_all = { }
-local view_dps_all = { }
+local view_dmg_all = {}
+local view_dps_all = {}
 local playerClasses = {}
 
 -- default config
 local config = {
-  -- size
-  width = 180,
-  height = 15,
-  bars = 8,
-  spacing = 0,
+  second_enabled = 1,
+  window_one = {
+    -- size
+    width = 180,
+    height = 15,
+    bars = 8,
+    spacing = 0,
 
-  -- tracking
-  track_all_units = 0,
-  merge_pets = 1,
+    -- tracking
+    track_all_units = 0,
+    merge_pets = 1,
 
-  -- appearance
-  visible = 1,
-  texture = 2,
-  pastel = 0,
+    -- appearance
+    visible = 1,
+    texture = 2,
+    pastel = 0,
 
-  -- window
-  backdrop = 1,
-  view = 1,
-  lock = 0,
+    -- window
+    backdrop = 1,
+    view = 1,
+    lock = 0,
+  },
+  window_two = {
+    -- size
+    width = 180,
+    height = 15,
+    bars = 8,
+    spacing = 0,
+
+    -- tracking
+    track_all_units = 0,
+    merge_pets = 1,
+
+    -- appearance
+    visible = 1,
+    texture = 2,
+    pastel = 0,
+
+    -- window
+    backdrop = 1,
+    view = 3,
+    lock = 0,
+  }
 }
 
 local internals = {
@@ -102,6 +126,7 @@ ShaguDPS.data = data
 ShaguDPS.config = config
 ShaguDPS.textures = textures
 ShaguDPS.window = window
+ShaguDPS.Windows = {}
 ShaguDPS.settings = settings
 ShaguDPS.internals = internals
 ShaguDPS.parser = parser
