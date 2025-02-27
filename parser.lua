@@ -98,6 +98,9 @@ parser.combat:SetScript("OnUpdate", function()
 end)
 
 parser.ScanName = function(self, name)
+  -- ignore invalid messages
+  if not name then return end
+
   -- check if name matches a real player
   for unit, _ in pairs(validUnits) do
     if UnitExists(unit) and UnitName(unit) == name then
