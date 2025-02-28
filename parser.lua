@@ -113,11 +113,13 @@ parser.ScanName = function(self, name)
   end
 
   -- detect SuperWoW pet owner
-  local match, _, owner = string.find(name, "%((.*)%)", 1)
-  if match and owner then
-    if parser:ScanName(owner) == "PLAYER" then
-      data["classes"][name] = owner
-      return "PET"
+  if name then
+    local match, _, owner = string.find(name, "%((.*)%)", 1)
+    if match and owner then
+      if parser:ScanName(owner) == "PLAYER" then
+        data["classes"][name] = owner
+        return "PET"
+      end
     end
   end
 
