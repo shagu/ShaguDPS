@@ -149,6 +149,7 @@ end
 parser.AddData = function(self, source, action, target, value, school, datatype)
   -- abort on invalid input
   if type(source) ~= "string" then return end
+  if not tonumber(value) then return end
 
   -- trim leading and trailing spaces
   source = trim(source)
