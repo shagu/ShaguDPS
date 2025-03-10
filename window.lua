@@ -371,7 +371,7 @@ end)
 
 window:RegisterEvent("PLAYER_LOGIN")
 window:SetScript("OnEvent", function()
-  if ShaguDPS_Config.pos then
+  if ShaguDPS_Config and ShaguDPS_Config.pos then
     -- load config position if existing
     window:ClearAllPoints()
     window:SetPoint("CENTER", UIParent, "BOTTOMLEFT", unpack(ShaguDPS_Config.pos))
