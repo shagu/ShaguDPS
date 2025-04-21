@@ -75,12 +75,9 @@ local config = {
 
   -- appearance
   visible = 1,
+  backdrop = 1,
   texture = 2,
   pastel = 0,
-
-  -- window
-  backdrop = 1,
-  view = 1,
   lock = 0,
 }
 
@@ -93,9 +90,9 @@ local internals = {
 }
 
 -- create core component frames
-local window = CreateFrame("Frame", "ShaguDPSWindow", UIParent)
 local settings = CreateFrame("Frame")
 local parser = CreateFrame("Frame")
+local window = {}
 
 -- make everything public
 ShaguDPS.data = data

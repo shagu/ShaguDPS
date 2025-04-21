@@ -190,13 +190,14 @@ local function barTooltipShow()
 
   local value = segment[this.unit]["_sum"]
   local persec = round(segment[this.unit]["_sum"] / segment[this.unit]["_ctime"], 1)
+  local wid = this.parent:GetID()
 
   GameTooltip:AddLine(this.title .. ":")
 
-  if config.view == 1 or config.view == 2 then
+  if config[wid].view == 1 or config[wid].view == 2 then
     GameTooltip:AddDoubleLine("|cffffffffDamage", "|cffffffff" .. value)
     GameTooltip:AddDoubleLine("|cffffffffDamage Per Second", "|cffffffff" .. persec)
-  elseif config.view == 3 or config.view == 4 then
+  elseif config[wid].view == 3 or config[wid].view == 4 then
     local evalue = segment[this.unit]["_esum"]
     local epersec = round(segment[this.unit]["_esum"] / segment[this.unit]["_ctime"], 1)
 
@@ -246,7 +247,7 @@ local function barScrollWheel()
   scroll = math.min(scroll, count + 1 - config.bars)
   scroll = math.max(scroll, 0)
 
-  window.Refresh()
+  this:Refresh()
 end
 
 local function ResetData()
@@ -272,11 +273,15 @@ local function ResetData()
 
   -- reset scroll and reload
   scroll = 0
+
+  -- reload all windows
   window.Refresh()
 end
 
 local function CreateBar(parent, i, background)
   parent.bars[i] = parent.bars[i] or CreateFrame("StatusBar", "ShaguDPSBar" .. i, parent)
+  parent.bars[i].parent = parent
+
   parent.bars[i]:SetStatusBarTexture(textures[config.texture] or textures[1])
   parent.bars[i]:SetPoint("TOPLEFT", parent, "TOPLEFT", 2, -config.height * (i-1) - 22)
   parent.bars[i]:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -config.height * (i-1) - 22)
@@ -340,188 +345,6 @@ local function btnLeave()
   this:SetBackdropBorderColor(.4,.4,.4,1)
 end
 
-window:EnableMouse(true)
-window:EnableMouseWheel(1)
-window:RegisterForDrag("LeftButton")
-window:SetMovable(true)
-window:SetScript("OnDragStart", function()
-  if config.lock == 0 then
-    window:StartMoving()
-  end
-end)
-
-window:SetScript("OnDragStop", function()
-  window:StopMovingOrSizing()
-  ShaguDPS_Config.pos = { window:GetCenter() }
-end)
-
-window:SetScript("OnMouseWheel", barScrollWheel)
-window:SetClampedToScreen(true)
-
-window:SetScript("OnUpdate", function()
-  -- only check for updates every .2 seconds
-  if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + .2 end
-
-  -- refresh window if needed
-  if this.needs_refresh then
-    this.needs_refresh = nil
-    this.Refresh()
-  end
-end)
-
-window:RegisterEvent("PLAYER_LOGIN")
-window:SetScript("OnEvent", function()
-  if ShaguDPS_Config and ShaguDPS_Config.pos then
-    -- load config position if existing
-    window:ClearAllPoints()
-    window:SetPoint("CENTER", UIParent, "BOTTOMLEFT", unpack(ShaguDPS_Config.pos))
-  else
-    -- use default window position
-    window:ClearAllPoints()
-    window:SetPoint("RIGHT", UIParent, "RIGHT", -100, -100)
-  end
-end)
-
-window.title = window:CreateTexture(nil, "NORMAL")
-window.title:SetTexture(0,0,0,.6)
-window.title:SetHeight(20)
-window.title:SetPoint("TOPLEFT", 2, -2)
-window.title:SetPoint("TOPRIGHT", -2, -2)
-
-window.btnSegment = CreateFrame("Button", "ShaguDPSDamage", window)
-window.btnSegment:SetPoint("CENTER", window.title, "CENTER", -25.5, 0)
-window.btnSegment:SetFrameStrata("MEDIUM")
-window.btnSegment:SetHeight(16)
-window.btnSegment:SetWidth(50)
-window.btnSegment:SetBackdrop(backdrop)
-window.btnSegment:SetBackdropColor(.2,.2,.2,1)
-window.btnSegment:SetBackdropBorderColor(.4,.4,.4,1)
-
-window.btnSegment.caption = window.btnSegment:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
-window.btnSegment.caption:SetFont(STANDARD_TEXT_FONT, 9)
-window.btnSegment.caption:SetText("Overall")
-window.btnSegment.caption:SetAllPoints()
-window.btnSegment.tooltip = { "Select Segment", "|cffffffffOverall, Current" }
-window.btnSegment:SetScript("OnEnter", btnEnter)
-window.btnSegment:SetScript("OnLeave", btnLeave)
-window.btnSegment:SetScript("OnClick", function()
-  if window.btnCurrent:IsShown() then
-    window.btnDamage:Hide()
-    window.btnDPS:Hide()
-    window.btnHeal:Hide()
-    window.btnHPS:Hide()
-    window.btnOverall:Hide()
-    window.btnCurrent:Hide()
-  else
-    window.btnDamage:Hide()
-    window.btnDPS:Hide()
-    window.btnHeal:Hide()
-    window.btnHPS:Hide()
-    window.btnOverall:Show()
-    window.btnCurrent:Show()
-  end
-end)
-
-window.btnMode = CreateFrame("Button", "ShaguDPSDamage", window)
-window.btnMode:SetPoint("CENTER", window.title, "CENTER", 25.5, 0)
-window.btnMode:SetFrameStrata("MEDIUM")
-window.btnMode:SetHeight(16)
-window.btnMode:SetWidth(50)
-window.btnMode:SetBackdrop(backdrop)
-window.btnMode:SetBackdropColor(.2,.2,.2,1)
-window.btnMode:SetBackdropBorderColor(.4,.4,.4,1)
-
-window.btnMode.caption = window.btnMode:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
-window.btnMode.caption:SetFont(STANDARD_TEXT_FONT, 9)
-window.btnMode.caption:SetText("Mode: Damage")
-window.btnMode.caption:SetAllPoints()
-window.btnMode.tooltip = { "Select Mode", "|cffffffffDamage, DPS, Heal, HPS" }
-window.btnMode:SetScript("OnEnter", btnEnter)
-window.btnMode:SetScript("OnLeave", btnLeave)
-window.btnMode:SetScript("OnClick", function()
-  if window.btnDamage:IsShown() then
-    window.btnDamage:Hide()
-    window.btnDPS:Hide()
-    window.btnHeal:Hide()
-    window.btnHPS:Hide()
-    window.btnOverall:Hide()
-    window.btnCurrent:Hide()
-  else
-    window.btnDamage:Show()
-    window.btnDPS:Show()
-    window.btnHeal:Show()
-    window.btnHPS:Show()
-    window.btnOverall:Hide()
-    window.btnCurrent:Hide()
-  end
-end)
-
-for name, template in pairs(menubuttons) do
-  window["btn"..name] = CreateFrame("Button", "ShaguDPS" .. name, window)
-
-  local button = window["btn"..name]
-  local template = template
-
-  button:SetPoint("CENTER", window.title, "CENTER", template[3], -18-template[1]*15)
-  button:SetFrameStrata("HIGH")
-  button:SetHeight(16)
-  button:SetWidth(50)
-  button:SetBackdrop(backdrop)
-  button:SetBackdropColor(.2,.2,.2,1)
-  button:SetBackdropBorderColor(.4,.4,.4,1)
-  button:Hide()
-
-  button.caption = button:CreateFontString("ShaguDPS"..name.."Title", "OVERLAY", "GameFontWhite")
-  button.caption:SetFont(STANDARD_TEXT_FONT, 9)
-  button.caption:SetText(name)
-  button.caption:SetAllPoints()
-  button.tooltip = { template[4], template[5] }
-  button:SetScript("OnEnter", btnEnter)
-  button:SetScript("OnLeave", btnLeave)
-  button:SetScript("OnClick", function()
-    config[template[6]] = template[2]
-
-    scroll = 0
-    window.Refresh(true)
-
-    for button in pairs(menubuttons) do
-      window["btn"..button]:Hide()
-    end
-  end)
-end
-
-window.btnReset = CreateFrame("Button", "ShaguDPSReset", window)
-window.btnReset:SetPoint("RIGHT", window.title, "RIGHT", -4, 0)
-window.btnReset:SetFrameStrata("MEDIUM")
-window.btnReset:SetHeight(16)
-window.btnReset:SetWidth(16)
-window.btnReset:SetBackdrop(backdrop)
-window.btnReset:SetBackdropColor(.2,.2,.2,1)
-window.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
-window.btnReset.tooltip = {
-  "Reset Data",
-  { "|cffffffffClick", "|cffaaaaaaAsk to reset all data."},
-  { "|cffffffffShift-Click", "|cffaaaaaaReset all data."},
-}
-
-window.btnReset.tex = window.btnReset:CreateTexture()
-window.btnReset.tex:SetWidth(10)
-window.btnReset.tex:SetHeight(10)
-window.btnReset.tex:SetPoint("CENTER", 0, 0)
-window.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\reset")
-window.btnReset:SetScript("OnEnter", btnEnter)
-window.btnReset:SetScript("OnLeave", btnLeave)
-window.btnReset:SetScript("OnClick", function()
-  if IsShiftKeyDown() then
-    ResetData()
-  else
-    local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
-    dialog.text = "Do you wish to reset the data?"
-    dialog.OnAccept = ResetData
-    StaticPopup_Show("SHAGUMETER_QUESTION")
-  end
-end)
-
 local function announce(text)
   local type = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
   local language = tbc and ChatFrameEditBox:GetAttribute("language") or ChatFrameEditBox.language
@@ -537,56 +360,7 @@ local function announce(text)
   end
 end
 
-window.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", window)
-window.btnAnnounce:SetPoint("LEFT", window.title, "LEFT", 4, 0)
-window.btnAnnounce:SetFrameStrata("MEDIUM")
-window.btnAnnounce:SetHeight(16)
-window.btnAnnounce:SetWidth(16)
-window.btnAnnounce:SetBackdrop(backdrop)
-window.btnAnnounce:SetBackdropColor(.2,.2,.2,1)
-window.btnAnnounce:SetBackdropBorderColor(.4,.4,.4,1)
-window.btnAnnounce.tooltip = {
-  "Send to Chat",
-  { "|cffffffffClick", "|cffaaaaaaAsk to anounce all data."},
-  { "|cffffffffShift-Click", "|cffaaaaaaAnnounce all data."},
-}
-
-window.btnAnnounce.tex = window.btnAnnounce:CreateTexture()
-window.btnAnnounce.tex:SetWidth(10)
-window.btnAnnounce.tex:SetHeight(10)
-window.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
-window.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\announce")
-window.btnAnnounce:SetScript("OnEnter", btnEnter)
-window.btnAnnounce:SetScript("OnLeave", btnLeave)
-window.btnAnnounce:SetScript("OnClick", function()
-  if IsShiftKeyDown() then
-    -- reload / anounce
-    window.Refresh(nil, true)
-  else
-    local ctype = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
-    local color = chatcolors[ctype]
-    if not color then color = "|cff00FAF6" end
-
-    local name = view_templates[config.view].name
-    local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
-
-    local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
-    dialog.text = text
-
-    dialog.OnAccept = function() window.Refresh(nil, true) end
-    StaticPopup_Show("SHAGUMETER_QUESTION")
-  end
-end)
-
-window.border = CreateFrame("Frame", "ShaguDPSBorder", window)
-window.border:ClearAllPoints()
-window.border:SetPoint("TOPLEFT", window, "TOPLEFT", -1,1)
-window.border:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", 1,-1)
-window.border:SetFrameLevel(100)
-
-window.bars = {}
-
-window.GetCaps = function(view, values)
+local function GetCaps(view, values)
   local values = values or {}
 
   -- reset/empty values
@@ -632,7 +406,7 @@ window.GetCaps = function(view, values)
   return values
 end
 
-window.GetData = function(unitdata, values)
+local function GetData(unitdata, values)
   local values = values or {}
 
   -- read normal values
@@ -694,23 +468,17 @@ window.GetData = function(unitdata, values)
   return values
 end
 
-local values = {}
-local buttons = {
-  window.btnDamage,
-  window.btnDPS,
-  window.btnHeal,
-  window.btnHPS,
-  window.btnOverall,
-  window.btnCurrent
-}
+local function Refresh(self, force, report)
+  -- assign shortcuts
+  local values, buttons = self.values, self.buttons
+  local wid = self:GetID()
 
-window.Refresh = function(force, report)
   -- config changes
   if force then
     if config.visible == 1 then
-      window:Show()
+      self:Show()
     else
-      window:Hide()
+      self:Hide()
     end
 
     for _, button in pairs(buttons) do
@@ -720,73 +488,73 @@ window.Refresh = function(force, report)
     -- update backdrop borders
     if config.backdrop == 1 then
       -- window background
-      window:SetBackdrop(backdrop_window)
-      window:SetBackdropColor(.5,.5,.5,.5)
+      self:SetBackdrop(backdrop_window)
+      self:SetBackdropColor(.5,.5,.5,.5)
 
       -- window border
-      window.border:SetBackdrop(backdrop_border)
-      window.border:SetBackdropBorderColor(.7,.7,.7,1)
+      self.border:SetBackdrop(backdrop_border)
+      self.border:SetBackdropBorderColor(.7,.7,.7,1)
     else
-      window:SetBackdrop(nil)
-      window.border:SetBackdrop(nil)
+      self:SetBackdrop(nil)
+      self.border:SetBackdrop(nil)
     end
 
     -- update panel button appearance
-    if config.view == 1 then
-      window.btnDamage.caption:SetTextColor(1,.9,0,1)
-      window.btnMode.caption:SetText("Damage")
-    elseif config.view == 2 then
-      window.btnDPS.caption:SetTextColor(1,.9,0,1)
-      window.btnMode.caption:SetText("DPS")
-    elseif config.view == 3 then
-      window.btnHeal.caption:SetTextColor(1,.9,0,1)
-      window.btnMode.caption:SetText("Heal")
-    elseif config.view == 4 then
-      window.btnHPS.caption:SetTextColor(1,.9,0,1)
-      window.btnMode.caption:SetText("HPS")
+    if config[wid].view == 1 then
+      self.btnDamage.caption:SetTextColor(1,.9,0,1)
+      self.btnMode.caption:SetText("Damage")
+    elseif config[wid].view == 2 then
+      self.btnDPS.caption:SetTextColor(1,.9,0,1)
+      self.btnMode.caption:SetText("DPS")
+    elseif config[wid].view == 3 then
+      self.btnHeal.caption:SetTextColor(1,.9,0,1)
+      self.btnMode.caption:SetText("Heal")
+    elseif config[wid].view == 4 then
+      self.btnHPS.caption:SetTextColor(1,.9,0,1)
+      self.btnMode.caption:SetText("HPS")
     end
 
-    if config.segment == 0 then
-      window.btnOverall.caption:SetTextColor(1,.9,0,1)
-      window.btnSegment.caption:SetText("Overall")
-    elseif config.segment == 1 then
-      window.btnCurrent.caption:SetTextColor(1,.9,0,1)
-      window.btnSegment.caption:SetText("Current")
+    if config[wid].segment == 0 then
+      self.btnOverall.caption:SetTextColor(1,.9,0,1)
+      self.btnSegment.caption:SetText("Overall")
+    elseif config[wid].segment == 1 then
+      self.btnCurrent.caption:SetTextColor(1,.9,0,1)
+      self.btnSegment.caption:SetText("Current")
     end
 
-    window:SetWidth(config.width)
-    window:SetHeight(config.height * config.bars + 22 + 4)
+    self:SetWidth(config.width)
+    self:SetHeight(config.height * config.bars + 22 + 4)
   end
 
   -- clear previous results
-  for id, bar in pairs(window.bars) do
+  for id, bar in pairs(self.bars) do
     bar.lowerBar:Hide()
     bar:Hide()
   end
 
   -- set view to damage or heal
-  if config.view == 1 or config.view == 2 then
-    segment = data.damage[(config.segment or 0)]
+  if config[wid].view == 1 or config[wid].view == 2 then
+    segment = data.damage[(config[wid].segment or 0)]
   elseif config.view == 3 or config.view == 4 then
-    segment = data.heal[(config.segment or 0)]
+    segment = data.heal[(config[wid].segment or 0)]
   end
 
   -- read view settings
-  local view_per_second = (config.view == 2 or config.view == 4) and true or nil
-  local view_effective  = (config.view == 3 or config.view == 4) and true or nil
+  local view_effective  = (config[wid].view == 3 or config[wid].view == 4) and true or nil
+  local view_per_second = (config[wid].view == 2 or config[wid].view == 4) and true or nil
 
-  local template = view_templates[config.view]
+  local template = view_templates[config[wid].view]
   local sort = sort_algorithms[template.sort]
 
   -- report to chat if flag is set
   if report then
-    local name = view_templates[config.view].name
-    local seg = config.segment == 1 and "Current" or "Overall"
+    local name = view_templates[config[wid].view].name
+    local seg = config[wid].segment == 1 and "Current" or "Overall"
     announce("ShaguDPS - " .. seg .. " " .. name .. ":")
   end
 
   -- load caps of the current view
-  values = window.GetCaps(segment, values)
+  values = self.GetCaps(segment, values)
 
   local i = 1
   for name, unitdata in spairs(segment, sort) do
@@ -794,37 +562,37 @@ window.Refresh = function(force, report)
     values.name = name
 
     -- load data values of the current unit
-    values = window.GetData(unitdata, values)
+    values = self.GetData(unitdata, values)
 
     local bar = i - scroll
     if bar >= 1 and bar <= config.bars then
-      window.bars[bar] = not force and window.bars[bar] or CreateBar(window, bar)
+      self.bars[bar] = not force and self.bars[bar] or CreateBar(self, bar)
 
       -- attach unit and titles to bar
-      window.bars[bar].title = values.name
-      window.bars[bar].unit = name
+      self.bars[bar].title = values.name
+      self.bars[bar].unit = name
 
-      window.bars[bar]:SetMinMaxValues(0, values[template.bar_max])
-      window.bars[bar]:SetValue(values[template.bar_val])
+      self.bars[bar]:SetMinMaxValues(0, values[template.bar_max])
+      self.bars[bar]:SetValue(values[template.bar_val])
 
       -- enable lower bar if template requires it
       if template.bar_lower_max and template.bar_lower_val then
-        window.bars[bar].lowerBar:SetMinMaxValues(0, values[template.bar_lower_max])
-        window.bars[bar].lowerBar:SetValue(values[template.bar_lower_val])
-        window.bars[bar].lowerBar:Show()
+        self.bars[bar].lowerBar:SetMinMaxValues(0, values[template.bar_lower_max])
+        self.bars[bar].lowerBar:SetValue(values[template.bar_lower_val])
+        self.bars[bar].lowerBar:Show()
       else
-        window.bars[bar].lowerBar:Hide()
+        self.bars[bar].lowerBar:Hide()
       end
 
-      window.bars[bar]:SetStatusBarColor(values.color.r, values.color.g, values.color.b)
-      window.bars[bar].textLeft:SetText(i .. ". " .. values.name)
+      self.bars[bar]:SetStatusBarColor(values.color.r, values.color.g, values.color.b)
+      self.bars[bar].textLeft:SetText(i .. ". " .. values.name)
 
       local a = template.bar_string_params
       local line = string.format(template.bar_string,
         values[a[1]], values[a[2]], values[a[3]], values[a[4]], values[a[5]])
 
-      window.bars[bar].textRight:SetText(line)
-      window.bars[bar]:Show()
+      self.bars[bar].textRight:SetText(line)
+      self.bars[bar]:Show()
 
       -- report to chat if flag is set
       if report and i <= 10 then
@@ -839,6 +607,275 @@ window.Refresh = function(force, report)
   end
 end
 
-table.insert(parser.callbacks.refresh, function()
-  window.needs_refresh = true
-end)
+local function CreateWindow(wid)
+  -- create default config
+  config[wid] = config[wid] or {
+    segment = 1,
+    view = 1,
+  }
+
+  local frame = CreateFrame("Frame", "ShaguDPSWindow" .. (wid == 1 and "" or wid), UIParent)
+  frame:SetID(wid)
+  frame:EnableMouse(true)
+  frame:EnableMouseWheel(1)
+  frame:RegisterForDrag("LeftButton")
+  frame:SetMovable(true)
+  frame:SetScript("OnDragStart", function()
+    if config.lock == 0 then
+      frame:StartMoving()
+    end
+  end)
+
+  frame:SetScript("OnDragStop", function()
+    frame:StopMovingOrSizing()
+    ShaguDPS_Config[frame:GetID()].pos = { frame:GetCenter() }
+  end)
+
+  frame:SetScript("OnMouseWheel", barScrollWheel)
+  frame:SetClampedToScreen(true)
+
+  frame:SetScript("OnUpdate", function()
+    -- only check for updates every .2 seconds
+    if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + .2 end
+
+    -- refresh window if needed
+    if this.needs_refresh then
+      this.needs_refresh = nil
+      this:Refresh()
+    end
+  end)
+
+  frame:RegisterEvent("PLAYER_LOGIN")
+  frame:SetScript("OnEvent", function()
+    if ShaguDPS_Config and ShaguDPS_Config[frame:GetID()] and ShaguDPS_Config[frame:GetID()].pos then
+      -- load config position if existing
+      frame:ClearAllPoints()
+      frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", unpack(ShaguDPS_Config[frame:GetID()].pos))
+    else
+      -- use default window position
+      frame:ClearAllPoints()
+      frame:SetPoint("RIGHT", UIParent, "RIGHT", -100, -100)
+    end
+  end)
+
+  frame.title = frame:CreateTexture(nil, "NORMAL")
+  frame.title:SetTexture(0,0,0,.6)
+  frame.title:SetHeight(20)
+  frame.title:SetPoint("TOPLEFT", 2, -2)
+  frame.title:SetPoint("TOPRIGHT", -2, -2)
+
+  frame.btnSegment = CreateFrame("Button", "ShaguDPSDamage", frame)
+  frame.btnSegment:SetPoint("CENTER", frame.title, "CENTER", -25.5, 0)
+  frame.btnSegment:SetFrameStrata("MEDIUM")
+  frame.btnSegment:SetHeight(16)
+  frame.btnSegment:SetWidth(50)
+  frame.btnSegment:SetBackdrop(backdrop)
+  frame.btnSegment:SetBackdropColor(.2,.2,.2,1)
+  frame.btnSegment:SetBackdropBorderColor(.4,.4,.4,1)
+
+  frame.btnSegment.caption = frame.btnSegment:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
+  frame.btnSegment.caption:SetFont(STANDARD_TEXT_FONT, 9)
+  frame.btnSegment.caption:SetText("Overall")
+  frame.btnSegment.caption:SetAllPoints()
+  frame.btnSegment.tooltip = { "Select Segment", "|cffffffffOverall, Current" }
+  frame.btnSegment:SetScript("OnEnter", btnEnter)
+  frame.btnSegment:SetScript("OnLeave", btnLeave)
+  frame.btnSegment:SetScript("OnClick", function()
+    if frame.btnCurrent:IsShown() then
+      frame.btnDamage:Hide()
+      frame.btnDPS:Hide()
+      frame.btnHeal:Hide()
+      frame.btnHPS:Hide()
+      frame.btnOverall:Hide()
+      frame.btnCurrent:Hide()
+    else
+      frame.btnDamage:Hide()
+      frame.btnDPS:Hide()
+      frame.btnHeal:Hide()
+      frame.btnHPS:Hide()
+      frame.btnOverall:Show()
+      frame.btnCurrent:Show()
+    end
+  end)
+
+  frame.btnMode = CreateFrame("Button", "ShaguDPSDamage", frame)
+  frame.btnMode:SetPoint("CENTER", frame.title, "CENTER", 25.5, 0)
+  frame.btnMode:SetFrameStrata("MEDIUM")
+  frame.btnMode:SetHeight(16)
+  frame.btnMode:SetWidth(50)
+  frame.btnMode:SetBackdrop(backdrop)
+  frame.btnMode:SetBackdropColor(.2,.2,.2,1)
+  frame.btnMode:SetBackdropBorderColor(.4,.4,.4,1)
+
+  frame.btnMode.caption = frame.btnMode:CreateFontString("ShaguDPSTitle", "OVERLAY", "GameFontWhite")
+  frame.btnMode.caption:SetFont(STANDARD_TEXT_FONT, 9)
+  frame.btnMode.caption:SetText("Mode: Damage")
+  frame.btnMode.caption:SetAllPoints()
+  frame.btnMode.tooltip = { "Select Mode", "|cffffffffDamage, DPS, Heal, HPS" }
+  frame.btnMode:SetScript("OnEnter", btnEnter)
+  frame.btnMode:SetScript("OnLeave", btnLeave)
+  frame.btnMode:SetScript("OnClick", function()
+    if frame.btnDamage:IsShown() then
+      frame.btnDamage:Hide()
+      frame.btnDPS:Hide()
+      frame.btnHeal:Hide()
+      frame.btnHPS:Hide()
+      frame.btnOverall:Hide()
+      frame.btnCurrent:Hide()
+    else
+      frame.btnDamage:Show()
+      frame.btnDPS:Show()
+      frame.btnHeal:Show()
+      frame.btnHPS:Show()
+      frame.btnOverall:Hide()
+      frame.btnCurrent:Hide()
+    end
+  end)
+
+  for name, template in pairs(menubuttons) do
+    frame["btn"..name] = CreateFrame("Button", "ShaguDPS" .. name, frame)
+
+    local button = frame["btn"..name]
+    local template = template
+
+    button:SetPoint("CENTER", frame.title, "CENTER", template[3], -18-template[1]*15)
+    button:SetFrameStrata("HIGH")
+    button:SetHeight(16)
+    button:SetWidth(50)
+    button:SetBackdrop(backdrop)
+    button:SetBackdropColor(.2,.2,.2,1)
+    button:SetBackdropBorderColor(.4,.4,.4,1)
+    button:Hide()
+
+    button.caption = button:CreateFontString("ShaguDPS"..name.."Title", "OVERLAY", "GameFontWhite")
+    button.caption:SetFont(STANDARD_TEXT_FONT, 9)
+    button.caption:SetText(name)
+    button.caption:SetAllPoints()
+    button.tooltip = { template[4], template[5] }
+    button:SetScript("OnEnter", btnEnter)
+    button:SetScript("OnLeave", btnLeave)
+    button:SetScript("OnClick", function()
+      config[frame:GetID()][template[6]] = template[2]
+
+      scroll = 0
+      frame:Refresh(true)
+
+      for button in pairs(menubuttons) do
+        frame["btn"..button]:Hide()
+      end
+    end)
+  end
+
+  frame.btnReset = CreateFrame("Button", "ShaguDPSReset", frame)
+  frame.btnReset:SetPoint("RIGHT", frame.title, "RIGHT", -4, 0)
+  frame.btnReset:SetFrameStrata("MEDIUM")
+  frame.btnReset:SetHeight(16)
+  frame.btnReset:SetWidth(16)
+  frame.btnReset:SetBackdrop(backdrop)
+  frame.btnReset:SetBackdropColor(.2,.2,.2,1)
+  frame.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
+  frame.btnReset.tooltip = {
+    "Reset Data",
+    { "|cffffffffClick", "|cffaaaaaaAsk to reset all data."},
+    { "|cffffffffShift-Click", "|cffaaaaaaReset all data."},
+  }
+
+  frame.btnReset.tex = frame.btnReset:CreateTexture()
+  frame.btnReset.tex:SetWidth(10)
+  frame.btnReset.tex:SetHeight(10)
+  frame.btnReset.tex:SetPoint("CENTER", 0, 0)
+  frame.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\reset")
+  frame.btnReset:SetScript("OnEnter", btnEnter)
+  frame.btnReset:SetScript("OnLeave", btnLeave)
+  frame.btnReset:SetScript("OnClick", function()
+    if IsShiftKeyDown() then
+      ResetData()
+    else
+      local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
+      dialog.text = "Do you wish to reset the data?"
+      dialog.OnAccept = ResetData
+      StaticPopup_Show("SHAGUMETER_QUESTION")
+    end
+  end)
+
+  frame.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", frame)
+  frame.btnAnnounce:SetPoint("LEFT", frame.title, "LEFT", 4, 0)
+  frame.btnAnnounce:SetFrameStrata("MEDIUM")
+  frame.btnAnnounce:SetHeight(16)
+  frame.btnAnnounce:SetWidth(16)
+  frame.btnAnnounce:SetBackdrop(backdrop)
+  frame.btnAnnounce:SetBackdropColor(.2,.2,.2,1)
+  frame.btnAnnounce:SetBackdropBorderColor(.4,.4,.4,1)
+  frame.btnAnnounce.tooltip = {
+    "Send to Chat",
+    { "|cffffffffClick", "|cffaaaaaaAsk to anounce all data."},
+    { "|cffffffffShift-Click", "|cffaaaaaaAnnounce all data."},
+  }
+
+  frame.btnAnnounce.tex = frame.btnAnnounce:CreateTexture()
+  frame.btnAnnounce.tex:SetWidth(10)
+  frame.btnAnnounce.tex:SetHeight(10)
+  frame.btnAnnounce.tex:SetPoint("CENTER", 0, 0)
+  frame.btnAnnounce.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\announce")
+  frame.btnAnnounce:SetScript("OnEnter", btnEnter)
+  frame.btnAnnounce:SetScript("OnLeave", btnLeave)
+  frame.btnAnnounce:SetScript("OnClick", function()
+    if IsShiftKeyDown() then
+      -- reload / anounce
+      frame:Refresh(nil, true)
+    else
+      local ctype = tbc and ChatFrameEditBox:GetAttribute("chatType") or ChatFrameEditBox.chatType
+      local color = chatcolors[ctype]
+      if not color then color = "|cff00FAF6" end
+
+      local name = view_templates[config[frame:GetID()].view].name
+      local text = "Post |cffffdd00" .. name .. "|r data into /" .. color..string.lower(ctype) .. "|r?"
+
+      local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
+      dialog.text = text
+
+      dialog.OnAccept = function() frame:Refresh(nil, true) end
+      StaticPopup_Show("SHAGUMETER_QUESTION")
+    end
+  end)
+
+  frame.border = CreateFrame("Frame", "ShaguDPSBorder", frame)
+  frame.border:ClearAllPoints()
+  frame.border:SetPoint("TOPLEFT", frame, "TOPLEFT", -1,1)
+  frame.border:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 1,-1)
+  frame.border:SetFrameLevel(100)
+
+  frame.bars = {}
+  frame.values = {}
+  frame.buttons = {
+    frame.btnDamage,
+    frame.btnDPS,
+    frame.btnHeal,
+    frame.btnHPS,
+    frame.btnOverall,
+    frame.btnCurrent
+  }
+
+  frame.GetCaps = GetCaps
+  frame.GetData = GetData
+  frame.Refresh = Refresh
+
+  table.insert(parser.callbacks.refresh, function()
+    frame.needs_refresh = true
+  end)
+
+  return frame
+end
+
+-- make sure to always create first window
+window[1] = window[1] or CreateWindow(1)
+
+-- update all available windows
+window.Refresh = function(force, report)
+  for i=1,10 do
+    if config[i] then
+      window[i] = window[i] or CreateWindow(i)
+      window[i]:Refresh(force, report)
+    end
+  end
+end
