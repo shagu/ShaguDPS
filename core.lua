@@ -90,7 +90,7 @@ local internals = {
 }
 
 -- create core component frames
-local settings = CreateFrame("Frame")
+local settings = CreateFrame("Frame", nil, UIParent)
 local parser = CreateFrame("Frame")
 local window = {}
 

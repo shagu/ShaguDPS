@@ -814,6 +814,34 @@ local function CreateWindow(wid)
     end
   end)
 
+  frame.btnSettings = CreateFrame("Button", "ShaguDPSReset", frame)
+  frame.btnSettings:SetPoint("LEFT", frame.btnAnnounce, "RIGHT", 1, 0)
+  frame.btnSettings:SetFrameStrata("MEDIUM")
+  frame.btnSettings:SetHeight(16)
+  frame.btnSettings:SetWidth(16)
+  frame.btnSettings:SetBackdrop(backdrop)
+  frame.btnSettings:SetBackdropColor(.2,.2,.2,1)
+  frame.btnSettings:SetBackdropBorderColor(.4,.4,.4,1)
+  frame.btnSettings.tooltip = {
+    "Settings",
+    "|cffffffffShow Configuration Window"
+  }
+
+  frame.btnSettings.tex = frame.btnSettings:CreateTexture()
+  frame.btnSettings.tex:SetWidth(10)
+  frame.btnSettings.tex:SetHeight(10)
+  frame.btnSettings.tex:SetPoint("CENTER", 0, 0)
+  frame.btnSettings.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\settings")
+  frame.btnSettings:SetScript("OnEnter", btnEnter)
+  frame.btnSettings:SetScript("OnLeave", btnLeave)
+  frame.btnSettings:SetScript("OnClick", function()
+    if ShaguDPS.settings:IsShown() then
+      ShaguDPS.settings:Hide()
+    else
+      ShaguDPS.settings:Show()
+    end
+  end)
+
   frame.btnReset = CreateFrame("Button", "ShaguDPSReset", frame)
   frame.btnReset:SetPoint("RIGHT", frame.title, "RIGHT", -4, 0)
   frame.btnReset:SetFrameStrata("MEDIUM")
