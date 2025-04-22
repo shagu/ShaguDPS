@@ -242,7 +242,7 @@ local function barScrollWheel()
     count = count + 1
   end
 
-  this.scroll = math.min(this.scroll, count + 1 - config.bars)
+  this.scroll = math.min(this.scroll, count + 1 - config[this:GetID()].bars)
   this.scroll = math.max(this.scroll, 0)
 
   this:Refresh()
@@ -333,7 +333,7 @@ local function btnEnter()
     GameTooltip:Show()
   end
 
-  this:SetBackdropBorderColor(1,.9,0,1)
+  this:SetBackdropBorderColor(1,.8,0,1)
 end
 
 local function btnLeave()
@@ -521,8 +521,8 @@ local function Refresh(self, force, report)
       self.btnSegment.caption:SetText("Current")
     end
 
-    self:SetWidth(config.width)
-    self:SetHeight(config.height * config.bars + 22 + 4)
+    self:SetWidth((config[wid].width or 172))
+    self:SetHeight(config.height * (config[wid].bars or 8) + 22 + (config[wid].bars == 0 and 2 or 3))
   end
 
   -- clear previous results
@@ -564,7 +564,7 @@ local function Refresh(self, force, report)
     self.values = self.GetData(unitdata, self.values)
 
     local bar = i - self.scroll
-    if bar >= 1 and bar <= config.bars then
+    if bar >= 1 and bar <= (config[wid].bars or 8) then
       self.bars[bar] = not force and self.bars[bar] or CreateBar(self, bar)
 
       -- attach unit and titles to bar
@@ -608,10 +608,11 @@ end
 
 local function CreateWindow(wid)
   -- create default config
-  config[wid] = config[wid] or {
-    segment = 1,
-    view = 1,
-  }
+  config[wid] = config[wid] or {}
+  config[wid].bars = config[wid].bars or 8
+  config[wid].width = config[wid].width or 172
+  config[wid].segment = config[wid].segment or 1
+  config[wid].view = config[wid].view or 1
 
   local frame = CreateFrame("Frame", "ShaguDPSWindow" .. (wid == 1 and "" or wid), UIParent)
   frame.scroll = 0
@@ -633,6 +634,8 @@ local function CreateWindow(wid)
   frame:SetID(wid)
   frame:EnableMouse(true)
   frame:EnableMouseWheel(1)
+  frame:SetResizable(true)
+  frame:SetMinResize(172, 22)
   frame:RegisterForDrag("LeftButton")
   frame:SetMovable(true)
   frame:SetScript("OnDragStart", function()
@@ -650,8 +653,30 @@ local function CreateWindow(wid)
   frame:SetClampedToScreen(true)
 
   frame:SetScript("OnUpdate", function()
+    -- update config on resize
+    if this.sizing then
+      local wid = frame:GetID()
+      local width = frame:GetWidth()
+      local height = frame:GetHeight()
+      local bars = (height - 22) / config.height
+      bars = math.floor(bars)
+
+      config[wid].width = width
+      if config[wid].bars ~= bars then
+        config[wid].bars = bars
+        frame:Refresh()
+      end
+    end
+
     -- only check for updates every .2 seconds
     if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + .2 end
+
+    -- check for resize button
+    if MouseIsOver(this) then
+      this.btnResize:SetAlpha(.5)
+    else
+      this.btnResize:SetAlpha(0)
+    end
 
     -- refresh window if needed
     if this.needs_refresh then
@@ -671,7 +696,7 @@ local function CreateWindow(wid)
   frame.title:SetPoint("TOPRIGHT", -2, -2)
 
   frame.btnSegment = CreateFrame("Button", "ShaguDPSDamage", frame)
-  frame.btnSegment:SetPoint("CENTER", frame.title, "CENTER", -25.5, 0)
+  frame.btnSegment:SetPoint("RIGHT", frame.title, "CENTER", 0, 0)
   frame.btnSegment:SetFrameStrata("MEDIUM")
   frame.btnSegment:SetHeight(16)
   frame.btnSegment:SetWidth(50)
@@ -705,7 +730,7 @@ local function CreateWindow(wid)
   end)
 
   frame.btnMode = CreateFrame("Button", "ShaguDPSDamage", frame)
-  frame.btnMode:SetPoint("CENTER", frame.title, "CENTER", 25.5, 0)
+  frame.btnMode:SetPoint("LEFT", frame.title, "CENTER", 0, 0)
   frame.btnMode:SetFrameStrata("MEDIUM")
   frame.btnMode:SetHeight(16)
   frame.btnMode:SetWidth(50)
@@ -744,7 +769,7 @@ local function CreateWindow(wid)
     local button = frame["btn"..name]
     local template = template
 
-    button:SetPoint("CENTER", frame.title, "CENTER", template[3], -18-template[1]*15)
+    button:SetPoint("CENTER", frame.title, "CENTER", template[3], -17-template[1]*14)
     button:SetFrameStrata("HIGH")
     button:SetHeight(16)
     button:SetWidth(50)
@@ -773,7 +798,7 @@ local function CreateWindow(wid)
   end
 
   frame.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", frame)
-  frame.btnAnnounce:SetPoint("LEFT", frame.title, "LEFT", 4, 0)
+  frame.btnAnnounce:SetPoint("LEFT", frame.title, "LEFT", 2, 0)
   frame.btnAnnounce:SetFrameStrata("MEDIUM")
   frame.btnAnnounce:SetHeight(16)
   frame.btnAnnounce:SetWidth(16)
@@ -814,7 +839,7 @@ local function CreateWindow(wid)
   end)
 
   frame.btnSettings = CreateFrame("Button", "ShaguDPSReset", frame)
-  frame.btnSettings:SetPoint("LEFT", frame.btnAnnounce, "RIGHT", 1, 0)
+  frame.btnSettings:SetPoint("LEFT", frame.btnAnnounce, "RIGHT", 0, 0)
   frame.btnSettings:SetFrameStrata("MEDIUM")
   frame.btnSettings:SetHeight(16)
   frame.btnSettings:SetWidth(16)
@@ -842,7 +867,7 @@ local function CreateWindow(wid)
   end)
 
   frame.btnReset = CreateFrame("Button", "ShaguDPSReset", frame)
-  frame.btnReset:SetPoint("RIGHT", frame.title, "RIGHT", -4, 0)
+  frame.btnReset:SetPoint("RIGHT", frame.title, "RIGHT", -2, 0)
   frame.btnReset:SetFrameStrata("MEDIUM")
   frame.btnReset:SetHeight(16)
   frame.btnReset:SetWidth(16)
@@ -874,7 +899,7 @@ local function CreateWindow(wid)
   end)
 
   frame.btnWindow = CreateFrame("Button", "ShaguDPSReset", frame)
-  frame.btnWindow:SetPoint("RIGHT", frame.btnReset, "LEFT", -1, 0)
+  frame.btnWindow:SetPoint("RIGHT", frame.btnReset, "LEFT", 0, 0)
   frame.btnWindow:SetFrameStrata("MEDIUM")
   frame.btnWindow:SetHeight(16)
   frame.btnWindow:SetWidth(16)
@@ -920,6 +945,28 @@ local function CreateWindow(wid)
 
   frame.btnWindow:SetScript("OnEnter", btnEnter)
   frame.btnWindow:SetScript("OnLeave", btnLeave)
+
+  frame.btnResize = CreateFrame("Frame", nil, frame)
+  frame.btnResize:SetPoint("BOTTOMRIGHT", -3, 3)
+  frame.btnResize:SetWidth(12)
+  frame.btnResize:SetHeight(12)
+  frame.btnResize:EnableMouse(1)
+  frame.btnResize.tex = frame.btnResize:CreateTexture(nil, "BACKGROUND")
+  frame.btnResize.tex:SetAllPoints()
+  frame.btnResize.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\resize")
+  frame.btnResize:SetFrameLevel(50)
+  frame.btnResize:SetScript("OnMouseDown", function()
+    if not this:GetParent().sizing then
+      this:GetParent().sizing = true
+      this:GetParent():StartSizing()
+    end
+  end)
+
+  frame.btnResize:SetScript("OnMouseUp", function()
+    this:GetParent().sizing = nil
+    this:GetParent():StopMovingOrSizing()
+    this:GetParent():Refresh(true)
+  end)
 
   frame.border = CreateFrame("Frame", "ShaguDPSBorder", frame)
   frame.border:ClearAllPoints()

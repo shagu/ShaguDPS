@@ -57,7 +57,7 @@ local function CreateSelector(self, values)
   input.left:SetBackdrop(backdrop)
   input.left:SetBackdropColor(.2,.2,.2,1)
   input.left:SetBackdropBorderColor(.4,.4,.4,1)
-  input.left:SetScript("OnEnter", function() this:SetBackdropBorderColor(1.0, 0.9, 0.0, 1) end)
+  input.left:SetScript("OnEnter", function() this:SetBackdropBorderColor(1.0, 0.8, 0.0, 1) end)
   input.left:SetScript("OnLeave", function() this:SetBackdropBorderColor(0.4, 0.4, 0.4, 1) end)
   input.left:SetScript("OnClick", function() input:change(-1) end)
   input.left.caption = input.left:CreateFontString(nil, "OVERLAY", "GameFontWhite")
@@ -72,7 +72,7 @@ local function CreateSelector(self, values)
   input.right:SetBackdrop(backdrop)
   input.right:SetBackdropColor(.2,.2,.2,1)
   input.right:SetBackdropBorderColor(.4,.4,.4,1)
-  input.right:SetScript("OnEnter", function() this:SetBackdropBorderColor(1.0, 0.9, 0.0, 1) end)
+  input.right:SetScript("OnEnter", function() this:SetBackdropBorderColor(1.0, 0.8, 0.0, 1) end)
   input.right:SetScript("OnLeave", function() this:SetBackdropBorderColor(0.4, 0.4, 0.4, 1) end)
   input.right:SetScript("OnClick", function() input:change(1) end)
   input.right.caption = input.right:CreateFontString(nil, "OVERLAY", "GameFontWhite")
@@ -132,13 +132,13 @@ local function CreateConfig(self, caption, entry, check)
   text:SetPoint("TOPLEFT", self, "TOPLEFT", 10, -self.entries*18 - 4)
   text:SetWidth(100)
   text:SetHeight(18)
-  text:SetFont(STANDARD_TEXT_FONT, 10)
+  text:SetFont(STANDARD_TEXT_FONT, 10, "THINOUTLINE")
   text:SetJustifyH("LEFT")
   text:SetText(caption)
 
   if check == "header" then
     text:SetPoint("TOPLEFT", self, "TOPLEFT", 8, -self.entries*18 - 8)
-    text:SetFont(STANDARD_TEXT_FONT, 11)
+    text:SetFont(STANDARD_TEXT_FONT, 11, "OUTLINE")
     text:SetTextColor(1, .8, 0)
   end
 
@@ -197,7 +197,7 @@ settings.CreateSelector = CreateSelector
 
 -- window background
 settings:SetBackdrop(backdrop_window)
-settings:SetBackdropColor(.5,.5,.5,.5)
+settings:SetBackdropColor(.5,.5,.5,.9)
 
 -- window border
 settings.border = CreateFrame("Frame", nil, settings)
@@ -215,7 +215,7 @@ settings.title:SetPoint("TOPLEFT", 2, -2)
 settings.title:SetPoint("TOPRIGHT", -2, -2)
 
 settings.caption = settings:CreateFontString(nil, "OVERLAY", "GameFontWhite")
-settings.caption:SetFont(STANDARD_TEXT_FONT, 10)
+settings.caption:SetFont(STANDARD_TEXT_FONT, 10, "OUTLINE")
 settings.caption:SetText("|cffffcc00Shagu|cffffffffDPS")
 settings.caption:SetAllPoints(settings.title)
 
@@ -231,7 +231,7 @@ settings.btnClose.caption = settings.btnClose:CreateFontString(nil, "OVERLAY", "
 settings.btnClose.caption:SetFont(STANDARD_TEXT_FONT, 14)
 settings.btnClose.caption:SetText("x")
 settings.btnClose.caption:SetAllPoints()
-settings.btnClose:SetScript("OnEnter", function() this:SetBackdropBorderColor(1.0, 0.9, 0.0, 1) end)
+settings.btnClose:SetScript("OnEnter", function() this:SetBackdropBorderColor(1.0, 0.8, 0.0, 1) end)
 settings.btnClose:SetScript("OnLeave", function() this:SetBackdropBorderColor(0.4, 0.4, 0.4, 1) end)
 settings.btnClose:SetScript("OnClick", function() settings:Hide() end)
 

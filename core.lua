@@ -64,9 +64,7 @@ local playerClasses = {}
 -- default config
 local config = {
   -- size
-  width = 180,
   height = 15,
-  bars = 8,
   spacing = 0,
 
   -- tracking
