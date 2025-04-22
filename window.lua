@@ -13,8 +13,6 @@ local textures = ShaguDPS.textures
 local spairs = ShaguDPS.spairs
 local round = ShaguDPS.round
 
-local scroll = 0
-
 -- all known classes
 local classes = {
   WARRIOR = true, MAGE = true, ROGUE = true, DRUID = true, HUNTER = true,
@@ -236,16 +234,16 @@ local function barTooltipHide()
 end
 
 local function barScrollWheel()
-  scroll = arg1 > 0 and scroll - 1 or scroll
-  scroll = arg1 < 0 and scroll + 1 or scroll
+  this.scroll = arg1 > 0 and this.scroll - 1 or this.scroll
+  this.scroll = arg1 < 0 and this.scroll + 1 or this.scroll
 
   local count = 0
-  for k,v in pairs(this.parent.segment) do
+  for k,v in pairs(this.segment) do
     count = count + 1
   end
 
-  scroll = math.min(scroll, count + 1 - config.bars)
-  scroll = math.max(scroll, 0)
+  this.scroll = math.min(this.scroll, count + 1 - config.bars)
+  this.scroll = math.max(this.scroll, 0)
 
   this:Refresh()
 end
@@ -271,8 +269,9 @@ local function ResetData()
     data.heal[1][k] = nil
   end
 
-  -- reset scroll and reload
-  scroll = 0
+  for i=1,10 do
+    if window[i] then window[i].scroll = 0 end
+  end
 
   -- reload all windows
   window.Refresh()
@@ -564,7 +563,7 @@ local function Refresh(self, force, report)
     -- load data values of the current unit
     self.values = self.GetData(unitdata, self.values)
 
-    local bar = i - scroll
+    local bar = i - self.scroll
     if bar >= 1 and bar <= config.bars then
       self.bars[bar] = not force and self.bars[bar] or CreateBar(self, bar)
 
@@ -615,7 +614,7 @@ local function CreateWindow(wid)
   }
 
   local frame = CreateFrame("Frame", "ShaguDPSWindow" .. (wid == 1 and "" or wid), UIParent)
-
+  frame.scroll = 0
   frame.GetCaps = GetCaps
   frame.GetData = GetData
   frame.Refresh = Refresh
@@ -764,7 +763,7 @@ local function CreateWindow(wid)
     button:SetScript("OnClick", function()
       config[frame:GetID()][template[6]] = template[2]
 
-      scroll = 0
+      frame.scroll = 0
       frame:Refresh(true)
 
       for button in pairs(menubuttons) do
