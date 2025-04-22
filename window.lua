@@ -14,7 +14,6 @@ local spairs = ShaguDPS.spairs
 local round = ShaguDPS.round
 
 local scroll = 0
-local segment = data.damage[0]
 
 -- all known classes
 local classes = {
@@ -188,6 +187,7 @@ end
 local function barTooltipShow()
   GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 
+  local segment = this.parent.segment
   local value = segment[this.unit]["_sum"]
   local persec = round(segment[this.unit]["_sum"] / segment[this.unit]["_ctime"], 1)
   local wid = this.parent:GetID()
@@ -240,7 +240,7 @@ local function barScrollWheel()
   scroll = arg1 < 0 and scroll + 1 or scroll
 
   local count = 0
-  for k,v in pairs(segment) do
+  for k,v in pairs(this.parent.segment) do
     count = count + 1
   end
 
@@ -534,9 +534,9 @@ local function Refresh(self, force, report)
 
   -- set view to damage or heal
   if config[wid].view == 1 or config[wid].view == 2 then
-    segment = data.damage[(config[wid].segment or 0)]
+    self.segment = data.damage[(config[wid].segment or 0)]
   elseif config.view == 3 or config.view == 4 then
-    segment = data.heal[(config[wid].segment or 0)]
+    self.segment = data.heal[(config[wid].segment or 0)]
   end
 
   -- read view settings
@@ -554,42 +554,42 @@ local function Refresh(self, force, report)
   end
 
   -- load caps of the current view
-  values = self.GetCaps(segment, values)
+  self.values = self.GetCaps(self.segment, self.values)
 
   local i = 1
-  for name, unitdata in spairs(segment, sort) do
+  for name, unitdata in spairs(self.segment, sort) do
     -- attach name to values
-    values.name = name
+    self.values.name = name
 
     -- load data values of the current unit
-    values = self.GetData(unitdata, values)
+    self.values = self.GetData(unitdata, self.values)
 
     local bar = i - scroll
     if bar >= 1 and bar <= config.bars then
       self.bars[bar] = not force and self.bars[bar] or CreateBar(self, bar)
 
       -- attach unit and titles to bar
-      self.bars[bar].title = values.name
+      self.bars[bar].title = self.values.name
       self.bars[bar].unit = name
 
-      self.bars[bar]:SetMinMaxValues(0, values[template.bar_max])
-      self.bars[bar]:SetValue(values[template.bar_val])
+      self.bars[bar]:SetMinMaxValues(0, self.values[template.bar_max])
+      self.bars[bar]:SetValue(self.values[template.bar_val])
 
       -- enable lower bar if template requires it
       if template.bar_lower_max and template.bar_lower_val then
-        self.bars[bar].lowerBar:SetMinMaxValues(0, values[template.bar_lower_max])
-        self.bars[bar].lowerBar:SetValue(values[template.bar_lower_val])
+        self.bars[bar].lowerBar:SetMinMaxValues(0, self.values[template.bar_lower_max])
+        self.bars[bar].lowerBar:SetValue(self.values[template.bar_lower_val])
         self.bars[bar].lowerBar:Show()
       else
         self.bars[bar].lowerBar:Hide()
       end
 
-      self.bars[bar]:SetStatusBarColor(values.color.r, values.color.g, values.color.b)
-      self.bars[bar].textLeft:SetText(i .. ". " .. values.name)
+      self.bars[bar]:SetStatusBarColor(self.values.color.r, self.values.color.g, self.values.color.b)
+      self.bars[bar].textLeft:SetText(i .. ". " .. self.values.name)
 
       local a = template.bar_string_params
       local line = string.format(template.bar_string,
-        values[a[1]], values[a[2]], values[a[3]], values[a[4]], values[a[5]])
+        self.values[a[1]], self.values[a[2]], self.values[a[3]], self.values[a[4]], self.values[a[5]])
 
       self.bars[bar].textRight:SetText(line)
       self.bars[bar]:Show()
@@ -597,9 +597,9 @@ local function Refresh(self, force, report)
       -- report to chat if flag is set
       if report and i <= 10 then
         local chat = string.format(template.chat_string,
-          values[a[1]], values[a[2]], values[a[3]], values[a[4]], values[a[5]])
+          self.values[a[1]], self.values[a[2]], self.values[a[3]], self.values[a[4]], self.values[a[5]])
 
-        announce(i .. ". " .. values.name .. " " .. chat)
+        announce(i .. ". " .. self.values.name .. " " .. chat)
       end
     end
 
@@ -615,6 +615,22 @@ local function CreateWindow(wid)
   }
 
   local frame = CreateFrame("Frame", "ShaguDPSWindow" .. (wid == 1 and "" or wid), UIParent)
+
+  frame.GetCaps = GetCaps
+  frame.GetData = GetData
+  frame.Refresh = Refresh
+  frame.LoadPosition = function()
+    if ShaguDPS_Config and ShaguDPS_Config[frame:GetID()] and ShaguDPS_Config[frame:GetID()].pos then
+      -- load config position if existing
+      frame:ClearAllPoints()
+      frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", unpack(ShaguDPS_Config[frame:GetID()].pos))
+    else
+      -- use default window position
+      frame:ClearAllPoints()
+      frame:SetPoint("RIGHT", UIParent, "RIGHT", -100, -100)
+    end
+  end
+
   frame:SetID(wid)
   frame:EnableMouse(true)
   frame:EnableMouseWheel(1)
@@ -646,17 +662,8 @@ local function CreateWindow(wid)
   end)
 
   frame:RegisterEvent("PLAYER_LOGIN")
-  frame:SetScript("OnEvent", function()
-    if ShaguDPS_Config and ShaguDPS_Config[frame:GetID()] and ShaguDPS_Config[frame:GetID()].pos then
-      -- load config position if existing
-      frame:ClearAllPoints()
-      frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", unpack(ShaguDPS_Config[frame:GetID()].pos))
-    else
-      -- use default window position
-      frame:ClearAllPoints()
-      frame:SetPoint("RIGHT", UIParent, "RIGHT", -100, -100)
-    end
-  end)
+  frame:SetScript("OnEvent", frame.LoadPosition)
+  frame.LoadPosition()
 
   frame.title = frame:CreateTexture(nil, "NORMAL")
   frame.title:SetTexture(0,0,0,.6)
@@ -766,38 +773,6 @@ local function CreateWindow(wid)
     end)
   end
 
-  frame.btnReset = CreateFrame("Button", "ShaguDPSReset", frame)
-  frame.btnReset:SetPoint("RIGHT", frame.title, "RIGHT", -4, 0)
-  frame.btnReset:SetFrameStrata("MEDIUM")
-  frame.btnReset:SetHeight(16)
-  frame.btnReset:SetWidth(16)
-  frame.btnReset:SetBackdrop(backdrop)
-  frame.btnReset:SetBackdropColor(.2,.2,.2,1)
-  frame.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
-  frame.btnReset.tooltip = {
-    "Reset Data",
-    { "|cffffffffClick", "|cffaaaaaaAsk to reset all data."},
-    { "|cffffffffShift-Click", "|cffaaaaaaReset all data."},
-  }
-
-  frame.btnReset.tex = frame.btnReset:CreateTexture()
-  frame.btnReset.tex:SetWidth(10)
-  frame.btnReset.tex:SetHeight(10)
-  frame.btnReset.tex:SetPoint("CENTER", 0, 0)
-  frame.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\reset")
-  frame.btnReset:SetScript("OnEnter", btnEnter)
-  frame.btnReset:SetScript("OnLeave", btnLeave)
-  frame.btnReset:SetScript("OnClick", function()
-    if IsShiftKeyDown() then
-      ResetData()
-    else
-      local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
-      dialog.text = "Do you wish to reset the data?"
-      dialog.OnAccept = ResetData
-      StaticPopup_Show("SHAGUMETER_QUESTION")
-    end
-  end)
-
   frame.btnAnnounce = CreateFrame("Button", "ShaguDPSReset", frame)
   frame.btnAnnounce:SetPoint("LEFT", frame.title, "LEFT", 4, 0)
   frame.btnAnnounce:SetFrameStrata("MEDIUM")
@@ -839,6 +814,86 @@ local function CreateWindow(wid)
     end
   end)
 
+  frame.btnReset = CreateFrame("Button", "ShaguDPSReset", frame)
+  frame.btnReset:SetPoint("RIGHT", frame.title, "RIGHT", -4, 0)
+  frame.btnReset:SetFrameStrata("MEDIUM")
+  frame.btnReset:SetHeight(16)
+  frame.btnReset:SetWidth(16)
+  frame.btnReset:SetBackdrop(backdrop)
+  frame.btnReset:SetBackdropColor(.2,.2,.2,1)
+  frame.btnReset:SetBackdropBorderColor(.4,.4,.4,1)
+  frame.btnReset.tooltip = {
+    "Reset Data",
+    { "|cffffffffClick", "|cffaaaaaaAsk to reset all data."},
+    { "|cffffffffShift-Click", "|cffaaaaaaReset all data."},
+  }
+
+  frame.btnReset.tex = frame.btnReset:CreateTexture()
+  frame.btnReset.tex:SetWidth(10)
+  frame.btnReset.tex:SetHeight(10)
+  frame.btnReset.tex:SetPoint("CENTER", 0, 0)
+  frame.btnReset.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\reset")
+  frame.btnReset:SetScript("OnEnter", btnEnter)
+  frame.btnReset:SetScript("OnLeave", btnLeave)
+  frame.btnReset:SetScript("OnClick", function()
+    if IsShiftKeyDown() then
+      ResetData()
+    else
+      local dialog = StaticPopupDialogs["SHAGUMETER_QUESTION"]
+      dialog.text = "Do you wish to reset the data?"
+      dialog.OnAccept = ResetData
+      StaticPopup_Show("SHAGUMETER_QUESTION")
+    end
+  end)
+
+  frame.btnWindow = CreateFrame("Button", "ShaguDPSReset", frame)
+  frame.btnWindow:SetPoint("RIGHT", frame.btnReset, "LEFT", -1, 0)
+  frame.btnWindow:SetFrameStrata("MEDIUM")
+  frame.btnWindow:SetHeight(16)
+  frame.btnWindow:SetWidth(16)
+  frame.btnWindow:SetBackdrop(backdrop)
+  frame.btnWindow:SetBackdropColor(.2,.2,.2,1)
+  frame.btnWindow:SetBackdropBorderColor(.4,.4,.4,1)
+
+  frame.btnWindow.caption = frame.btnWindow:CreateFontString(nil, "GameFontWhite")
+  frame.btnWindow.caption:SetFont(STANDARD_TEXT_FONT, 14)
+  frame.btnWindow.caption:SetAllPoints()
+
+  if frame:GetID() == 1 then
+    frame.btnWindow.caption:SetText("+")
+    frame.btnWindow.tooltip = {
+      "New Window",
+      "|cffffffffCreate a new window"
+    }
+
+    frame.btnWindow:SetScript("OnClick", function()
+      for i=1,10 do
+        if not ShaguDPS.window[i] then
+          ShaguDPS.window[i] = CreateWindow(i)
+          ShaguDPS.window.Refresh(true)
+          return
+        end
+      end
+    end)
+  else
+    frame.btnWindow.caption:SetText("-")
+    frame.btnWindow.tooltip = {
+      "Remove Window",
+      "|cffffffffDelete this window"
+    }
+
+    frame.btnWindow:SetScript("OnClick", function()
+      local wid = frame:GetID()
+      window[wid]:Hide()
+      window[wid] = nil
+      config[wid] = nil
+      window.Refresh(true)
+    end)
+  end
+
+  frame.btnWindow:SetScript("OnEnter", btnEnter)
+  frame.btnWindow:SetScript("OnLeave", btnLeave)
+
   frame.border = CreateFrame("Frame", "ShaguDPSBorder", frame)
   frame.border:ClearAllPoints()
   frame.border:SetPoint("TOPLEFT", frame, "TOPLEFT", -1,1)
@@ -855,10 +910,6 @@ local function CreateWindow(wid)
     frame.btnOverall,
     frame.btnCurrent
   }
-
-  frame.GetCaps = GetCaps
-  frame.GetData = GetData
-  frame.Refresh = Refresh
 
   table.insert(parser.callbacks.refresh, function()
     frame.needs_refresh = true
@@ -879,3 +930,5 @@ window.Refresh = function(force, report)
     end
   end
 end
+
+window.Refresh(true)
