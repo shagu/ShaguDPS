@@ -521,7 +521,7 @@ local function Refresh(self, force, report)
       self.btnSegment.caption:SetText("Current")
     end
 
-    self:SetWidth((config[wid].width or 172))
+    self:SetWidth((config[wid].width or 177))
     self:SetHeight(config.height * (config[wid].bars or 8) + 22 + (config[wid].bars == 0 and 2 or 3))
   end
 
@@ -610,7 +610,7 @@ local function CreateWindow(wid)
   -- create default config
   config[wid] = config[wid] or {}
   config[wid].bars = config[wid].bars or 8
-  config[wid].width = config[wid].width or 172
+  config[wid].width = config[wid].width or 177
   config[wid].segment = config[wid].segment or 1
   config[wid].view = config[wid].view or 1
 
@@ -635,7 +635,7 @@ local function CreateWindow(wid)
   frame:EnableMouse(true)
   frame:EnableMouseWheel(1)
   frame:SetResizable(true)
-  frame:SetMinResize(172, 22)
+  frame:SetMinResize(177, 22)
   frame:RegisterForDrag("LeftButton")
   frame:SetMovable(true)
   frame:SetScript("OnDragStart", function()
@@ -672,7 +672,7 @@ local function CreateWindow(wid)
     if ( this.tick or 1) > GetTime() then return else this.tick = GetTime() + .2 end
 
     -- check for resize button
-    if MouseIsOver(this) then
+    if config.lock == 0 and MouseIsOver(this) then
       this.btnResize:SetAlpha(.5)
     else
       this.btnResize:SetAlpha(0)
@@ -696,7 +696,7 @@ local function CreateWindow(wid)
   frame.title:SetPoint("TOPRIGHT", -2, -2)
 
   frame.btnSegment = CreateFrame("Button", "ShaguDPSDamage", frame)
-  frame.btnSegment:SetPoint("RIGHT", frame.title, "CENTER", 0, 0)
+  frame.btnSegment:SetPoint("RIGHT", frame.title, "CENTER", -.5, 0)
   frame.btnSegment:SetFrameStrata("MEDIUM")
   frame.btnSegment:SetHeight(16)
   frame.btnSegment:SetWidth(50)
@@ -730,7 +730,7 @@ local function CreateWindow(wid)
   end)
 
   frame.btnMode = CreateFrame("Button", "ShaguDPSDamage", frame)
-  frame.btnMode:SetPoint("LEFT", frame.title, "CENTER", 0, 0)
+  frame.btnMode:SetPoint("LEFT", frame.title, "CENTER", .5, 0)
   frame.btnMode:SetFrameStrata("MEDIUM")
   frame.btnMode:SetHeight(16)
   frame.btnMode:SetWidth(50)
@@ -839,7 +839,7 @@ local function CreateWindow(wid)
   end)
 
   frame.btnSettings = CreateFrame("Button", "ShaguDPSReset", frame)
-  frame.btnSettings:SetPoint("LEFT", frame.btnAnnounce, "RIGHT", 0, 0)
+  frame.btnSettings:SetPoint("LEFT", frame.btnAnnounce, "RIGHT", 1, 0)
   frame.btnSettings:SetFrameStrata("MEDIUM")
   frame.btnSettings:SetHeight(16)
   frame.btnSettings:SetWidth(16)
@@ -899,7 +899,7 @@ local function CreateWindow(wid)
   end)
 
   frame.btnWindow = CreateFrame("Button", "ShaguDPSReset", frame)
-  frame.btnWindow:SetPoint("RIGHT", frame.btnReset, "LEFT", 0, 0)
+  frame.btnWindow:SetPoint("RIGHT", frame.btnReset, "LEFT", -1, 0)
   frame.btnWindow:SetFrameStrata("MEDIUM")
   frame.btnWindow:SetHeight(16)
   frame.btnWindow:SetWidth(16)
@@ -956,7 +956,7 @@ local function CreateWindow(wid)
   frame.btnResize.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\resize")
   frame.btnResize:SetFrameLevel(50)
   frame.btnResize:SetScript("OnMouseDown", function()
-    if not this:GetParent().sizing then
+    if not this:GetParent().sizing and config.lock == 0 then
       this:GetParent().sizing = true
       this:GetParent():StartSizing()
     end
