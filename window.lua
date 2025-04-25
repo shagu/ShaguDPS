@@ -197,7 +197,7 @@ local function barTooltipShow()
     GameTooltip:AddDoubleLine("|cffffffffDamage Per Second", "|cffffffff" .. persec)
   elseif config[wid].view == 3 or config[wid].view == 4 then
     local evalue = segment[this.unit]["_esum"]
-    local epersec = round(segment[this.unit]["_esum"] / segment[this.unit]["_ctime"], 1)
+    local epersec = round(evalue / segment[this.unit]["_ctime"], 1)
 
     GameTooltip:AddDoubleLine("|cffffffffHealing", "|cffffffff" .. evalue)
     GameTooltip:AddDoubleLine("|cffaaaaaaOverheal", "|cffcc8888+" .. value - evalue)
@@ -534,7 +534,7 @@ local function Refresh(self, force, report)
   -- set view to damage or heal
   if config[wid].view == 1 or config[wid].view == 2 then
     self.segment = data.damage[(config[wid].segment or 0)]
-  elseif config.view == 3 or config.view == 4 then
+  elseif config[wid].view == 3 or config[wid].view == 4 then
     self.segment = data.heal[(config[wid].segment or 0)]
   end
 
