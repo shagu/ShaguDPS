@@ -37,9 +37,7 @@ Available options are:
 
 ```
 /sdps visible 1        Show main window (0 or 1)
-/sdps width 180        Bar width (any number)
 /sdps height 17        Bar height (any number)
-/sdps bars 8           Visible Bars (any number)
 /sdps trackall 0       Track all nearby units (0 or 1)
 /sdps texture 2        Set the statusbar texture (1 to 4)
 /sdps pastel 0         Use pastel colors (0 or 1)
