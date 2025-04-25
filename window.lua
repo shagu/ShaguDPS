@@ -907,12 +907,13 @@ local function CreateWindow(wid)
   frame.btnWindow:SetBackdropColor(.2,.2,.2,1)
   frame.btnWindow:SetBackdropBorderColor(.4,.4,.4,1)
 
-  frame.btnWindow.caption = frame.btnWindow:CreateFontString(nil, "GameFontWhite")
-  frame.btnWindow.caption:SetFont(STANDARD_TEXT_FONT, 14)
-  frame.btnWindow.caption:SetAllPoints()
+  frame.btnWindow.tex = frame.btnWindow:CreateTexture()
+  frame.btnWindow.tex:SetWidth(10)
+  frame.btnWindow.tex:SetHeight(10)
+  frame.btnWindow.tex:SetPoint("CENTER", 0, 0)
 
   if frame:GetID() == 1 then
-    frame.btnWindow.caption:SetText("+")
+    frame.btnWindow.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\plus")
     frame.btnWindow.tooltip = {
       "New Window",
       "|cffffffffCreate a new window"
@@ -928,7 +929,7 @@ local function CreateWindow(wid)
       end
     end)
   else
-    frame.btnWindow.caption:SetText("-")
+    frame.btnWindow.tex:SetTexture("Interface\\AddOns\\ShaguDPS" .. (tbc and "-tbc" or "") .. "\\img\\minus")
     frame.btnWindow.tooltip = {
       "Remove Window",
       "|cffffffffDelete this window"
