@@ -468,6 +468,9 @@ local function GetData(unitdata, values)
 end
 
 local function Refresh(self, force, report)
+  -- skip refreshs on legacy calls
+  if not self or type(self) == "boolean" then return end
+
   -- assign shortcuts
   local values, buttons = self.values, self.buttons
   local wid = self:GetID()
