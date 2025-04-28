@@ -609,6 +609,20 @@ local function Refresh(self, force, report)
   end
 end
 
+local function Resize(self)
+  local wid = self:GetID()
+  local width = self:GetWidth()
+  local height = self:GetTop() - self:GetBottom()
+  local bars = (height - 22) / config.height
+  bars = math.floor(bars)
+
+  config[wid].width = width
+  if config[wid].bars ~= bars then
+    config[wid].bars = bars
+    self:Refresh()
+  end
+end
+
 local function CreateWindow(wid)
   -- create default config
   config[wid] = config[wid] or {}
@@ -622,6 +636,8 @@ local function CreateWindow(wid)
   frame.GetCaps = GetCaps
   frame.GetData = GetData
   frame.Refresh = Refresh
+  frame.Resize = Resize
+
   frame.LoadPosition = function()
     if ShaguDPS_Config and ShaguDPS_Config[frame:GetID()] and ShaguDPS_Config[frame:GetID()].pos then
       -- load config position if existing
@@ -658,17 +674,7 @@ local function CreateWindow(wid)
   frame:SetScript("OnUpdate", function()
     -- update config on resize
     if this.sizing then
-      local wid = frame:GetID()
-      local width = frame:GetWidth()
-      local height = frame:GetHeight()
-      local bars = (height - 22) / config.height
-      bars = math.floor(bars)
-
-      config[wid].width = width
-      if config[wid].bars ~= bars then
-        config[wid].bars = bars
-        frame:Refresh()
-      end
+      this:Resize()
     end
 
     -- only check for updates every .2 seconds
