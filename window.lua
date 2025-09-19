@@ -208,6 +208,9 @@ local function barTooltipShow()
 
   GameTooltip:AddLine(" ")
   GameTooltip:AddLine("Details:")
+    -- total fight duration (fallback to 1 sec to avoid divide by zero)
+  local duration = (segment["_end"] or GetTime()) - (segment["_start"] or GetTime())
+  if duration <= 0 then duration = 1 end
 
   for attack, damage in spairs(segment[this.unit], sort_algorithms.single_spell) do
     if attack and not internals[attack] then
@@ -224,10 +227,6 @@ local function barTooltipShow()
         local str = string.format("|cffffffff %s (%.1f%%)", damage, percent)
         GameTooltip:AddDoubleLine("|cffffffff" .. attack, str)
       end
-    end
-  end
-  GameTooltip:Show()
-end
 
 local function barTooltipHide()
   GameTooltip:Hide()
