@@ -48,9 +48,9 @@ local view_templates = {
     bar_val = "value",
     bar_lower_max = nil,
     bar_lower_val = nil,
-    chat_string = "%s (%.1f%%)",
-    bar_string = "%s (%.1f%%)",
-    bar_string_params = { "value", "percent" },
+    chat_string = "%s (%.1f DPS)",
+    bar_string = "%s (%.1f DPS)",
+    bar_string_params = { "value", "value_persecond" },
   },
   [2] = { -- dps
     name = "DPS",
@@ -90,8 +90,13 @@ local view_templates = {
 -- panel button templates
 local menubuttons = {
   -- segments
-  ["Current"]  = { 0, 1, -25.5, "Current Segment", "|cffffffffShow current fight",      "segment" },
-  ["Overall"]  = { 1, 0, -25.5, "Overall Segment", "|cffffffffShow all fights",         "segment" },
+  ["Current"]       = { 0, 1, -25.5, "Current Segment",  "|cffffffffShow current fight",      "segment" },
+  ["Overall"]       = { 1, 0, -25.5, "Overall Segment",  "|cffffffffShow all fights",         "segment" },
+  ["Previous"]      = { 2, 2, -25.5, "Previous Segment", "|cffffffffShow previous fight",     "segment" },
+  ["2 Combats Ago"] = { 3, 3, -25.5, "History Segment",  "|cffffffffShow 2 combats ago",      "segment" },
+  ["3 Combats Ago"] = { 4, 4, -25.5, "History Segment",  "|cffffffffShow 3 combats ago",      "segment" },
+  ["4 Combats Ago"] = { 5, 5, -25.5, "History Segment",  "|cffffffffShow 4 combats ago",      "segment" },
+  ["5 Combats Ago"] = { 6, 6, -25.5, "History Segment",  "|cffffffffShow 5 combats ago",      "segment" },
 
   -- modes
   ["Damage"]   = { 0, 1, 25.5,  "Damage View",     "|cffffffffShow Damage Done",        "view" },
@@ -249,24 +254,18 @@ local function barScrollWheel()
 end
 
 local function ResetData()
-  -- clear overall damage data
-  for k, v in pairs(data.damage[0]) do
-    data.damage[0][k] = nil
+  -- clear all damage data (overall, current, and history)
+  for segment = 0, 6 do
+    for k, v in pairs(data.damage[segment]) do
+      data.damage[segment][k] = nil
+    end
   end
 
-  -- clear current damage data
-  for k, v in pairs(data.damage[1]) do
-    data.damage[1][k] = nil
-  end
-
-  -- clear overall heal data
-  for k, v in pairs(data.heal[0]) do
-    data.heal[0][k] = nil
-  end
-
-  -- clear current heal data
-  for k, v in pairs(data.heal[1]) do
-    data.heal[1][k] = nil
+  -- clear all heal data (overall, current, and history)
+  for segment = 0, 6 do
+    for k, v in pairs(data.heal[segment]) do
+      data.heal[segment][k] = nil
+    end
   end
 
   for i=1,10 do
@@ -522,6 +521,21 @@ local function Refresh(self, force, report)
     elseif config[wid].segment == 1 then
       self.btnCurrent.caption:SetTextColor(1,.9,0,1)
       self.btnSegment.caption:SetText("Current")
+    elseif config[wid].segment == 2 then
+      self.btnPrevious.caption:SetTextColor(1,.9,0,1)
+      self.btnSegment.caption:SetText("Prev.")
+    elseif config[wid].segment == 3 then
+      self["btn2 Combats Ago"].caption:SetTextColor(1,.9,0,1)
+      self.btnSegment.caption:SetText("Prev. 2")
+    elseif config[wid].segment == 4 then
+      self["btn3 Combats Ago"].caption:SetTextColor(1,.9,0,1)
+      self.btnSegment.caption:SetText("Prev. 3")
+    elseif config[wid].segment == 5 then
+      self["btn4 Combats Ago"].caption:SetTextColor(1,.9,0,1)
+      self.btnSegment.caption:SetText("Prev. 4")
+    elseif config[wid].segment == 6 then
+      self["btn5 Combats Ago"].caption:SetTextColor(1,.9,0,1)
+      self.btnSegment.caption:SetText("Prev. 5")
     end
 
     self:SetWidth((config[wid].width or 177))
@@ -551,7 +565,9 @@ local function Refresh(self, force, report)
   -- report to chat if flag is set
   if report then
     local name = view_templates[config[wid].view].name
-    local seg = config[wid].segment == 1 and "Current" or "Overall"
+    local segment_names = { [0] = "Overall", [1] = "Current", [2] = "Previous",
+      [3] = "2 Combats Ago", [4] = "3 Combats Ago", [5] = "4 Combats Ago", [6] = "5 Combats Ago" }
+    local seg = segment_names[config[wid].segment] or "Current"
     announce("ShaguDPS - " .. seg .. " " .. name .. ":")
   end
 
@@ -728,6 +744,11 @@ local function CreateWindow(wid)
       frame.btnHPS:Hide()
       frame.btnOverall:Hide()
       frame.btnCurrent:Hide()
+      frame.btnPrevious:Hide()
+      frame["btn2 Combats Ago"]:Hide()
+      frame["btn3 Combats Ago"]:Hide()
+      frame["btn4 Combats Ago"]:Hide()
+      frame["btn5 Combats Ago"]:Hide()
     else
       frame.btnDamage:Hide()
       frame.btnDPS:Hide()
@@ -735,6 +756,11 @@ local function CreateWindow(wid)
       frame.btnHPS:Hide()
       frame.btnOverall:Show()
       frame.btnCurrent:Show()
+      frame.btnPrevious:Show()
+      frame["btn2 Combats Ago"]:Show()
+      frame["btn3 Combats Ago"]:Show()
+      frame["btn4 Combats Ago"]:Show()
+      frame["btn5 Combats Ago"]:Show()
     end
   end)
 
@@ -762,6 +788,11 @@ local function CreateWindow(wid)
       frame.btnHPS:Hide()
       frame.btnOverall:Hide()
       frame.btnCurrent:Hide()
+      frame.btnPrevious:Hide()
+      frame["btn2 Combats Ago"]:Hide()
+      frame["btn3 Combats Ago"]:Hide()
+      frame["btn4 Combats Ago"]:Hide()
+      frame["btn5 Combats Ago"]:Hide()
     else
       frame.btnDamage:Show()
       frame.btnDPS:Show()
@@ -769,6 +800,11 @@ local function CreateWindow(wid)
       frame.btnHPS:Show()
       frame.btnOverall:Hide()
       frame.btnCurrent:Hide()
+      frame.btnPrevious:Hide()
+      frame["btn2 Combats Ago"]:Hide()
+      frame["btn3 Combats Ago"]:Hide()
+      frame["btn4 Combats Ago"]:Hide()
+      frame["btn5 Combats Ago"]:Hide()
     end
   end)
 
@@ -781,7 +817,7 @@ local function CreateWindow(wid)
     button:SetPoint("CENTER", frame.title, "CENTER", template[3], -17-template[1]*14)
     button:SetFrameStrata("HIGH")
     button:SetHeight(16)
-    button:SetWidth(50)
+    button:SetWidth(template[6] == "segment" and 85 or 50)
     button:SetBackdrop(backdrop)
     button:SetBackdropColor(.2,.2,.2,1)
     button:SetBackdropBorderColor(.4,.4,.4,1)
@@ -992,7 +1028,12 @@ local function CreateWindow(wid)
     frame.btnHeal,
     frame.btnHPS,
     frame.btnOverall,
-    frame.btnCurrent
+    frame.btnCurrent,
+    frame.btnPrevious,
+    frame["btn2 Combats Ago"],
+    frame["btn3 Combats Ago"],
+    frame["btn4 Combats Ago"],
+    frame["btn5 Combats Ago"],
   }
 
   table.insert(parser.callbacks.refresh, function()

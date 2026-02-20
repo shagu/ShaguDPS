@@ -46,11 +46,21 @@ local data = {
   damage = {
     [0] = {}, -- overall
     [1] = {}, -- current
+    [2] = {}, -- previous
+    [3] = {}, -- 2 combats ago
+    [4] = {}, -- 3 combats ago
+    [5] = {}, -- 4 combats ago
+    [6] = {}, -- 5 combats ago
   },
 
   heal = {
     [0] = {}, -- overall
     [1] = {}, -- current
+    [2] = {}, -- previous
+    [3] = {}, -- 2 combats ago
+    [4] = {}, -- 3 combats ago
+    [5] = {}, -- 4 combats ago
+    [6] = {}, -- 5 combats ago
   },
 
   classes = {},
